@@ -6,120 +6,298 @@
 <title>Loan Management System</title>
 
 <style>
-
-body{
-    font-family: Arial, sans-serif;
+/* RESET */
+*{
     margin:0;
-    background:#f4f6f9;
+    padding:0;
+    box-sizing:border-box;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
+/* NAVBAR */
 header{
-    background:#2c3e50;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:18px 40px;
+    background:#ffffff;
+    box-shadow:0 2px 10px rgba(0,0,0,0.1);
+}
+
+.logo{
+    font-size:22px;
+    font-weight:bold;
+    color:#007bff;
+}
+
+nav a{
+    margin-left:18px;
+    text-decoration:none;
+    color:#333;
+    font-weight:500;
+}
+
+nav a:hover{
+    color:#007bff;
+}
+
+.login-btn{
+    padding:8px 16px;
+    border:1px solid #007bff;
+    border-radius:5px;
+}
+
+.register-btn{
+    padding:8px 16px;
+    background:#007bff;
     color:white;
-    padding:15px;
+    border-radius:5px;
+}
+
+/* HERO */
+.hero{
+    height:85vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    background:linear-gradient(120deg,#007bff,#00c6ff);
+    color:white;
+    padding:20px;
+}
+
+.hero h1{
+    font-size:48px;
+}
+
+.hero p{
+    margin-top:15px;
+    font-size:18px;
+    max-width:600px;
+}
+
+.hero-buttons{
+    margin-top:25px;
+}
+
+.btn-primary{
+    background:white;
+    color:#007bff;
+    padding:12px 28px;
+    text-decoration:none;
+    border-radius:6px;
+    margin-right:10px;
+    font-weight:bold;
+}
+
+.btn-secondary{
+    border:2px solid white;
+    padding:12px 28px;
+    border-radius:6px;
+    color:white;
+    text-decoration:none;
+}
+
+/* FEATURES */
+.features{
+    padding:70px 40px;
+    text-align:center;
+    background:#f4f6fb;
+}
+
+.features h2{
+    margin-bottom:30px;
+    font-size:32px;
+}
+
+.feature-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:20px;
+}
+
+.feature-card{
+    background:white;
+    padding:25px;
+    border-radius:10px;
+    box-shadow:0 4px 15px rgba(0,0,0,0.1);
+    transition:0.3s;
+}
+
+.feature-card:hover{
+    transform:translateY(-5px);
+}
+
+/* ABOUT */
+.about{
+    padding:70px 40px;
     text-align:center;
 }
 
-.container{
-    text-align:center;
-    padding:60px 20px;
-}
-
-.container h1{
-    color:#2c3e50;
-}
-
-.container p{
+.about p{
     max-width:700px;
     margin:auto;
+    margin-top:15px;
     line-height:1.6;
-    font-size:18px;
 }
 
-.buttons{
-    margin-top:30px;
+/* CTA */
+.cta{
+    background:#007bff;
+    color:white;
+    padding:60px 20px;
+    text-align:center;
 }
 
-button{
+.cta a{
+    margin-top:15px;
+    display:inline-block;
+    background:white;
+    color:#007bff;
     padding:12px 25px;
-    margin:10px;
-    border:none;
     border-radius:5px;
-    font-size:16px;
-    cursor:pointer;
+    text-decoration:none;
+    font-weight:bold;
 }
 
-.register{
-    background:#3498db;
-    color:white;
-}
-
-.login{
-    background:#27ae60;
-    color:white;
-}
-
-button:hover{
-    opacity:0.9;
-}
-
+/* FOOTER */
 footer{
-    background:#2c3e50;
+    background:#222;
     color:white;
     text-align:center;
-    padding:10px;
-    position:fixed;
-    bottom:0;
-    width:100%;
+    padding:15px;
 }
 
+/* RESPONSIVE */
+@media(max-width:768px){
+
+.hero h1{
+    font-size:34px;
+}
+
+nav{
+    display:none;
+}
+
+}
 </style>
 </head>
 
 <body>
 
+<!-- NAVBAR -->
 <header>
-<h2>Loan Management System</h2>
+<div class="logo">LoanMS</div>
+
+<nav>
+<a href="#">Home</a>
+<a href="#features">Features</a>
+<a href="#about">About</a>
+<a href="login.html" class="login-btn">Sign In</a>
+<a href="register.html" class="register-btn">Register</a>
+</nav>
 </header>
 
-<div class="container">
+<!-- HERO -->
+<section class="hero">
 
-<h1>Welcome to Loan Management System</h1>
+<div>
 
-<p>
-This project is a web-based Loan Management System that allows users to apply for loans,
-track loan status, calculate EMI, and manage repayments easily.
-</p>
+<h1>Smart Loan Management System</h1>
 
 <p>
-The system also includes an Admin dashboard where administrators can review loan
-applications, approve or reject loans, and monitor payments.
+Apply for loans, track approvals, calculate EMI, and manage repayments easily with our modern loan management platform.
 </p>
 
-<div class="buttons">
+<div class="hero-buttons">
 
-<button class="register" onclick="register()">Register</button>
-
-<button class="login" onclick="login()">Sign In</button>
+<a href="register.html" class="btn-primary">Get Started</a>
+<a href="#features" class="btn-secondary">Learn More</a>
 
 </div>
 
 </div>
 
+</section>
+
+<!-- FEATURES -->
+<section id="features" class="features">
+
+<h2>System Features</h2>
+
+<div class="feature-grid">
+
+<div class="feature-card">
+<h3>Easy Loan Application</h3>
+<p>Users can quickly apply for loans through a simple online form.</p>
+</div>
+
+<div class="feature-card">
+<h3>Admin Approval</h3>
+<p>Admins can approve or reject loan applications efficiently.</p>
+</div>
+
+<div class="feature-card">
+<h3>EMI Calculator</h3>
+<p>Calculate monthly EMI before applying for a loan.</p>
+</div>
+
+<div class="feature-card">
+<h3>Payment Tracking</h3>
+<p>Track EMI payments and repayment schedules easily.</p>
+</div>
+
+<div class="feature-card">
+<h3>Defaulter Monitoring</h3>
+<p>Identify users who miss EMI payments automatically.</p>
+</div>
+
+<div class="feature-card">
+<h3>Analytics Dashboard</h3>
+<p>Admins can view loan statistics and system insights.</p>
+</div>
+
+</div>
+
+</section>
+
+<!-- ABOUT -->
+<section id="about" class="about">
+
+<h2>About This Project</h2>
+
+<p>
+The Loan Management System is a web application designed to simplify loan processing. 
+Users can register, apply for loans, and track their status, while administrators manage 
+loan approvals, monitor payments, and analyze system data.
+</p>
+
+</section>
+
+<!-- CALL TO ACTION -->
+<section class="cta">
+
+<h2>Start Managing Loans Efficiently</h2>
+
+<a href="register.html">Create Account</a>
+
+</section>
+
+<!-- FOOTER -->
 <footer>
 <p>© 2026 Loan Management System</p>
 </footer>
 
 <script>
-
-function register(){
-    window.location.href="register.html";
-}
-
-function login(){
-    window.location.href="login.html";
-}
-
+// Smooth scrolling for feature links
+document.querySelectorAll('a[href^="#"]').forEach(anchor=>{
+anchor.addEventListener('click',function(e){
+e.preventDefault();
+document.querySelector(this.getAttribute('href')).scrollIntoView({
+behavior:'smooth'
+});
+});
+});
 </script>
 
 </body>
