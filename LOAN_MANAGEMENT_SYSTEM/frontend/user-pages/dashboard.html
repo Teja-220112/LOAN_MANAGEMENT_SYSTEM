@@ -113,29 +113,8 @@
         </div>
       </div>
 
-      <!-- Quick Actions + Upcoming EMI -->
+      <!-- Upcoming EMI (Quick Actions removed — links are now in the navbar) -->
       <div class="col-lg-4">
-        <div class="lms-card mb-4">
-          <div class="card-header"><i class="fas fa-bolt"></i> Quick Actions</div>
-          <div class="card-body d-grid gap-2">
-            <a href="apply_loan.html" class="btn btn-outline-primary text-start">
-              <i class="fas fa-file-signature me-2 text-primary"></i>Apply for Loan
-            </a>
-            <a href="emi_calculator.html" class="btn btn-outline-primary text-start">
-              <i class="fas fa-calculator me-2 text-primary"></i>EMI Calculator
-            </a>
-            <a href="pay_emi.html" class="btn btn-outline-primary text-start">
-              <i class="fa-solid fa-credit-card me-2 text-primary"></i>Pay EMI
-            </a>
-            <a href="payments.html" class="btn btn-outline-primary text-start">
-              <i class="fas fa-receipt me-2 text-primary"></i>Payment History
-            </a>
-            <a href="profile.html" class="btn btn-outline-primary text-start">
-              <i class="fas fa-user-pen me-2 text-primary"></i>Edit Profile
-            </a>
-          </div>
-        </div>
-
         <div class="lms-card">
           <div class="card-header"><i class="fas fa-calendar-check"></i> Upcoming EMI</div>
           <div class="card-body">
@@ -153,7 +132,7 @@
   </div>
 </main>
 
-<div id="footer-placeholder"></div>
+<!-- No footer on dashboard page -->
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
 <script src="scripts.js"></script>
@@ -161,12 +140,14 @@
   document.addEventListener('DOMContentLoaded', function () {
     // Date display
     const now = new Date();
+    const hour = now.getHours();
+    const greeting = hour < 12 ? 'Good morning 👋' : hour < 17 ? 'Good afternoon 👋' : 'Good evening 👋';
+    document.querySelector('.dashboard-greeting').textContent = greeting;
     document.getElementById('dashboard-date').textContent =
       now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
     // In production, replace with Flask template variables:
     // {{ current_user.full_name }}, {{ stats.active_loans }}, etc.
-    // Placeholder — remove when connecting to backend
     document.getElementById('user-name').textContent = 'Welcome, User';
     document.getElementById('stat-active-loans').textContent = '0';
     document.getElementById('stat-pending').textContent = '0';

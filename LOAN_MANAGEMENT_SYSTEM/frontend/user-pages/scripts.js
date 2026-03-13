@@ -23,6 +23,7 @@ const NAVBAR_HTML = `
         <li class="nav-item"><a class="nav-link" href="home.html" data-page="home"><i class="fas fa-house me-1 d-lg-none"></i>Home</a></li>
         <li class="nav-item"><a class="nav-link" href="apply_loan.html" data-page="apply_loan"><i class="fas fa-file-signature me-1 d-lg-none"></i>Apply Loan</a></li>
         <li class="nav-item"><a class="nav-link" href="my_loans.html" data-page="my_loans"><i class="fas fa-credit-card me-1 d-lg-none"></i>My Loans</a></li>
+        <li class="nav-item"><a class="nav-link" href="pay_emi.html" data-page="pay_emi"><i class="fas fa-wallet me-1 d-lg-none"></i>Pay EMI</a></li>
         <li class="nav-item"><a class="nav-link" href="emi_calculator.html" data-page="emi_calculator"><i class="fas fa-calculator me-1 d-lg-none"></i>EMI Calculator</a></li>
         <li class="nav-item"><a class="nav-link" href="payments.html" data-page="payments"><i class="fas fa-receipt me-1 d-lg-none"></i>Payment History</a></li>
         <li class="nav-item"><a class="nav-link" href="profile.html" data-page="profile"><i class="fas fa-user me-1 d-lg-none"></i>Profile</a></li>
@@ -81,10 +82,23 @@ const FOOTER_HTML = `
 
 /* ── Inject Shared Layout ───────────────────────────────────────── */
 function injectLayout() {
+  // Standard navbar placeholder (used by most pages)
   const navEl = document.getElementById('navbar-placeholder');
-  const footEl = document.getElementById('footer-placeholder');
   if (navEl) navEl.innerHTML = NAVBAR_HTML;
-  if (footEl) footEl.innerHTML = FOOTER_HTML;
+
+  // pay_emi.html uses a different placeholder id
+  const navEl2 = document.getElementById('lms-navbar-placeholder');
+  if (navEl2) navEl2.innerHTML = NAVBAR_HTML;
+
+  // Footer — inject ONLY on home.html, nowhere else
+  const currentPage = location.pathname.split('/').pop();
+  const isHome = currentPage === 'home.html' || currentPage === '';
+
+  const footEl = document.getElementById('footer-placeholder');
+  if (footEl && isHome) footEl.innerHTML = FOOTER_HTML;
+
+  const footEl2 = document.getElementById('lms-footer-placeholder');
+  if (footEl2 && isHome) footEl2.innerHTML = FOOTER_HTML;
 
   // Mark active nav link based on page filename
   const page = location.pathname.split('/').pop().replace('.html', '');
@@ -150,7 +164,6 @@ function initApplyLoanForm() {
   if (!form) return;
   form.addEventListener('submit', function (e) {
     e.preventDefault();
-    // Backend integration point
     alert('Your loan application has been submitted successfully. You will receive a confirmation shortly.');
     form.reset();
   });
@@ -169,20 +182,11 @@ function initPasswordToggle() {
   });
 }
 
-
 /* ── Pay EMI Page — Navbar / Footer Helpers ─────────────────────── */
-/**
- * renderNavbar(activeLabel)
- * Injects the shared navbar into #lms-navbar-placeholder and marks
- * the matching nav link active.  activeLabel matches the visible
- * link text, e.g. 'My Loans'.
- */
 function renderNavbar(activeLabel) {
   const el = document.getElementById('lms-navbar-placeholder');
   if (!el) return;
   el.innerHTML = NAVBAR_HTML;
-
-  // Mark active by visible text content
   if (activeLabel) {
     document.querySelectorAll('#lms-navbar-placeholder .nav-link').forEach(link => {
       if (link.textContent.trim().toLowerCase().includes(activeLabel.toLowerCase())) {
@@ -192,10 +196,6 @@ function renderNavbar(activeLabel) {
   }
 }
 
-/**
- * renderFooter()
- * Injects the shared footer into #lms-footer-placeholder.
- */
 function renderFooter() {
   const el = document.getElementById('lms-footer-placeholder');
   if (!el) return;
@@ -203,17 +203,9 @@ function renderFooter() {
 }
 
 /* ── Pay EMI Page — Auto-initialisation ─────────────────────────── */
-/**
- * initPayEMI()
- * Runs any DOM-ready setup specific to pay_emi.html that cannot be
- * done inline (e.g. re-usable helpers or future enhancements).
- * The core step / payment logic stays in the page's own <script>
- * block so it can reference page-scoped variables (loanId, emiAmount).
- */
 function initPayEMI() {
-  if (!document.getElementById('payNowBtn')) return; // not on pay_emi page
+  if (!document.getElementById('payNowBtn')) return;
 
-  // Card number live formatting (also applied inline; guard against double-bind)
   const cardNum = document.getElementById('cardNum');
   if (cardNum && !cardNum.dataset.fmtBound) {
     cardNum.dataset.fmtBound = '1';
@@ -223,7 +215,6 @@ function initPayEMI() {
     });
   }
 
-  // Card expiry live formatting
   const cardExp = document.getElementById('cardExp');
   if (cardExp && !cardExp.dataset.fmtBound) {
     cardExp.dataset.fmtBound = '1';
@@ -234,7 +225,6 @@ function initPayEMI() {
     });
   }
 
-  // Close success overlay when clicking outside the box
   const overlay = document.getElementById('successOverlay');
   if (overlay) {
     overlay.addEventListener('click', function (e) {
@@ -243,7 +233,8 @@ function initPayEMI() {
   }
 }
 
-/* ── Extend DOMContentLoaded to include pay_emi init ────────────── */
+/* ── Global DOMContentLoaded — runs on every page ───────────────── */
 document.addEventListener('DOMContentLoaded', function () {
-  initPayEMI();
+  injectLayout();   // inject navbar on all pages; footer on all except dashboard
+  initPayEMI();     // pay_emi page specific setup
 });
