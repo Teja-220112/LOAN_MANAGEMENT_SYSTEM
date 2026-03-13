@@ -6,11 +6,33 @@
   <title>LoanSphere — Home</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="user-pages/style.css" />
 </head>
 <body>
 
-<div id="navbar-placeholder"></div>
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg lms-navbar">
+  <div class="container">
+    <a class="navbar-brand p-0" href="index.html">
+      <div class="navbar-brand-wrap">
+        <div class="brand-icon"><i class="fas fa-landmark"></i></div>
+        <div class="brand-text">LoanSphere <span>Management System</span></div>
+      </div>
+    </a>
+    <button class="navbar-toggler border-0 shadow-none" type="button"
+      data-bs-toggle="collapse" data-bs-target="#lmsNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="lmsNav">
+      <ul class="navbar-nav ms-auto align-items-lg-center gap-1 py-2 py-lg-0">
+        <li class="nav-item"><a class="nav-link btn btn-outline-primary btn-sm" href="features.html">Features</a></li>
+        <li class="nav-item"><a class="nav-link btn btn-outline-primary btn-sm" href="about.html">About</a></li>
+        <li class="nav-item"><a class="nav-link btn btn-outline-primary btn-sm" href="login.html">Sign In</a></li>
+        <li class="nav-item"><a class="nav-link btn btn-outline-primary btn-sm ms-2" href="register.html">Register</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
 
 <main>
   <!-- ── Hero ───────────────────────────────────────────────── -->
@@ -21,14 +43,6 @@
           <div class="hero-badge"><i class="fas fa-shield-halved"></i>Trusted &amp; Regulated</div>
           <h1>Simple and Secure<br>Loan Management</h1>
           <p>Access flexible loan solutions, track your EMIs, and manage all your financial commitments in one secure place.</p>
-          <div class="d-flex flex-wrap gap-3">
-            <a href="apply_loan.html" class="btn btn-primary btn-lg">
-              <i class="fas fa-file-signature me-2"></i>Apply for Loan
-            </a>
-            <a href="my_loans.html" class="btn btn-lg" style="background:rgba(255,255,255,0.12);color:#fff;border:1px solid rgba(255,255,255,0.25);">
-              <i class="fas fa-magnifying-glass me-2"></i>Check Loan Status
-            </a>
-          </div>
         </div>
         <div class="col-lg-5 d-none d-lg-flex justify-content-end">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:320px;">
@@ -126,15 +140,56 @@
       <p style="color:rgba(255,255,255,0.6);margin-bottom:28px;">Join thousands of customers who trust LoanSphere for their financial needs.</p>
       <div class="d-flex flex-wrap gap-3 justify-content-center">
         <a href="register.html" class="btn btn-primary btn-lg">Create Free Account</a>
-        <a href="emi_calculator.html" class="btn btn-lg" style="background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.2);">Try EMI Calculator</a>
+        <a href="features.html" class="btn btn-lg" style="background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.2);">Learn More</a>
       </div>
     </div>
   </section>
 </main>
 
-<div id="footer-placeholder"></div>
+<!-- Footer -->
+<footer class="lms-footer">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-lg-4">
+        <div class="footer-brand">
+          <div class="brand-icon"><i class="fas fa-landmark"></i></div>
+          <span class="footer-brand-name">LoanSphere</span>
+        </div>
+        <p class="footer-tagline">Simple, secure, and transparent loan management for everyone.</p>
+      </div>
+      <div class="col-lg-2 col-sm-4">
+        <div class="footer-heading">Quick Links</div>
+        <ul class="footer-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="features.html">Features</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="register.html">Register</a></li>
+        </ul>
+      </div>
+      <div class="col-lg-2 col-sm-4">
+        <div class="footer-heading">Support</div>
+        <ul class="footer-links">
+          <li><a href="login.html">Login</a></li>
+          <li><a href="#">Help</a></li>
+          <li><a href="#">Contact</a></li>
+          <li><a href="#">FAQ</a></li>
+        </ul>
+      </div>
+      <div class="col-lg-4 col-sm-4">
+        <div class="footer-heading">Contact Us</div>
+        <div class="footer-contact-item"><i class="fas fa-envelope"></i>support@loansphere.com</div>
+        <div class="footer-contact-item"><i class="fas fa-phone"></i>+1 (800) 555-LOAN</div>
+        <div class="footer-contact-item"><i class="fas fa-location-dot"></i>123 Finance Street, New York, NY 10001</div>
+      </div>
+    </div>
+    <div class="footer-bottom d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
+      <span>&copy; 2025 LoanSphere Management System. All rights reserved.</span>
+      <span>Built for secure &amp; transparent lending.</span>
+    </div>
+  </div>
+</footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
-<script src="scripts.js"></script>
+<script src="user-pages/scripts.js"></script>
 </body>
 </html>

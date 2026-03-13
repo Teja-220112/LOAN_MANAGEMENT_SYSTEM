@@ -28,7 +28,7 @@ const NAVBAR_HTML = `
         <li class="nav-item"><a class="nav-link" href="payments.html" data-page="payments"><i class="fas fa-receipt me-1 d-lg-none"></i>Payment History</a></li>
         <li class="nav-item"><a class="nav-link" href="profile.html" data-page="profile"><i class="fas fa-user me-1 d-lg-none"></i>Profile</a></li>
         <li class="nav-item">
-          <a class="nav-link nav-logout" href="login.html">
+          <a class="nav-link nav-logout" href="logout.html">
             <i class="fas fa-right-from-bracket me-1"></i>Logout
           </a>
         </li>

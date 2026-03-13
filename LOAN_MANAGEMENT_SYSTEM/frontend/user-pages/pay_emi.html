@@ -110,12 +110,6 @@
                 <h6 class="fw-600 mb-3">Choose Payment Method</h6>
                 <div class="row g-2 mb-4" id="methodGrid">
                   <div class="col-6">
-                    <button class="payment-method-btn w-100" onclick="selectMethod('upi',this)">
-                      <i class="fa-solid fa-qrcode"></i>
-                      UPI / QR Code
-                    </button>
-                  </div>
-                  <div class="col-6">
                     <button class="payment-method-btn w-100" onclick="selectMethod('card',this)">
                       <i class="fa-solid fa-credit-card"></i>
                       Debit / Credit Card
@@ -141,19 +135,6 @@
 
               <!-- STEP 2: Payment Details -->
               <div class="card-body" id="step2" style="display:none">
-                <!-- UPI -->
-                <div id="upiForm">
-                  <h6 class="fw-600 mb-3"><span class="upi-logo"><span class="u">U</span><span class="p">P</span><span class="i">I</span></span> Payment</h6>
-                  <div class="form-group">
-                    <label class="form-label-lms">UPI ID</label>
-                    <input type="text" class="form-control-lms" id="upiId" placeholder="yourname@upi" autocomplete="off">
-                  </div>
-                  <div class="lms-alert lms-alert-info">
-                    <i class="fa-solid fa-mobile-screen"></i>
-                    <span>A payment request will be sent to your UPI app for approval.</span>
-                  </div>
-                </div>
-
                 <!-- Card -->
                 <div id="cardForm" style="display:none">
                   <h6 class="fw-600 mb-3"><i class="fa-brands fa-cc-visa me-1" style="color:#1a1f71"></i><i class="fa-brands fa-cc-mastercard ms-1" style="color:#eb001b"></i> Card Payment</h6>
@@ -411,14 +392,14 @@
 
     // Show correct method form in step 2
     if (n === 2) {
-      ['upi','card','netbanking','wallet'].forEach(m => {
+      ['card','netbanking','wallet'].forEach(m => {
         document.getElementById(m+'Form').style.display = m === selectedMethod ? 'block' : 'none';
       });
     }
 
     // Populate confirm step
     if (n === 3) {
-      const methodLabels = { upi: 'UPI', card: 'Debit/Credit Card', netbanking: 'Net Banking', wallet: 'Mobile Wallet' };
+      const methodLabels = { card: 'Debit/Credit Card', netbanking: 'Net Banking', wallet: 'Mobile Wallet' };
       document.getElementById('confirmLoanId').textContent      = '#' + loanId;
       document.getElementById('confirmAmt').textContent         = '₹' + emiAmount.toLocaleString('en-IN');
       document.getElementById('confirmAmtInline').textContent   = '₹' + emiAmount.toLocaleString('en-IN');

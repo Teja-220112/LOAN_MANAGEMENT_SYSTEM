@@ -1,301 +1,224 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Features | Loan Management System</title>
-
-<style>
-
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Arial, Helvetica, sans-serif;
-}
-
-body{
-background:#f6f8fc;
-color:#333;
-}
-
-/* NAVBAR */
-
-header{
-display:flex;
-justify-content:space-between;
-align-items:center;
-padding:20px 60px;
-background:white;
-box-shadow:0 2px 10px rgba(0,0,0,0.08);
-}
-
-.logo{
-font-size:22px;
-font-weight:bold;
-color:#3b6df5;
-}
-
-nav a{
-margin-left:20px;
-text-decoration:none;
-color:#333;
-font-weight:500;
-}
-
-/* HERO */
-
-.hero{
-padding:80px 20px;
-text-align:center;
-background:linear-gradient(120deg,#3b6df5,#6ea8ff);
-color:white;
-}
-
-.hero h1{
-font-size:42px;
-margin-bottom:15px;
-}
-
-.hero p{
-max-width:650px;
-margin:auto;
-font-size:18px;
-}
-
-/* FEATURES SECTION */
-
-.features{
-padding:80px 60px;
-}
-
-.features h2{
-text-align:center;
-font-size:32px;
-margin-bottom:50px;
-}
-
-.feature-row{
-display:flex;
-align-items:center;
-justify-content:space-between;
-margin-bottom:70px;
-flex-wrap:wrap;
-}
-
-.feature-text{
-flex:1;
-min-width:280px;
-padding:20px;
-}
-
-.feature-text h3{
-font-size:26px;
-margin-bottom:10px;
-color:#3b6df5;
-}
-
-.feature-text p{
-line-height:1.6;
-}
-
-.feature-box{
-flex:1;
-min-width:280px;
-padding:30px;
-background:white;
-border-radius:10px;
-box-shadow:0 5px 18px rgba(0,0,0,0.1);
-}
-
-/* GRID FEATURES */
-
-.grid{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
-gap:25px;
-margin-top:40px;
-}
-
-.card{
-background:white;
-padding:25px;
-border-radius:10px;
-box-shadow:0 5px 15px rgba(0,0,0,0.1);
-transition:0.3s;
-}
-
-.card:hover{
-transform:translateY(-5px);
-}
-
-.card h4{
-color:#3b6df5;
-margin-bottom:10px;
-}
-
-/* CTA */
-
-.cta{
-background:#3b6df5;
-color:white;
-padding:70px;
-text-align:center;
-}
-
-.cta a{
-background:white;
-color:#3b6df5;
-padding:12px 25px;
-text-decoration:none;
-border-radius:6px;
-display:inline-block;
-margin-top:15px;
-font-weight:bold;
-}
-
-/* FOOTER */
-
-footer{
-background:#222;
-color:white;
-text-align:center;
-padding:15px;
-}
-
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Features — LoanSphere</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="user-pages/style.css" />
 </head>
-
 <body>
 
-<header>
-
-<div class="logo">LoanMS</div>
-
-<nav>
-<a href="homepage.html">Home</a>
-<a href="features.html">Features</a>
-<a href="about.html">About</a>
-<a href="login.html">Sign In</a>
-<a href="register.html">Register</a>
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg lms-navbar">
+  <div class="container">
+    <a class="navbar-brand p-0" href="index.html">
+      <div class="navbar-brand-wrap">
+        <div class="brand-icon"><i class="fas fa-landmark"></i></div>
+        <div class="brand-text">LoanSphere <span>Management System</span></div>
+      </div>
+    </a>
+    <button class="navbar-toggler border-0 shadow-none" type="button"
+      data-bs-toggle="collapse" data-bs-target="#lmsNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="lmsNav">
+      <ul class="navbar-nav ms-auto align-items-lg-center gap-1 py-2 py-lg-0">
+        <li class="nav-item"><a class="nav-link active" href="features.html">Features</a></li>
+        <li class="nav-item"><a class="nav-link" href="about.html">About</a></li>
+        <li class="nav-item"><a class="nav-link" href="login.html">Sign In</a></li>
+        <li class="nav-item"><a class="nav-link btn btn-primary btn-sm ms-2" href="register.html">Register</a></li>
+      </ul>
+    </div>
+  </div>
 </nav>
 
-</header>
+<main>
+  <!-- ── Hero ───────────────────────────────────────────────── -->
+  <section class="page-hero">
+    <div class="container">
+      <div class="row align-items-center gy-4">
+        <div class="col-lg-7 fade-in-up">
+          <div class="hero-badge"><i class="fas fa-star"></i>Powerful Features</div>
+          <h1>Powerful Loan Management<br>Features</h1>
+          <p>Our platform simplifies loan processing with tools for borrowers and administrators to manage applications, approvals, and repayments efficiently.</p>
+          <div class="d-flex flex-wrap gap-3">
+            <a href="register.html" class="btn btn-primary btn-lg">
+              <i class="fas fa-rocket me-2"></i>Get Started
+            </a>
+            <a href="about.html" class="btn btn-lg" style="background:rgba(255,255,255,0.12);color:#fff;border:1px solid rgba(255,255,255,0.25);">
+              <i class="fas fa-info-circle me-2"></i>Learn More
+            </a>
+          </div>
+        </div>
+        <div class="col-lg-5 d-none d-lg-flex justify-content-end">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:320px;">
+            <div style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:16px;padding:20px;text-align:center;">
+              <div style="font-size:1.6rem;font-weight:700;color:#fff;font-family:'DM Mono',monospace;">24/7</div>
+              <div style="font-size:0.72rem;color:rgba(255,255,255,0.5);margin-top:4px;">Support</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:16px;padding:20px;text-align:center;margin-top:24px;">
+              <div style="font-size:1.6rem;font-weight:700;color:#fff;font-family:'DM Mono',monospace;">100%</div>
+              <div style="font-size:0.72rem;color:rgba(255,255,255,0.5);margin-top:4px;">Secure</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:16px;padding:20px;text-align:center;margin-top:-24px;">
+              <div style="font-size:1.6rem;font-weight:700;color:#fff;font-family:'DM Mono',monospace;">Auto</div>
+              <div style="font-size:0.72rem;color:rgba(255,255,255,0.5);margin-top:4px;">Processing</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:16px;padding:20px;text-align:center;">
+              <div style="font-size:1.6rem;font-weight:700;color:#fff;font-family:'DM Mono',monospace;">AI</div>
+              <div style="font-size:0.72rem;color:rgba(255,255,255,0.5);margin-top:4px;">Powered</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
+  <!-- ── Key Features ───────────────────────────────────────── -->
+  <section class="page-section" style="background:var(--white);">
+    <div class="container">
+      <div class="text-center mb-5">
+        <div class="section-title">Key Platform Capabilities</div>
+        <p class="section-subtitle mb-0">Everything you need for efficient loan management.</p>
+      </div>
+      <div class="row g-4">
+        <div class="col-md-4 fade-in-up fade-in-up-1">
+          <div class="feature-card h-100">
+            <div class="feature-icon"><i class="fas fa-file-signature"></i></div>
+            <h5>Online Loan Applications</h5>
+            <p>Users can submit loan applications directly through the system with a simple form. All application data is securely stored and accessible to administrators for review.</p>
+          </div>
+        </div>
+        <div class="col-md-4 fade-in-up fade-in-up-2">
+          <div class="feature-card h-100">
+            <div class="feature-icon"><i class="fas fa-user-shield"></i></div>
+            <h5>Admin Control Dashboard</h5>
+            <p>Administrators can view loan applications, approve or reject requests, and track the entire system through a centralized dashboard.</p>
+          </div>
+        </div>
+        <div class="col-md-4 fade-in-up fade-in-up-3">
+          <div class="feature-card h-100">
+            <div class="feature-icon"><i class="fas fa-calculator"></i></div>
+            <h5>EMI Calculator</h5>
+            <p>Calculate monthly EMI before applying for a loan. Get instant calculations with detailed breakdowns of interest and total payments.</p>
+          </div>
+        </div>
+        <div class="col-md-4 fade-in-up fade-in-up-1">
+          <div class="feature-card h-100">
+            <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
+            <h5>Loan Status Tracking</h5>
+            <p>Users can check whether their loan is pending, approved, or rejected. Real-time updates on application progress.</p>
+          </div>
+        </div>
+        <div class="col-md-4 fade-in-up fade-in-up-2">
+          <div class="feature-card h-100">
+            <div class="feature-icon"><i class="fas fa-receipt"></i></div>
+            <h5>Payment Monitoring</h5>
+            <p>Track EMI payments and repayment schedules. Automated reminders and payment confirmations.</p>
+          </div>
+        </div>
+        <div class="col-md-4 fade-in-up fade-in-up-3">
+          <div class="feature-card h-100">
+            <div class="feature-icon"><i class="fas fa-exclamation-triangle"></i></div>
+            <h5>Defaulter Identification</h5>
+            <p>Automatically detect borrowers who miss payments. Proactive alerts and management tools.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-<section class="hero">
+  <!-- ── How It Works ───────────────────────────────────────── -->
+  <section class="page-section" style="background:var(--slate-50);">
+    <div class="container">
+      <div class="text-center mb-5">
+        <div class="section-title">How It Works</div>
+        <p class="section-subtitle mb-0">Simple steps to manage your loans effectively.</p>
+      </div>
+      <div class="row g-4 justify-content-center">
+        <div class="col-sm-6 col-lg-3 text-center">
+          <div style="width:52px;height:52px;background:var(--blue-100);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-weight:700;color:var(--blue-600);font-size:1.1rem;">1</div>
+          <h6 style="font-weight:600;margin-bottom:6px;">Register Account</h6>
+          <p style="font-size:0.875rem;color:var(--slate-500);">Create your secure account with basic information.</p>
+        </div>
+        <div class="col-sm-6 col-lg-3 text-center">
+          <div style="width:52px;height:52px;background:var(--blue-100);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-weight:700;color:var(--blue-600);font-size:1.1rem;">2</div>
+          <h6 style="font-weight:600;margin-bottom:6px;">Apply for Loan</h6>
+          <p style="font-size:0.875rem;color:var(--slate-500);">Submit your loan application with required details.</p>
+        </div>
+        <div class="col-sm-6 col-lg-3 text-center">
+          <div style="width:52px;height:52px;background:var(--blue-100);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-weight:700;color:var(--blue-600);font-size:1.1rem;">3</div>
+          <h6 style="font-weight:600;margin-bottom:6px;">Get Approval</h6>
+          <p style="font-size:0.875rem;color:var(--slate-500);">Receive quick approval and disbursement.</p>
+        </div>
+        <div class="col-sm-6 col-lg-3 text-center">
+          <div style="width:52px;height:52px;background:var(--blue-100);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-weight:700;color:var(--blue-600);font-size:1.1rem;">4</div>
+          <h6 style="font-weight:600;margin-bottom:6px;">Manage Payments</h6>
+          <p style="font-size:0.875rem;color:var(--slate-500);">Track and make EMI payments easily.</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-<h1>Powerful Loan Management Features</h1>
+  <!-- ── CTA ────────────────────────────────────────────────── -->
+  <section class="page-section" style="background:var(--blue-900);">
+    <div class="container text-center">
+      <h2 style="font-weight:700;font-size:1.75rem;color:#fff;letter-spacing:-0.02em;margin-bottom:12px;">Ready to Experience These Features?</h2>
+      <p style="color:rgba(255,255,255,0.6);margin-bottom:28px;">Join LoanSphere today and streamline your loan management process.</p>
+      <div class="d-flex flex-wrap gap-3 justify-content-center">
+        <a href="register.html" class="btn btn-primary btn-lg">Start Free Trial</a>
+        <a href="about.html" class="btn btn-lg" style="background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.2);">About Us</a>
+      </div>
+    </div>
+  </section>
+</main>
 
-<p>
-Our platform simplifies loan processing with tools for borrowers and administrators to manage
-applications, approvals, and repayments efficiently.
-</p>
-
-</section>
-
-
-<section class="features">
-
-<h2>Key Platform Capabilities</h2>
-
-<div class="feature-row">
-
-<div class="feature-text">
-<h3>Online Loan Applications</h3>
-<p>
-Users can submit loan applications directly through the system with a simple form.
-All application data is securely stored and accessible to administrators for review.
-</p>
-</div>
-
-<div class="feature-box">
-<p>
-✔ Fast application submission  
-<br><br>
-✔ Secure user authentication  
-<br><br>
-✔ Automated status tracking
-</p>
-</div>
-
-</div>
-
-
-<div class="feature-row">
-
-<div class="feature-box">
-<p>
-✔ Approve or reject loan requests  
-<br><br>
-✔ Monitor loan statistics  
-<br><br>
-✔ Manage users and payments
-</p>
-</div>
-
-<div class="feature-text">
-<h3>Admin Control Dashboard</h3>
-<p>
-Administrators can view loan applications, approve or reject requests,
-and track the entire system through a centralized dashboard.
-</p>
-</div>
-
-</div>
-
-
-<h2>Additional Features</h2>
-
-<div class="grid">
-
-<div class="card">
-<h4>EMI Calculator</h4>
-<p>Calculate monthly EMI before applying for a loan.</p>
-</div>
-
-<div class="card">
-<h4>Loan Status Tracking</h4>
-<p>Users can check whether their loan is pending, approved, or rejected.</p>
-</div>
-
-<div class="card">
-<h4>Payment Monitoring</h4>
-<p>Track EMI payments and repayment schedules.</p>
-</div>
-
-<div class="card">
-<h4>Defaulter Identification</h4>
-<p>Automatically detect borrowers who miss payments.</p>
-</div>
-
-<div class="card">
-<h4>User Profile Management</h4>
-<p>Users can update personal information and manage their loans.</p>
-</div>
-
-<div class="card">
-<h4>Reports & Analytics</h4>
-<p>Admins can view loan trends and system statistics.</p>
-</div>
-
-</div>
-
-</section>
-
-
-<section class="cta">
-
-<h2>Start Managing Loans Efficiently</h2>
-
-<a href="register.html">Create Account</a>
-
-</section>
-
-
-<footer>
-<p>© 2026 Loan Management System</p>
+<!-- Footer -->
+<footer class="lms-footer">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-lg-4">
+        <div class="footer-brand">
+          <div class="brand-icon"><i class="fas fa-landmark"></i></div>
+          <span class="footer-brand-name">LoanSphere</span>
+        </div>
+        <p class="footer-tagline">Simple, secure, and transparent loan management for everyone.</p>
+      </div>
+      <div class="col-lg-2 col-sm-4">
+        <div class="footer-heading">Quick Links</div>
+        <ul class="footer-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="features.html">Features</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="register.html">Register</a></li>
+        </ul>
+      </div>
+      <div class="col-lg-2 col-sm-4">
+        <div class="footer-heading">Support</div>
+        <ul class="footer-links">
+          <li><a href="login.html">Login</a></li>
+          <li><a href="#">Help</a></li>
+          <li><a href="#">Contact</a></li>
+          <li><a href="#">FAQ</a></li>
+        </ul>
+      </div>
+      <div class="col-lg-4 col-sm-4">
+        <div class="footer-heading">Contact Us</div>
+        <div class="footer-contact-item"><i class="fas fa-envelope"></i>support@loansphere.com</div>
+        <div class="footer-contact-item"><i class="fas fa-phone"></i>+1 (800) 555-LOAN</div>
+        <div class="footer-contact-item"><i class="fas fa-location-dot"></i>123 Finance Street, New York, NY 10001</div>
+      </div>
+    </div>
+    <div class="footer-bottom d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
+      <span>&copy; 2025 LoanSphere Management System. All rights reserved.</span>
+      <span>Built for secure &amp; transparent lending.</span>
+    </div>
+  </div>
 </footer>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script src="user-pages/scripts.js"></script>
 </body>
 </html>

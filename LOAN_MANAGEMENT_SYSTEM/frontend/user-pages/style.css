@@ -196,7 +196,7 @@ a:hover{color:var(--navy-400)}
 /* ── AUTH PAGES ─────────────────────────────────────────────────── */
 .auth-page{background:linear-gradient(160deg,var(--navy-50) 0%,var(--white) 40%,#f2f5fb 100%);min-height:100vh;display:flex;align-items:center;position:relative}
 .auth-page::before{content:'';position:fixed;top:-200px;right:-200px;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(30,107,186,.06) 0%,transparent 60%);pointer-events:none}
-.auth-card{background:var(--white);border:1px solid var(--g200);border-radius:var(--r-2xl);padding:44px 40px;box-shadow:var(--shxl);width:100%;position:relative;z-index:1}
+.auth-card{background:var(--white);border:1px solid var(--g200);border-radius:var(--r-2xl);padding:30px 40px;box-shadow:var(--shxl);width:100%;max-width:500px;margin:0 auto;position:relative;z-index:1}
 .auth-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--navy-700),var(--navy-500),var(--navy-300));border-radius:var(--r-2xl) var(--r-2xl) 0 0}
 .auth-logo{display:flex;align-items:center;gap:12px;margin-bottom:8px}
 .auth-logo .brand-icon{width:46px;height:46px;font-size:19px}
