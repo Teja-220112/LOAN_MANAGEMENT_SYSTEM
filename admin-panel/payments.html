@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Payments — LoanSphere</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="sidebar-brand-icon"><i class="fas fa-landmark"></i></div>
+    <div class="sidebar-brand-text">
+      <span class="sidebar-brand-name">LoanSphere</span>
+      <span class="sidebar-brand-sub">Management System</span>
+    </div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Main</div>
+    <a href="dashboard.html" class="sidebar-link"><i class="fas fa-chart-pie nav-icon"></i><span class="nav-label">Dashboard</span></a>
+    <a href="users.html" class="sidebar-link"><i class="fas fa-users nav-icon"></i><span class="nav-label">Users</span></a>
+    <div class="nav-section-label">Loans</div>
+    <a href="loan_applications.html" class="sidebar-link"><i class="fas fa-file-invoice-dollar nav-icon"></i><span class="nav-label">Loan Applications</span></a>
+    <a href="loan_approval.html" class="sidebar-link"><i class="fas fa-check-circle nav-icon"></i><span class="nav-label">Loan Approval</span></a>
+    <a href="emi_schedule.html" class="sidebar-link"><i class="fas fa-calendar-alt nav-icon"></i><span class="nav-label">EMI Schedule</span></a>
+    <div class="nav-section-label">Finance</div>
+    <a href="payments.html" class="sidebar-link active"><i class="fas fa-credit-card nav-icon"></i><span class="nav-label">Payments</span></a>
+    <a href="defaulters.html" class="sidebar-link"><i class="fas fa-exclamation-triangle nav-icon"></i><span class="nav-label">Defaulter Reports</span></a>
+    <div class="nav-section-label">Insights</div>
+    <a href="analytics.html" class="sidebar-link"><i class="fas fa-chart-bar nav-icon"></i><span class="nav-label">Analytics</span></a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="sidebar-user-avatar">SA</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name">Super Admin</div>
+        <div class="sidebar-user-role">Administrator</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main-wrapper" id="mainWrapper">
+  <header class="topbar">
+    <button class="topbar-toggle" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+    <span class="topbar-title">Payments</span>
+    <div class="topbar-search">
+      <i class="fas fa-search search-icon"></i>
+      <input type="text" placeholder="Search payments..."/>
+    </div>
+    <div class="topbar-actions">
+      <button class="topbar-btn"><i class="fas fa-bell"></i><span class="badge-dot"></span></button>
+      <button class="topbar-btn"><i class="fas fa-cog"></i></button>
+      <div class="topbar-divider"></div>
+      <div class="topbar-profile" id="profileTrigger">
+        <div class="topbar-avatar">SA</div>
+        <div class="topbar-profile-info">
+          <div class="topbar-profile-name">Super Admin</div>
+          <div class="topbar-profile-role">Administrator</div>
+        </div>
+        <i class="fas fa-chevron-down ms-1" style="font-size:10px;color:#94a3b8;"></i>
+        <div class="profile-dropdown" id="profileDropdown">
+          <a href="#"><i class="fas fa-user-circle"></i> My Profile</a>
+          <a href="#"><i class="fas fa-cog"></i> Settings</a>
+          <hr/>
+          <a href="login.html" class="logout-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="content-area">
+
+    <div class="page-header">
+      <div class="page-header-left">
+        <div class="breadcrumb-bar">
+          <a href="dashboard.html">Home</a><span>/</span><span>Payments</span>
+        </div>
+        <h4>Payment Monitoring</h4>
+        <p>Track all EMI payment transactions across all loans.</p>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-outline-secondary btn-sm"><i class="fas fa-download"></i> Export</button>
+      </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-md-4">
+        <div class="mini-stat">
+          <div class="mini-stat-icon green"><i class="fas fa-check-circle"></i></div>
+          <div>
+            <div class="mini-stat-value" id="totalCollected">—</div>
+            <div class="mini-stat-label">Total Collected</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-4">
+        <div class="mini-stat">
+          <div class="mini-stat-icon orange"><i class="fas fa-hourglass-half"></i></div>
+          <div>
+            <div class="mini-stat-value" id="totalPending">—</div>
+            <div class="mini-stat-label">Pending Payments</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-4">
+        <div class="mini-stat">
+          <div class="mini-stat-icon red"><i class="fas fa-times-circle"></i></div>
+          <div>
+            <div class="mini-stat-value" id="totalFailed">—</div>
+            <div class="mini-stat-label">Failed Transactions</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payments Table -->
+    <div class="table-container">
+      <div class="table-header">
+        <div class="table-header-left">
+          <div class="card-title">Payment Transactions</div>
+          <div class="card-subtitle">All EMI payment records</div>
+        </div>
+        <div class="table-header-right">
+          <div class="table-search">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="paySearchInput" placeholder="Search by Payment ID, Loan ID..."/>
+          </div>
+          <div class="filter-bar">
+            <select id="payStatusFilter" aria-label="Payment status filter">
+              <option value="">All Status</option>
+              <option value="Paid">Paid</option>
+              <option value="Pending">Pending</option>
+              <option value="Failed">Failed</option>
+            </select>
+            <input
+              type="date"
+              id="payDateFilter"
+              style="height:36px;padding:0 12px;border:1.5px solid var(--border-color);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;background:#fff;color:var(--text-primary);"
+              aria-label="Filter by date"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Payment ID</th>
+              <th>Loan ID</th>
+              <th>Borrower</th>
+              <th>Amount Paid</th>
+              <th>Payment Method</th>
+              <th>Payment Date</th>
+              <th>Status</th>
+              <th>Receipt</th>
+            </tr>
+          </thead>
+          <tbody id="paymentsTableBody">
+            <tr>
+              <td colspan="8">
+                <div class="empty-state">
+                  <i class="fas fa-credit-card d-block"></i>
+                  <p>No payment records. Connect to your API to display transactions.</p>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-footer">
+        <div class="pagination-info" id="payPaginationInfo">Showing 0 payments</div>
+        <div class="pagination-controls">
+          <button disabled><i class="fas fa-chevron-left"></i></button>
+          <button class="active">1</button>
+          <button disabled><i class="fas fa-chevron-right"></i></button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/charts.js"></script>
+<script>
+  /**
+   * Payments Page
+   * TODO: Connect to /api/admin/payments endpoint
+   */
+
+  let allPayments = [];
+
+  function renderPayments(rows) {
+    const tbody = document.getElementById('paymentsTableBody');
+    if (!rows || rows.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state">
+        <i class="fas fa-credit-card d-block"></i>
+        <p>No payments match your filter.</p>
+      </div></td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = rows.map(row => `
+      <tr>
+        <td><span style="font-family:monospace;font-weight:600;color:#3b82f6;">${row.paymentId}</span></td>
+        <td><span style="font-family:monospace;font-size:12px;color:#64748b;">${row.loanId}</span></td>
+        <td>
+          <div class="user-cell">
+            <div class="user-avatar-sm">${(row.userName || '?').charAt(0)}</div>
+            <div class="user-name">${row.userName || '—'}</div>
+          </div>
+        </td>
+        <td><strong>₹${Number(row.amountPaid || 0).toLocaleString()}</strong></td>
+        <td style="color:#64748b;">${row.method || '—'}</td>
+        <td style="color:#64748b;">${row.paymentDate || '—'}</td>
+        <td>${paymentStatusBadge(row.status)}</td>
+        <td>
+          ${row.status === 'Paid'
+            ? `<button class="btn btn-outline-primary btn-sm btn-icon" title="Download Receipt"><i class="fas fa-file-download"></i></button>`
+            : `<span style="color:#94a3b8;font-size:12px;">—</span>`
+          }
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function paymentStatusBadge(status) {
+    const map = {
+      'Paid': 'badge-success',
+      'Pending': 'badge-warning',
+      'Failed': 'badge-danger',
+    };
+    return `<span class="badge ${map[status] || 'badge-secondary'}">${status || '—'}</span>`;
+  }
+
+  // Search
+  document.getElementById('paySearchInput').addEventListener('input', function () {
+    const q = this.value.trim().toLowerCase();
+    renderPayments(allPayments.filter(p =>
+      (p.paymentId || '').toLowerCase().includes(q) ||
+      (p.loanId    || '').toLowerCase().includes(q) ||
+      (p.userName  || '').toLowerCase().includes(q)
+    ));
+  });
+
+  // Filters
+  document.getElementById('payStatusFilter').addEventListener('change', applyPaymentFilters);
+  document.getElementById('payDateFilter').addEventListener('change', applyPaymentFilters);
+
+  function applyPaymentFilters() {
+    const status = document.getElementById('payStatusFilter').value;
+    const date   = document.getElementById('payDateFilter').value;
+    renderPayments(allPayments.filter(p => {
+      const matchStatus = !status || p.status === status;
+      const matchDate   = !date   || p.paymentDate === date;
+      return matchStatus && matchDate;
+    }));
+  }
+
+  // TODO: Load from API
+  // fetch('/api/admin/payments')
+  //   .then(r => r.json())
+  //   .then(data => {
+  //     allPayments = data.payments;
+  //     renderPayments(allPayments);
+  //     document.getElementById('totalCollected').textContent = `₹${data.collected.toLocaleString()}`;
+  //     document.getElementById('totalPending').textContent   = `₹${data.pending.toLocaleString()}`;
+  //     document.getElementById('totalFailed').textContent    = data.failedCount;
+  //   });
+</script>
+</body>
+</html>
