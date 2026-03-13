@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Defaulter Reports — LoanSphere</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="sidebar-brand-icon"><i class="fas fa-landmark"></i></div>
+    <div class="sidebar-brand-text">
+      <span class="sidebar-brand-name">LoanSphere</span>
+      <span class="sidebar-brand-sub">Management System</span>
+    </div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Main</div>
+    <a href="dashboard.html" class="sidebar-link"><i class="fas fa-chart-pie nav-icon"></i><span class="nav-label">Dashboard</span></a>
+    <a href="users.html" class="sidebar-link"><i class="fas fa-users nav-icon"></i><span class="nav-label">Users</span></a>
+    <div class="nav-section-label">Loans</div>
+    <a href="loan_applications.html" class="sidebar-link"><i class="fas fa-file-invoice-dollar nav-icon"></i><span class="nav-label">Loan Applications</span></a>
+    <a href="loan_approval.html" class="sidebar-link"><i class="fas fa-check-circle nav-icon"></i><span class="nav-label">Loan Approval</span></a>
+    <a href="emi_schedule.html" class="sidebar-link"><i class="fas fa-calendar-alt nav-icon"></i><span class="nav-label">EMI Schedule</span></a>
+    <div class="nav-section-label">Finance</div>
+    <a href="payments.html" class="sidebar-link"><i class="fas fa-credit-card nav-icon"></i><span class="nav-label">Payments</span></a>
+    <a href="defaulters.html" class="sidebar-link active"><i class="fas fa-exclamation-triangle nav-icon"></i><span class="nav-label">Defaulter Reports</span></a>
+    <div class="nav-section-label">Insights</div>
+    <a href="analytics.html" class="sidebar-link"><i class="fas fa-chart-bar nav-icon"></i><span class="nav-label">Analytics</span></a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="sidebar-user-avatar">SA</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name">Super Admin</div>
+        <div class="sidebar-user-role">Administrator</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main-wrapper" id="mainWrapper">
+  <header class="topbar">
+    <button class="topbar-toggle" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+    <span class="topbar-title">Defaulter Reports</span>
+    <div class="topbar-search">
+      <i class="fas fa-search search-icon"></i>
+      <input type="text" placeholder="Search defaulters..."/>
+    </div>
+    <div class="topbar-actions">
+      <button class="topbar-btn"><i class="fas fa-bell"></i><span class="badge-dot"></span></button>
+      <button class="topbar-btn"><i class="fas fa-cog"></i></button>
+      <div class="topbar-divider"></div>
+      <div class="topbar-profile" id="profileTrigger">
+        <div class="topbar-avatar">SA</div>
+        <div class="topbar-profile-info">
+          <div class="topbar-profile-name">Super Admin</div>
+          <div class="topbar-profile-role">Administrator</div>
+        </div>
+        <i class="fas fa-chevron-down ms-1" style="font-size:10px;color:#94a3b8;"></i>
+        <div class="profile-dropdown" id="profileDropdown">
+          <a href="#"><i class="fas fa-user-circle"></i> My Profile</a>
+          <a href="#"><i class="fas fa-cog"></i> Settings</a>
+          <hr/>
+          <a href="login.html" class="logout-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="content-area">
+
+    <div class="page-header">
+      <div class="page-header-left">
+        <div class="breadcrumb-bar">
+          <a href="dashboard.html">Home</a><span>/</span><span>Defaulter Reports</span>
+        </div>
+        <h4>Defaulter Reports</h4>
+        <p>Identify and manage borrowers who have missed EMI payments.</p>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-outline-secondary btn-sm"><i class="fas fa-download"></i> Export Report</button>
+        <button class="btn btn-danger btn-sm"><i class="fas fa-envelope"></i> Send Notices</button>
+      </div>
+    </div>
+
+    <!-- Summary Banner -->
+    <div style="background:linear-gradient(135deg,#7f1d1d,#991b1b);border-radius:16px;padding:24px 28px;margin-bottom:24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+      <div style="width:60px;height:60px;background:rgba(255,255,255,0.12);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;color:#fff;flex-shrink:0;">
+        <i class="fas fa-exclamation-triangle"></i>
+      </div>
+      <div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:13px;color:rgba(255,255,255,0.65);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Total Defaulters</div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:36px;font-weight:800;color:#fff;line-height:1;" id="totalDefaultersCount">—</div>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:16px;flex-wrap:wrap;">
+        <div style="text-align:center;">
+          <div style="font-size:22px;font-weight:700;color:#fca5a5;" id="highRiskCount">—</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.6);">High Risk</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:22px;font-weight:700;color:#fdba74;" id="medRiskCount">—</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.6);">Medium Risk</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:22px;font-weight:700;color:#fde68a;" id="lowRiskCount">—</div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.6);">Low Risk</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Defaulters Table -->
+    <div class="table-container">
+      <div class="table-header">
+        <div class="table-header-left">
+          <div class="card-title">Defaulter List</div>
+          <div class="card-subtitle">Borrowers with missed EMI payments</div>
+        </div>
+        <div class="table-header-right">
+          <div class="table-search">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="defSearchInput" placeholder="Search by name, loan ID..."/>
+          </div>
+          <div class="filter-bar">
+            <select id="defRiskFilter" aria-label="Risk level filter">
+              <option value="">All Risk Levels</option>
+              <option value="High Risk">High Risk</option>
+              <option value="Medium Risk">Medium Risk</option>
+              <option value="Low Risk">Low Risk</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Borrower</th>
+              <th>Loan ID</th>
+              <th>Outstanding Amount</th>
+              <th>Missed EMI Count</th>
+              <th>Last Payment Date</th>
+              <th>Days Overdue</th>
+              <th>Risk Level</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="defaultersTableBody">
+            <tr>
+              <td colspan="8">
+                <div class="empty-state">
+                  <i class="fas fa-exclamation-triangle d-block"></i>
+                  <p>No defaulter records. Connect to your API to display data.</p>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-footer">
+        <div class="pagination-info" id="defPaginationInfo">Showing 0 records</div>
+        <div class="pagination-controls">
+          <button disabled><i class="fas fa-chevron-left"></i></button>
+          <button class="active">1</button>
+          <button disabled><i class="fas fa-chevron-right"></i></button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/charts.js"></script>
+<script>
+  /**
+   * Defaulter Reports Page
+   * TODO: Connect to /api/admin/defaulters endpoint
+   */
+
+  let allDefaulters = [];
+
+  function renderDefaulters(rows) {
+    const tbody = document.getElementById('defaultersTableBody');
+    if (!rows || rows.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state">
+        <i class="fas fa-exclamation-triangle d-block"></i>
+        <p>No defaulters match your filter.</p>
+      </div></td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = rows.map(row => `
+      <tr>
+        <td>
+          <div class="user-cell">
+            <div class="user-avatar-sm" style="background:linear-gradient(135deg,#ef4444,#f97316);">
+              ${(row.userName || '?').charAt(0)}
+            </div>
+            <div>
+              <div class="user-name">${row.userName || '—'}</div>
+              <div class="user-id">${row.userId || ''}</div>
+            </div>
+          </div>
+        </td>
+        <td><span style="font-family:monospace;font-weight:600;color:#3b82f6;">${row.loanId}</span></td>
+        <td><strong style="color:#ef4444;">₹${Number(row.outstandingAmount || 0).toLocaleString()}</strong></td>
+        <td>
+          <span style="font-weight:700;font-size:16px;color:#ef4444;">${row.missedCount ?? '—'}</span>
+          <span style="font-size:11px;color:#94a3b8;"> EMIs</span>
+        </td>
+        <td style="color:#64748b;">${row.lastPaymentDate || 'Never'}</td>
+        <td>
+          <span style="font-weight:600;color:${row.daysOverdue > 90 ? '#ef4444' : row.daysOverdue > 30 ? '#f59e0b' : '#64748b'};">
+            ${row.daysOverdue ?? '—'} days
+          </span>
+        </td>
+        <td>${riskBadge(row.riskLevel)}</td>
+        <td>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-outline-primary btn-sm btn-icon" title="View Profile"><i class="fas fa-eye"></i></button>
+            <button class="btn btn-warning btn-sm btn-icon" title="Send Notice"><i class="fas fa-envelope"></i></button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function riskBadge(level) {
+    const map = {
+      'High Risk':   'badge-danger',
+      'Medium Risk': 'badge-warning',
+      'Low Risk':    { cls: 'badge', style: 'background:#fef9c3;color:#a16207;' },
+    };
+    if (level === 'Low Risk') {
+      return `<span class="badge" style="background:#fef9c3;color:#a16207;">${level}</span>`;
+    }
+    return `<span class="badge ${map[level] || 'badge-secondary'}">${level || '—'}</span>`;
+  }
+
+  // Search
+  document.getElementById('defSearchInput').addEventListener('input', function () {
+    const q = this.value.trim().toLowerCase();
+    renderDefaulters(allDefaulters.filter(d =>
+      (d.userName || '').toLowerCase().includes(q) ||
+      (d.loanId   || '').toLowerCase().includes(q)
+    ));
+  });
+
+  // Risk Filter
+  document.getElementById('defRiskFilter').addEventListener('change', function () {
+    const level = this.value;
+    renderDefaulters(level ? allDefaulters.filter(d => d.riskLevel === level) : allDefaulters);
+  });
+
+  // TODO: Load from API
+  // fetch('/api/admin/defaulters')
+  //   .then(r => r.json())
+  //   .then(data => {
+  //     allDefaulters = data.defaulters;
+  //     renderDefaulters(allDefaulters);
+  //     document.getElementById('totalDefaultersCount').textContent = data.total;
+  //     document.getElementById('highRiskCount').textContent        = data.highRisk;
+  //     document.getElementById('medRiskCount').textContent         = data.mediumRisk;
+  //     document.getElementById('lowRiskCount').textContent         = data.lowRisk;
+  //   });
+</script>
+</body>
+</html>
