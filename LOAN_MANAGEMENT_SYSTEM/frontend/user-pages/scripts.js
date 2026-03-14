@@ -8,7 +8,7 @@
 const NAVBAR_HTML = `
 <nav class="navbar navbar-expand-lg lms-navbar">
   <div class="container">
-    <a class="navbar-brand p-0" href="home.html">
+    <a class="navbar-brand p-0" href="../index.html">
       <div class="navbar-brand-wrap">
         <div class="brand-icon"><i class="fas fa-landmark"></i></div>
         <div class="brand-text">LoanSphere <span>Management System</span></div>
@@ -20,7 +20,7 @@ const NAVBAR_HTML = `
     </button>
     <div class="collapse navbar-collapse" id="lmsNav">
       <ul class="navbar-nav ms-auto align-items-lg-center gap-1 py-2 py-lg-0">
-        <li class="nav-item"><a class="nav-link" href="home.html" data-page="home"><i class="fas fa-house me-1 d-lg-none"></i>Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="../index.html" data-page="home"><i class="fas fa-house me-1 d-lg-none"></i>Home</a></li>
         <li class="nav-item"><a class="nav-link" href="apply_loan.html" data-page="apply_loan"><i class="fas fa-file-signature me-1 d-lg-none"></i>Apply Loan</a></li>
         <li class="nav-item"><a class="nav-link" href="my_loans.html" data-page="my_loans"><i class="fas fa-credit-card me-1 d-lg-none"></i>My Loans</a></li>
         <li class="nav-item"><a class="nav-link" href="pay_emi.html" data-page="pay_emi"><i class="fas fa-wallet me-1 d-lg-none"></i>Pay EMI</a></li>
@@ -51,7 +51,7 @@ const FOOTER_HTML = `
       <div class="col-lg-2 col-sm-4">
         <div class="footer-heading">Quick Links</div>
         <ul class="footer-links">
-          <li><a href="home.html">Home</a></li>
+          <li><a href="../index.html">Home</a></li>
           <li><a href="apply_loan.html">Apply Loan</a></li>
           <li><a href="my_loans.html">My Loans</a></li>
           <li><a href="emi_calculator.html">EMI Calculator</a></li>
@@ -92,7 +92,7 @@ function injectLayout() {
 
   // Footer — inject ONLY on home.html, nowhere else
   const currentPage = location.pathname.split('/').pop();
-  const isHome = currentPage === 'home.html' || currentPage === '';
+  const isHome = currentPage === 'home.html' || currentPage === 'index.html' || currentPage === '';
 
   const footEl = document.getElementById('footer-placeholder');
   if (footEl && isHome) footEl.innerHTML = FOOTER_HTML;
