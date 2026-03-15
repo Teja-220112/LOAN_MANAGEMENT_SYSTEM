@@ -397,5 +397,64 @@
     alert(`Loan ${loanId} rejection action — connect to API`);
   }
 </script>
+
+<script>
+// ===== Frontend Connection Code: admin loan_approval.html =====
+async function apiCall(endpoint, method='GET', body=null) {
+    const token = localStorage.getItem('lms_token');
+    if(!token) { window.location.href = 'login.html'; return; }
+    const options = { method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` } };
+    if(body) options.body = JSON.stringify(body);
+    const res = await fetch(`http://localhost:3000${endpoint}`, options);
+    if(res.status === 401 || res.status === 403) { window.location.href = 'login.html'; return; }
+    return res.json();
+}
+document.addEventListener('DOMContentLoaded', async () => {
+    if(!localStorage.getItem('lms_token')) window.location.href = 'login.html';
+    const urlParams = new URLSearchParams(window.location.search);
+    const loanId = urlParams.get('id');
+    if(!loanId) return alert('No loan ID');
+    
+    try {
+        const res = await apiCall(`/api/admin/loans/${loanId}`);
+        if(res && res.success) {
+            const l = res.data;
+            const u = l.userId || {};
+            // Populate fields if they exist
+            document.querySelectorAll('[id^="detail-"]').forEach(el => {
+                const key = el.id.replace('detail-', '');
+                if(key === 'name') el.textContent = `${u.firstName || ''} ${u.lastName || ''}`;
+                if(key === 'email') el.textContent = u.email;
+                if(key === 'phone') el.textContent = u.phone;
+                if(key === 'amount') el.textContent = '₹' + l.loan_amount.toLocaleString('en-IN');
+                if(key === 'purpose') el.textContent = l.loan_purpose;
+                if(key === 'tenure') el.textContent = l.loan_tenure + ' Months';
+                if(key === 'status') el.textContent = l.status;
+            });
+            
+            const btnApprove = document.getElementById('btn-approve');
+            const btnReject = document.getElementById('btn-reject');
+            
+            if(btnApprove) {
+                btnApprove.addEventListener('click', async () => {
+                    if(!confirm('Approve this loan?')) return;
+                    const r = await apiCall(`/api/admin/loans/${loanId}/approve`, 'PUT');
+                    if(r && r.success) { alert('Approved'); window.location.href = 'loan_applications.html'; }
+                    else alert('Error: ' + (r.error || ''));
+                });
+            }
+            if(btnReject) {
+                btnReject.addEventListener('click', async () => {
+                    if(!confirm('Reject this loan?')) return;
+                    const r = await apiCall(`/api/admin/loans/${loanId}/reject`, 'PUT');
+                    if(r && r.success) { alert('Rejected'); window.location.href = 'loan_applications.html'; }
+                    else alert('Error: ' + (r.error || ''));
+                });
+            }
+        }
+    } catch(err) { console.error(err); }
+});
+</script>
+
 </body>
 </html>

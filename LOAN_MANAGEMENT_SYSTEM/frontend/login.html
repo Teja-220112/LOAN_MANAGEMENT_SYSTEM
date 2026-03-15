@@ -18,7 +18,7 @@
   <h2 class="auth-title">Welcome Back</h2>
   <p class="auth-subtitle">Sign in to your account to continue</p>
 
-  <form class="mt-4" action="backend/login.php" method="post">
+  <form class="mt-4" onsubmit="return false;">
     <div class="mb-3">
       <label for="email" class="form-label-lms">Email Address</label>
       <input type="email" class="form-control-lms" id="email" placeholder="Enter your email" required>
@@ -52,5 +52,41 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
 <script src="user-pages/scripts.js"></script>
+
+<script>
+// ===== Frontend Connection Code: login.html =====
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.querySelector('form');
+    if(form) {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            try {
+                const res = await fetch('http://localhost:3000/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: data.email, password: data.password })
+                });
+                const result = await res.json();
+                if(result.success) {
+                    localStorage.setItem('lms_token', result.data.token);
+                    localStorage.setItem('lms_user', JSON.stringify(result.data.user));
+                    if(result.data.user.role === 'admin') {
+                        window.location.href = 'admin-panel/dashboard.html';
+                    } else {
+                        window.location.href = 'user-pages/dashboard.html';
+                    }
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            } catch (err) {
+                alert('Connection error');
+            }
+        });
+    }
+});
+</script>
+
 </body>
 </html>

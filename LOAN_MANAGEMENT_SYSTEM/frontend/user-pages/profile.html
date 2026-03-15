@@ -243,5 +243,84 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
 <script src="scripts.js"></script>
+
+<script>
+// ===== Frontend Connection Code: profile.html =====
+async function apiCall(endpoint, method='GET', body=null) {
+    const token = localStorage.getItem('lms_token');
+    if(!token) { window.location.href = 'login.html'; return; }
+    const options = { method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` } };
+    if(body) options.body = JSON.stringify(body);
+    const res = await fetch(`http://localhost:3000${endpoint}`, options);
+    if(res.status === 401) { window.location.href = 'login.html'; return; }
+    return res.json();
+}
+document.addEventListener('DOMContentLoaded', async () => {
+    if(!localStorage.getItem('lms_token')) window.location.href = 'login.html';
+    
+    try {
+        const res = await apiCall('/api/user/profile');
+        if(res && res.success) {
+            const u = res.data;
+            document.querySelectorAll('input').forEach(input => {
+                if(input.name === 'firstName' || input.id === 'firstName') input.value = u.firstName || '';
+                if(input.name === 'lastName' || input.id === 'lastName') input.value = u.lastName || '';
+                if(input.name === 'email' || input.id === 'email') input.value = u.email || '';
+                if(input.name === 'phone' || input.id === 'phone') input.value = u.phone || '';
+                if(input.name === 'address' || input.id === 'address') input.value = u.address || '';
+                if(input.name === 'dob' || input.id === 'dob') input.value = u.dob ? u.dob.split('T')[0] : '';
+            });
+        }
+        
+        const updateForm = document.getElementById('profile-form') || document.querySelector('form');
+        if(updateForm) {
+            const newForm = updateForm.cloneNode(true);
+            updateForm.parentNode.replaceChild(newForm, updateForm);
+            
+            newForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(newForm);
+                const data = Object.fromEntries(formData.entries());
+                
+                // Exclude empty password fields if any
+                const res = await apiCall('/api/user/profile/update', 'PUT', data);
+                if(res && res.success) {
+                    alert('Profile updated successfully!');
+                    localStorage.setItem('lms_user', JSON.stringify(res.data));
+                } else {
+                    alert('Error updating profile');
+                }
+            });
+        }
+        
+        const pwdForm = document.getElementById('password-form') || document.querySelectorAll('form')[1];
+        if(pwdForm) {
+             const newPwdForm = pwdForm.cloneNode(true);
+             pwdForm.parentNode.replaceChild(newPwdForm, pwdForm);
+             
+             newPwdForm.addEventListener('submit', async(e) => {
+                 e.preventDefault();
+                 const formData = new FormData(newPwdForm);
+                 const data = Object.fromEntries(formData.entries());
+                 if(data.newPassword !== data.confirmPassword) return alert('Passwords do not match!');
+                 const res = await apiCall('/api/user/profile/change-password', 'PUT', {
+                     currentPassword: data.currentPassword,
+                     newPassword: data.newPassword
+                 });
+                 if(res && res.success) {
+                     alert('Password changed successfully!');
+                     newPwdForm.reset();
+                 } else {
+                     alert('Error: ' + (res ? res.error : 'Unknown'));
+                 }
+             });
+        }
+        
+    } catch(err) {
+        console.error('Error fetching profile', err);
+    }
+});
+</script>
+
 </body>
 </html>

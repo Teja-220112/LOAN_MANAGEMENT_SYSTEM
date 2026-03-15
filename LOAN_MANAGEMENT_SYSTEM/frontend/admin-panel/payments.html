@@ -277,5 +277,47 @@
   //     document.getElementById('totalFailed').textContent    = data.failedCount;
   //   });
 </script>
+
+<script>
+// ===== Frontend Connection Code: admin payments.html =====
+async function apiCall(endpoint, method='GET', body=null) {
+    const token = localStorage.getItem('lms_token');
+    if(!token) { window.location.href = 'login.html'; return; }
+    const options = { method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` } };
+    if(body) options.body = JSON.stringify(body);
+    const res = await fetch(`http://localhost:3000${endpoint}`, options);
+    if(res.status === 401 || res.status === 403) { window.location.href = 'login.html'; return; }
+    return res.json();
+}
+document.addEventListener('DOMContentLoaded', async () => {
+    if(!localStorage.getItem('lms_token')) window.location.href = 'login.html';
+    const tbody = document.getElementById('payments-tbody') || document.querySelector('table tbody');
+    if(tbody) {
+             tbody.innerHTML = '<tr><td colspan="7" class="text-center">Loading...</td></tr>';
+             try {
+                const res = await apiCall('/api/admin/payments');
+                if(res && res.success) {
+                    tbody.innerHTML = '';
+                    if(res.data.length === 0) return tbody.innerHTML = '<tr><td colspan="7" class="text-center">No records.</td></tr>';
+                    res.data.forEach(p => {
+                        const badgeClass = p.status === 'Paid' ? 'badge-active' : 'badge-failed';
+                        const name = p.userId ? `${p.userId.firstName} ${p.userId.lastName}` : 'Unknown';
+                        tbody.innerHTML += `
+                        <tr>
+                            <td>${p.transaction_id || p._id.slice(-6).toUpperCase()}</td>
+                            <td>${name}</td>
+                            <td>${p.loanId ? p.loanId._id.slice(-6).toUpperCase() : 'N/A'}</td>
+                            <td class="td-mono">₹${p.amount_paid.toLocaleString('en-IN')}</td>
+                            <td>${new Date(p.payment_date).toLocaleDateString()}</td>
+                            <td>${p.method}</td>
+                            <td><span class="badge-status ${badgeClass}">${p.status}</span></td>
+                        </tr>`;
+                    });
+                }
+             } catch(err) { tbody.innerHTML = '<tr><td colspan="7" class="text-center">Error</td></tr>'; }
+    }
+});
+</script>
+
 </body>
 </html>

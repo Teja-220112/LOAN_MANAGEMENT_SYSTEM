@@ -463,5 +463,87 @@
     window.print();
   }
 </script>
+
+<script>
+// ===== Frontend Connection Code: pay_emi.html =====
+async function apiCall(endpoint, method='GET', body=null) {
+    const token = localStorage.getItem('lms_token');
+    if(!token) { window.location.href = 'login.html'; return; }
+    const options = { method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` } };
+    if(body) options.body = JSON.stringify(body);
+    const res = await fetch(`http://localhost:3000${endpoint}`, options);
+    if(res.status === 401) { window.location.href = 'login.html'; return; }
+    return res.json();
+}
+document.addEventListener('DOMContentLoaded', async () => {
+    if(!localStorage.getItem('lms_token')) window.location.href = 'login.html';
+    
+    // Fetch pending EMIs to populate logic
+    // This assumes loans API provides a way to find pending EMIs globally or we fetch all loans then their EMIs
+    // Since we don't have a global /api/loans/pending-emis route, let's just make the payment form mock a payment directly
+    // or fetch from my loans and find first pending EMI.
+    
+    let pendingEmiId = null;
+    let pendingEmiAmount = 0;
+    
+    try {
+        const loansRes = await apiCall('/api/loans/my-loans');
+        if(loansRes && loansRes.success) {
+            for(let loan of loansRes.data) {
+                if(loan.status === 'Approved' || loan.status === 'Active') {
+                    const emiRes = await apiCall(`/api/loans/${loan._id}/emi-schedule`);
+                    if(emiRes && emiRes.success) {
+                        const pending = emiRes.data.find(e => e.status === 'Pending' || e.status === 'Overdue');
+                        if(pending) {
+                            pendingEmiId = pending._id;
+                            pendingEmiAmount = pending.emi_amount;
+                            
+                            const amountEl = document.querySelector('.emi-due-amount') || document.querySelector('.amount-display');
+                            if(amountEl) amountEl.textContent = '₹' + pending.emi_amount.toLocaleString('en-IN');
+                            
+                            const labelEl = document.querySelector('.emi-due-meta') || document.getElementById('detail-date');
+                            if(labelEl) labelEl.textContent = 'Due Date: ' + new Date(pending.due_date).toLocaleDateString('en-GB');
+                            
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        
+        const form = document.querySelector('form') || document.getElementById('payment-form');
+        const payBtn = document.getElementById('payNowBtn');
+        if(payBtn) {
+            // Replace click listener
+            const newBtn = payBtn.cloneNode(true);
+            payBtn.parentNode.replaceChild(newBtn, payBtn);
+            
+            newBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                if(!pendingEmiId) return alert('No pending EMIs found!');
+                
+                try {
+                    const res = await apiCall('/api/payments/pay', 'POST', {
+                        emiScheduleId: pendingEmiId,
+                        method: 'Card',
+                        amount: pendingEmiAmount
+                    });
+                    if(res && res.success) {
+                        alert('Payment Successful!');
+                        window.location.href = 'payments.html';
+                    } else {
+                        alert('Payment Failed: ' + (res ? res.error : 'Unknown'));
+                    }
+                } catch(err) {
+                    alert('Connection Error');
+                }
+            });
+        }
+    } catch(err) {
+        console.error(err);
+    }
+});
+</script>
+
 </body>
 </html>

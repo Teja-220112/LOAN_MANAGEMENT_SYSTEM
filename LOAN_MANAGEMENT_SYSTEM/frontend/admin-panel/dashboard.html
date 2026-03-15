@@ -383,5 +383,42 @@
     return `<span class="badge ${map[status] || 'badge-secondary'}">${status}</span>`;
   }
 </script>
+
+<script>
+// ===== Frontend Connection Code: admin dashboard.html =====
+async function apiCall(endpoint, method='GET', body=null) {
+    const token = localStorage.getItem('lms_token');
+    if(!token) { window.location.href = 'login.html'; return; }
+    const options = { method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` } };
+    if(body) options.body = JSON.stringify(body);
+    const res = await fetch(`http://localhost:3000${endpoint}`, options);
+    if(res.status === 401 || res.status === 403) { window.location.href = 'login.html'; return; }
+    return res.json();
+}
+document.addEventListener('DOMContentLoaded', async () => {
+    if(!localStorage.getItem('lms_token')) window.location.href = 'login.html';
+    
+    try {
+        const statsRes = await apiCall('/api/admin/dashboard/stats');
+        if(statsRes && statsRes.success) {
+            const data = statsRes.data;
+            const uEl = document.getElementById('stat-total-users');
+            if(uEl) uEl.textContent = data.totalUsers;
+            
+            const appEl = document.getElementById('stat-total-applications');
+            if(appEl) appEl.textContent = data.totalApplications;
+            
+            const appLoanEl = document.getElementById('stat-approved-loans');
+            if(appLoanEl) appLoanEl.textContent = data.approvedLoans;
+            
+            const dEl = document.getElementById('stat-total-defaulters');
+            if(dEl) dEl.textContent = data.totalDefaulters;
+        }
+    } catch(err) {
+        console.error(err);
+    }
+});
+</script>
+
 </body>
 </html>

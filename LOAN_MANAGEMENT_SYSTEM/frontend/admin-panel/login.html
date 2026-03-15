@@ -122,21 +122,39 @@
       icon.classList.replace('fa-eye-slash', 'fa-eye');
     }
   });
-
-  // Form submit — wire up to backend authentication endpoint
-  document.getElementById('loginForm').addEventListener('submit', function (e) {
-    e.preventDefault();
-    const email    = document.getElementById('adminEmail').value.trim();
-    const password = document.getElementById('adminPassword').value;
-
-    // TODO: Replace with actual API call
-    // fetch('/api/admin/login', { method:'POST', body: JSON.stringify({email, password}) })
-    //   .then(r => r.json())
-    //   .then(data => { if(data.token) window.location.href = 'dashboard.html'; })
-
-    // Demo redirect
-    window.location.href = 'dashboard.html';
-  });
 </script>
+
+
+<script>
+// ===== Frontend Connection Code: admin login.html =====
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.querySelector('form');
+    if(form) {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            try {
+                const res = await fetch('http://localhost:3000/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: data.email, password: data.password })
+                });
+                const result = await res.json();
+                if(result.success && result.data.user.role === 'admin') {
+                    localStorage.setItem('lms_token', result.data.token);
+                    localStorage.setItem('lms_user', JSON.stringify(result.data.user));
+                    window.location.href = 'dashboard.html';
+                } else {
+                    alert('Error: ' + (result.error || 'Not authorized as admin'));
+                }
+            } catch (err) {
+                alert('Connection error');
+            }
+        });
+    }
+});
+</script>
+
 </body>
 </html>

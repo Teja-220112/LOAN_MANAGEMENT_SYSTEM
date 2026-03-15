@@ -178,5 +178,76 @@
     // All other fields populated by Flask template or fetch API
   });
 </script>
+
+<script>
+// ===== Frontend Connection Code: loan_details.html =====
+async function apiCall(endpoint, method='GET', body=null) {
+    const token = localStorage.getItem('lms_token');
+    if(!token) { window.location.href = 'login.html'; return; }
+    const options = { method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` } };
+    if(body) options.body = JSON.stringify(body);
+    const res = await fetch(`http://localhost:3000${endpoint}`, options);
+    if(res.status === 401) { window.location.href = 'login.html'; return; }
+    return res.json();
+}
+document.addEventListener('DOMContentLoaded', async () => {
+    if(!localStorage.getItem('lms_token')) window.location.href = 'login.html';
+    const urlParams = new URLSearchParams(window.location.search);
+    const loanId = urlParams.get('id');
+    if(!loanId) return alert('No Loan ID provided');
+    
+    try {
+        const [loanRes, emiRes] = await Promise.all([
+            apiCall(`/api/loans/${loanId}`),
+            apiCall(`/api/loans/${loanId}/emi-schedule`)
+        ]);
+        
+        if(loanRes && loanRes.success) {
+            const loan = loanRes.data;
+            const fmt = n => '₹' + (n||0).toLocaleString('en-IN');
+            const dt = d => d ? new Date(d).toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'}) : 'N/A';
+            
+            // Populate fields
+            document.querySelectorAll('[id^="detail-"]').forEach(el => {
+                const key = el.id.replace('detail-', '');
+                if(key === 'amount') el.textContent = fmt(loan.loan_amount);
+                else if(key === 'purpose') el.textContent = loan.loan_purpose;
+                else if(key === 'tenure') el.textContent = loan.loan_tenure + ' Months';
+                else if(key === 'interest') el.textContent = loan.interest_rate + '%';
+                else if(key === 'status') el.textContent = loan.status;
+                else if(key === 'date') el.textContent = dt(loan.createdAt);
+                else if(key === 'id') el.textContent = loan._id.toUpperCase();
+            });
+        }
+        
+        if(emiRes && emiRes.success) {
+            const tbody = document.getElementById('emi-schedule-tbody') || document.querySelector('table tbody');
+            if(tbody) {
+                tbody.innerHTML = '';
+                const formatCur = (n) => '₹' + (n||0).toLocaleString('en-IN');
+                const dt = d => d ? new Date(d).toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'}) : 'N/A';
+                
+                emiRes.data.forEach(emi => {
+                    const badgeClass = emi.status === 'Paid' ? 'badge-active' : 
+                                       emi.status === 'Pending' ? 'badge-pending' : 'badge-failed';
+                    tbody.innerHTML += `
+                    <tr>
+                        <td>${emi.installment_number}</td>
+                        <td>${dt(emi.due_date)}</td>
+                        <td class="td-mono">${formatCur(emi.emi_amount)}</td>
+                        <td class="td-mono">${formatCur(emi.principal)}</td>
+                        <td class="td-mono">${formatCur(emi.interest)}</td>
+                        <td class="td-mono">${formatCur(emi.balance)}</td>
+                        <td><span class="badge-status ${badgeClass}">${emi.status}</span></td>
+                    </tr>`;
+                });
+            }
+        }
+    } catch(err) {
+        console.error(err);
+    }
+});
+</script>
+
 </body>
 </html>

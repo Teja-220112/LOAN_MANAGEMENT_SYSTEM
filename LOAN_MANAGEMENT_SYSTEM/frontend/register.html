@@ -18,7 +18,7 @@
   <h2 class="auth-title">Create Account</h2>
   <p class="auth-subtitle">Join us today and start managing your loans</p>
 
-  <form class="mt-4" action="backend/register.php" method="post">
+  <form class="mt-4" onsubmit="return false;">
     <div class="row">
       <div class="col-md-6 mb-3">
         <label for="firstName" class="form-label-lms">First Name</label>
@@ -63,5 +63,45 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
 <script src="user-pages/scripts.js"></script>
+
+<script>
+// ===== Frontend Connection Code: register.html =====
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.querySelector('form');
+    if(form) {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            // Map form fields to API fields
+            const payload = {
+                firstName: data.firstName || data.fname || data.name?.split(' ')[0] || 'User',
+                lastName: data.lastName || data.lname || data.name?.split(' ')[1] || 'Name',
+                email: data.email,
+                phone: data.phone,
+                password: data.password,
+                national_id: data.national_id || data.aadhar || '',
+            };
+            try {
+                const res = await fetch('http://localhost:3000/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await res.json();
+                if(result.success) {
+                    alert('Registration successful! Please login.');
+                    window.location.href = 'login.html';
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            } catch (err) {
+                alert('Connection error');
+            }
+        });
+    }
+});
+</script>
+
 </body>
 </html>

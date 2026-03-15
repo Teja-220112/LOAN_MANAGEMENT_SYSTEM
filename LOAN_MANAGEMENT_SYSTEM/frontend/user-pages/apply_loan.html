@@ -202,5 +202,55 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
 <script src="scripts.js"></script>
+
+<script>
+// ===== Frontend Connection Code: apply_loan.html =====
+async function apiCall(endpoint, method='GET', body=null) {
+    const token = localStorage.getItem('lms_token');
+    if(!token) { window.location.href = 'login.html'; return; }
+    const options = {
+        method,
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
+    };
+    if(body) options.body = JSON.stringify(body);
+    const res = await fetch(`http://localhost:3000${endpoint}`, options);
+    if(res.status === 401) { window.location.href = 'login.html'; return; }
+    return res.json();
+}
+document.addEventListener('DOMContentLoaded', () => {
+    if(!localStorage.getItem('lms_token')) window.location.href = 'login.html';
+    const form = document.querySelector('form') || document.getElementById('apply-loan-form');
+    if(form) {
+        // Remove old submit listener if existing
+        const newForm = form.cloneNode(true);
+        form.parentNode.replaceChild(newForm, form);
+        
+        newForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(newForm);
+            const data = Object.fromEntries(formData.entries());
+            const payload = {
+                loan_amount: Number(data.amount || data.loan_amount),
+                loan_purpose: data.purpose || data.loan_purpose,
+                loan_tenure: Number(data.tenure || data.loan_tenure),
+                monthly_income: Number(data.income || data.monthly_income),
+                employment_type: data.employment_type || 'Salaried'
+            };
+            try {
+                const result = await apiCall('/api/loans/apply', 'POST', payload);
+                if(result && result.success) {
+                    alert('Loan application submitted successfully!');
+                    window.location.href = 'my_loans.html';
+                } else {
+                    alert('Error: ' + (result ? result.error : 'Unknown error'));
+                }
+            } catch(err) {
+                alert('Connection error');
+            }
+        });
+    }
+});
+</script>
+
 </body>
 </html>

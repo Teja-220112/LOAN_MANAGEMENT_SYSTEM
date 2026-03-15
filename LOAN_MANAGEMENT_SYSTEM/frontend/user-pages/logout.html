@@ -51,5 +51,15 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
 <script src="scripts.js"></script>
+
+<script>
+// ===== Frontend Connection Code: logout.html =====
+document.addEventListener('DOMContentLoaded', () => {
+    localStorage.removeItem('lms_token');
+    localStorage.removeItem('lms_user');
+    window.location.href = 'login.html';
+});
+</script>
+
 </body>
 </html>

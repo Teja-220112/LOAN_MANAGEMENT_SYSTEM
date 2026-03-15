@@ -238,3 +238,9 @@ document.addEventListener('DOMContentLoaded', function () {
   injectLayout();   // inject navbar on all pages; footer on all except dashboard
   initPayEMI();     // pay_emi page specific setup
 });
+/* Auto-assign names for FormData */
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('input, select, textarea').forEach(el => {
+    if(el.id && !el.name) el.name = el.id;
+  });
+});

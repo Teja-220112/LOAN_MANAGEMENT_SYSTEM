@@ -273,5 +273,45 @@
   //     document.getElementById('lowRiskCount').textContent         = data.lowRisk;
   //   });
 </script>
+
+<script>
+// ===== Frontend Connection Code: admin defaulters.html =====
+async function apiCall(endpoint, method='GET', body=null) {
+    const token = localStorage.getItem('lms_token');
+    if(!token) { window.location.href = 'login.html'; return; }
+    const options = { method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` } };
+    if(body) options.body = JSON.stringify(body);
+    const res = await fetch(`http://localhost:3000${endpoint}`, options);
+    if(res.status === 401 || res.status === 403) { window.location.href = 'login.html'; return; }
+    return res.json();
+}
+document.addEventListener('DOMContentLoaded', async () => {
+    if(!localStorage.getItem('lms_token')) window.location.href = 'login.html';
+    const tbody = document.getElementById('defaulters-tbody') || document.querySelector('table tbody');
+    if(tbody) {
+             tbody.innerHTML = '<tr><td colspan="6" class="text-center">Loading...</td></tr>';
+             try {
+                const res = await apiCall('/api/admin/defaulters');
+                if(res && res.success) {
+                    tbody.innerHTML = '';
+                    if(res.data.length === 0) return tbody.innerHTML = '<tr><td colspan="6" class="text-center">No defaulters found!</td></tr>';
+                    res.data.forEach(d => {
+                        const rBadge = d.riskLevel === 'High' ? 'badge-rejected' : d.riskLevel === 'Medium' ? 'badge-pending' : 'badge-active';
+                        tbody.innerHTML += `
+                        <tr>
+                            <td>${d.firstName} ${d.lastName}</td>
+                            <td>${d.email}</td>
+                            <td>${d.phone || 'N/A'}</td>
+                            <td>${d.missedEMIs}</td>
+                            <td class="td-mono">₹${(d.totalOverdueAmount||0).toLocaleString('en-IN')}</td>
+                            <td><span class="badge-status ${rBadge}">${d.riskLevel} Risk</span></td>
+                        </tr>`;
+                    });
+                }
+             } catch(err) { tbody.innerHTML = '<tr><td colspan="6" class="text-center">Error</td></tr>'; }
+    }
+});
+</script>
+
 </body>
 </html>

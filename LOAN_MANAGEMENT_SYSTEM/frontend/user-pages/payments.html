@@ -175,5 +175,69 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
 <script src="scripts.js"></script>
+
+<script>
+// ===== Frontend Connection Code: payments.html =====
+async function apiCall(endpoint, method='GET', body=null) {
+    const token = localStorage.getItem('lms_token');
+    if(!token) { window.location.href = 'login.html'; return; }
+    const options = { method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` } };
+    if(body) options.body = JSON.stringify(body);
+    const res = await fetch(`http://localhost:3000${endpoint}`, options);
+    if(res.status === 401) { window.location.href = 'login.html'; return; }
+    return res.json();
+}
+document.addEventListener('DOMContentLoaded', async () => {
+    if(!localStorage.getItem('lms_token')) window.location.href = 'login.html';
+    const tbody = document.getElementById('payments-tbody') || document.querySelector('table tbody');
+    if(tbody) tbody.innerHTML = '<tr><td colspan="7" class="text-center">Loading...</td></tr>';
+    
+    try {
+        const [histRes, sumRes] = await Promise.all([
+            apiCall('/api/payments/history'),
+            apiCall('/api/payments/summary')
+        ]);
+        
+        if(histRes && histRes.success) {
+            if(tbody) {
+                tbody.innerHTML = '';
+                const payments = histRes.data;
+                const formatCur = (n) => '₹' + (n||0).toLocaleString('en-IN');
+                const dt = d => d ? new Date(d).toLocaleDateString('en-GB') : 'N/A';
+                
+                if(payments.length === 0) tbody.innerHTML = '<tr><td colspan="7" class="text-center">No payment records found.</td></tr>';
+                
+                payments.forEach(p => {
+                    const badgeClass = p.status === 'Paid' ? 'badge-active' : p.status === 'Pending' ? 'badge-pending' : 'badge-failed';
+                    tbody.innerHTML += `
+                    <tr>
+                        <td class="td-mono">${p.transaction_id || 'N/A'}</td>
+                        <td>${dt(p.payment_date)}</td>
+                        <td>${p.loanId ? p.loanId.loan_purpose : 'N/A'}</td>
+                        <td>Inst #${p.installment_number}</td>
+                        <td class="td-mono">${formatCur(p.amount_paid)}</td>
+                        <td>${p.method}</td>
+                        <td><span class="badge-status ${badgeClass}">${p.status}</span></td>
+                    </tr>`;
+                });
+            }
+        }
+        
+        if(sumRes && sumRes.success) {
+            const paidCountEl = document.getElementById('count-paid');
+            if(paidCountEl) paidCountEl.textContent = sumRes.data.paidCount;
+            
+            const pndCountEl = document.getElementById('count-pending');
+            if(pndCountEl) pndCountEl.textContent = sumRes.data.pendingCount;
+            
+            const fldCountEl = document.getElementById('count-failed');
+            if(fldCountEl) fldCountEl.textContent = sumRes.data.failedCount;
+        }
+    } catch(err) {
+        if(tbody) tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Error loading data</td></tr>';
+    }
+});
+</script>
+
 </body>
 </html>

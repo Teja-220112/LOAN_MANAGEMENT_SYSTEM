@@ -132,5 +132,54 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
 <script src="scripts.js"></script>
+
+<script>
+// ===== Frontend Connection Code: my_loans.html =====
+async function apiCall(endpoint, method='GET', body=null) {
+    const token = localStorage.getItem('lms_token');
+    if(!token) { window.location.href = 'login.html'; return; }
+    const options = { method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` } };
+    if(body) options.body = JSON.stringify(body);
+    const res = await fetch(`http://localhost:3000${endpoint}`, options);
+    if(res.status === 401) { window.location.href = 'login.html'; return; }
+    return res.json();
+}
+document.addEventListener('DOMContentLoaded', async () => {
+    if(!localStorage.getItem('lms_token')) window.location.href = 'login.html';
+    const tbody = document.getElementById('loans-tbody') || document.querySelector('table tbody');
+    if(!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center">Loading...</td></tr>';
+    
+    try {
+        const res = await apiCall('/api/loans/my-loans');
+        if(res && res.success) {
+            tbody.innerHTML = '';
+            const loans = res.data;
+            if(loans.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center">No loans found.</td></tr>';
+            } else {
+                loans.forEach(loan => {
+                    const badgeClass = loan.status === 'Active' ? 'badge-active' : loan.status === 'Approved' ? 'badge-approved' :
+                                       loan.status === 'Pending' ? 'badge-pending' : 
+                                       loan.status === 'Rejected' ? 'badge-rejected' : 'badge-closed';
+                    const dt = new Date(loan.createdAt).toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'});
+                    tbody.innerHTML += `
+                    <tr>
+                        <td class="td-mono">${loan._id.slice(-6).toUpperCase()}</td>
+                        <td>${loan.loan_purpose}</td>
+                        <td class="td-mono">₹${loan.loan_amount.toLocaleString('en-IN')}</td>
+                        <td>${loan.loan_tenure} Months</td>
+                        <td><span class="badge-status ${badgeClass}">${loan.status}</span></td>
+                        <td><a href="loan_details.html?id=${loan._id}" class="btn btn-sm btn-outline-primary">View</a></td>
+                    </tr>`;
+                });
+            }
+        }
+    } catch(err) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Error loading data</td></tr>';
+    }
+});
+</script>
+
 </body>
 </html>

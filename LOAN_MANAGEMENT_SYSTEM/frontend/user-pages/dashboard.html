@@ -155,5 +155,79 @@
     document.getElementById('stat-next-emi').textContent = 'N/A';
   });
 </script>
+
+<script>
+// ===== Frontend Connection Code: dashboard.html =====
+async function apiCall(endpoint, method='GET', body=null) {
+    const token = localStorage.getItem('lms_token');
+    if(!token) { window.location.href = 'login.html'; return; }
+    const options = {
+        method,
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
+    };
+    if(body) options.body = JSON.stringify(body);
+    const res = await fetch(`http://localhost:3000${endpoint}`, options);
+    if(res.status === 401) { window.location.href = 'login.html'; return; }
+    return res.json();
+}
+document.addEventListener('DOMContentLoaded', async () => {
+    if(!localStorage.getItem('lms_token')) window.location.href = 'login.html';
+    const user = JSON.parse(localStorage.getItem('lms_user') || '{}');
+    const nameEl = document.getElementById('user-name') || document.querySelector('.dashboard-name');
+    if(nameEl && user.name) nameEl.textContent = `Welcome, ${user.name}`;
+
+    try {
+        const statsRes = await apiCall('/api/loans/stats');
+        if(statsRes && statsRes.success) {
+            const data = statsRes.data;
+            const formatCur = (n) => '₹' + (n||0).toLocaleString('en-IN');
+            const dt = (d) => d ? new Date(d).toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'}) : 'N/A';
+            
+            const activeEl = document.getElementById('stat-active-loans') || document.querySelector('.stat-card.blue .stat-value');
+            if(activeEl) activeEl.textContent = data.activeLoans;
+            
+            const pendingEl = document.getElementById('stat-pending') || document.querySelector('.stat-card.amber .stat-value');
+            if(pendingEl) pendingEl.textContent = data.pending;
+            
+            const emiPaidEl = document.getElementById('stat-emi-paid') || document.querySelector('.stat-card.green .stat-value');
+            if(emiPaidEl) emiPaidEl.textContent = data.emisPaid;
+            
+            const nextEmiEl = document.getElementById('stat-next-emi') || document.querySelector('.stat-card.red .stat-value');
+            if(nextEmiEl) nextEmiEl.textContent = formatCur(data.nextEmiAmount);
+            
+            const nextEmiDateEl = document.querySelector('.stat-card.red .stat-label');
+            if(nextEmiDateEl && data.nextEmiDate) nextEmiDateEl.textContent = `Next EMI Due: ${dt(data.nextEmiDate)}`;
+        }
+        
+        // Fetch recent loans
+        const loansRes = await apiCall('/api/loans/my-loans');
+        const tbody = document.getElementById('recent-loans-tbody') || document.querySelector('table tbody');
+        if(tbody && loansRes && loansRes.success) {
+            tbody.innerHTML = '';
+            const loans = loansRes.data.slice(0, 5); // recent 5
+            if(loans.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center">No recent loans found.</td></tr>';
+            } else {
+                loans.forEach(loan => {
+                    const badgeClass = loan.status === 'Active' ? 'badge-active' : 
+                                       loan.status === 'Pending' ? 'badge-pending' : 
+                                       loan.status === 'Rejected' ? 'badge-rejected' : 'badge-closed';
+                    tbody.innerHTML += `
+                    <tr>
+                        <td class="td-mono">${loan._id.slice(-6).toUpperCase()}</td>
+                        <td>${loan.loan_purpose}</td>
+                        <td class="td-mono">₹${loan.loan_amount.toLocaleString('en-IN')}</td>
+                        <td><span class="badge-status ${badgeClass}">${loan.status}</span></td>
+                        <td><a href="loan_details.html?id=${loan._id}" class="btn btn-sm btn-outline-primary">View</a></td>
+                    </tr>`;
+                });
+            }
+        }
+    } catch (err) {
+        console.error('Failed to load dashboard data', err);
+    }
+});
+</script>
+
 </body>
 </html>
