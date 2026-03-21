@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LoanSphere — Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div id="navbar-placeholder"></div>
+
+<main>
+  <!-- ── Dashboard Header ──────────────────────────────────── -->
+  <div class="dashboard-header">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col">
+          <p class="dashboard-greeting">Good morning 👋</p>
+          <!-- User name populated by backend: {{ user.full_name }} -->
+          <h1 class="dashboard-name" id="user-name">Loading...</h1>
+          <p class="dashboard-date" id="dashboard-date"></p>
+        </div>
+        <div class="col-auto d-none d-md-block">
+          <a href="apply_loan.html" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>New Application
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Summary Cards ─────────────────────────────────────── -->
+  <div class="container" style="margin-top:-28px;position:relative;z-index:1;">
+    <div class="row g-3">
+      <!-- Active Loans -->
+      <div class="col-6 col-lg-3 fade-in-up fade-in-up-1">
+        <div class="stat-card blue">
+          <div class="stat-icon-wrap blue"><i class="fas fa-credit-card"></i></div>
+          <!-- Populated by backend: {{ stats.active_loans }} -->
+          <div class="stat-value" id="stat-active-loans">—</div>
+          <div class="stat-label">Active Loans</div>
+        </div>
+      </div>
+      <!-- Pending Applications -->
+      <div class="col-6 col-lg-3 fade-in-up fade-in-up-2">
+        <div class="stat-card amber">
+          <div class="stat-icon-wrap amber"><i class="fas fa-clock"></i></div>
+          <div class="stat-value" id="stat-pending">—</div>
+          <div class="stat-label">Pending Applications</div>
+        </div>
+      </div>
+      <!-- Total EMI Paid -->
+      <div class="col-6 col-lg-3 fade-in-up fade-in-up-3">
+        <div class="stat-card green">
+          <div class="stat-icon-wrap green"><i class="fas fa-circle-check"></i></div>
+          <div class="stat-value" id="stat-emi-paid">—</div>
+          <div class="stat-label">EMIs Paid</div>
+        </div>
+      </div>
+      <!-- Next EMI Due -->
+      <div class="col-6 col-lg-3 fade-in-up fade-in-up-4">
+        <div class="stat-card gold">
+          <div class="stat-icon-wrap gold"><i class="fas fa-calendar-day"></i></div>
+          <div class="stat-value" id="stat-next-emi">—</div>
+          <div class="stat-label">Next EMI Due</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Content Area ───────────────────────────────────────── -->
+  <div class="container page-section-sm">
+    <div class="row g-4">
+
+      <!-- Recent Applications Table -->
+      <div class="col-lg-8">
+        <div class="lms-card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span><i class="fas fa-list-check"></i> Recent Loan Applications</span>
+            <a href="my_loans.html" class="btn btn-sm btn-outline-primary">View All</a>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <!-- Table rows populated by backend -->
+              <table class="lms-table w-100" id="recent-loans-table">
+                <thead>
+                  <tr>
+                    <th>Loan ID</th>
+                    <th>Amount</th>
+                    <th>Purpose</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="recent-loans-tbody">
+                  <tr>
+                    <td colspan="6">
+                      <div class="empty-state py-4">
+                        <i class="fas fa-folder-open d-block"></i>
+                        <p class="mt-2">No loan applications yet.</p>
+                        <a href="apply_loan.html" class="btn btn-sm btn-primary mt-2">Apply Now</a>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Upcoming EMI (Quick Actions removed — links are now in the navbar) -->
+      <div class="col-lg-4">
+        <div class="lms-card">
+          <div class="card-header"><i class="fas fa-calendar-check"></i> Upcoming EMI</div>
+          <div class="card-body">
+            <div id="upcoming-emi-content">
+              <div class="empty-state py-3">
+                <i class="fas fa-calendar-xmark d-block"></i>
+                <p class="mt-2">No upcoming EMIs.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<!-- No footer on dashboard page -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script src="scripts.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    // Date display
+    const now = new Date();
+    const hour = now.getHours();
+    const greeting = hour < 12 ? 'Good morning 👋' : hour < 17 ? 'Good afternoon 👋' : 'Good evening 👋';
+    document.querySelector('.dashboard-greeting').textContent = greeting;
+    document.getElementById('dashboard-date').textContent =
+      now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+    // In production, replace with Flask template variables:
+    // {{ current_user.full_name }}, {{ stats.active_loans }}, etc.
+    document.getElementById('user-name').textContent = 'Welcome, User';
+    document.getElementById('stat-active-loans').textContent = '0';
+    document.getElementById('stat-pending').textContent = '0';
+    document.getElementById('stat-emi-paid').textContent = '0';
+    document.getElementById('stat-next-emi').textContent = 'N/A';
+  });
+</script>
+
+<script>
+// ===== Frontend Connection Code: dashboard.html =====
+async function apiCall(endpoint, method='GET', body=null) {
+    const token = localStorage.getItem('lms_token');
+    if(!token) { window.location.href = 'login.html'; return; }
+    const options = {
+        method,
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
+    };
+    if(body) options.body = JSON.stringify(body);
+    const res = await fetch(`http://localhost:3000${endpoint}`, options);
+    if(res.status === 401) { window.location.href = 'login.html'; return; }
+    return res.json();
+}
+document.addEventListener('DOMContentLoaded', async () => {
+    if(!localStorage.getItem('lms_token')) window.location.href = 'login.html';
+    const user = JSON.parse(localStorage.getItem('lms_user') || '{}');
+    const nameEl = document.getElementById('user-name') || document.querySelector('.dashboard-name');
+    if(nameEl && user.name) nameEl.textContent = `Welcome, ${user.name}`;
+
+    try {
+        const statsRes = await apiCall('/api/loans/stats');
+        if(statsRes && statsRes.success) {
+            const data = statsRes.data;
+            const formatCur = (n) => '₹' + (n||0).toLocaleString('en-IN');
+            const dt = (d) => d ? new Date(d).toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'}) : 'N/A';
+            
+            const activeEl = document.getElementById('stat-active-loans') || document.querySelector('.stat-card.blue .stat-value');
+            if(activeEl) activeEl.textContent = data.activeLoans;
+            
+            const pendingEl = document.getElementById('stat-pending') || document.querySelector('.stat-card.amber .stat-value');
+            if(pendingEl) pendingEl.textContent = data.pending;
+            
+            const emiPaidEl = document.getElementById('stat-emi-paid') || document.querySelector('.stat-card.green .stat-value');
+            if(emiPaidEl) emiPaidEl.textContent = data.emisPaid;
+            
+            const nextEmiEl = document.getElementById('stat-next-emi') || document.querySelector('.stat-card.red .stat-value');
+            if(nextEmiEl) nextEmiEl.textContent = formatCur(data.nextEmiAmount);
+            
+            const nextEmiDateEl = document.querySelector('.stat-card.red .stat-label');
+            if(nextEmiDateEl && data.nextEmiDate) nextEmiDateEl.textContent = `Next EMI Due: ${dt(data.nextEmiDate)}`;
+        }
+        
+        // Fetch recent loans
+        const loansRes = await apiCall('/api/loans/my-loans');
+        const tbody = document.getElementById('recent-loans-tbody') || document.querySelector('table tbody');
+        if(tbody && loansRes && loansRes.success) {
+            tbody.innerHTML = '';
+            const loans = loansRes.data.slice(0, 5); // recent 5
+            if(loans.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center">No recent loans found.</td></tr>';
+            } else {
+                loans.forEach(loan => {
+                    const badgeClass = loan.status === 'Active' ? 'badge-active' : 
+                                       loan.status === 'Pending' ? 'badge-pending' : 
+                                       loan.status === 'Rejected' ? 'badge-rejected' : 'badge-closed';
+                    tbody.innerHTML += `
+                    <tr>
+                        <td class="td-mono">${loan._id.slice(-6).toUpperCase()}</td>
+                        <td>${loan.loan_purpose}</td>
+                        <td class="td-mono">₹${loan.loan_amount.toLocaleString('en-IN')}</td>
+                        <td><span class="badge-status ${badgeClass}">${loan.status}</span></td>
+                        <td><a href="loan_details.html?id=${loan._id}" class="btn btn-sm btn-outline-primary">View</a></td>
+                    </tr>`;
+                });
+            }
+        }
+    } catch (err) {
+        console.error('Failed to load dashboard data', err);
+    }
+});
+</script>
+
+</body>
+</html>
