@@ -132,13 +132,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if(form) {
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const formData = new FormData(form);
-            const data = Object.fromEntries(formData.entries());
+            const email = document.getElementById('adminEmail').value;
+            const password = document.getElementById('adminPassword').value;
             try {
                 const res = await fetch('http://localhost:3000/api/auth/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: data.email, password: data.password })
+                    body: JSON.stringify({ email, password, role: 'admin' })
                 });
                 const result = await res.json();
                 if(result.success && result.data.user.role === 'admin') {

@@ -155,7 +155,7 @@
         <p>Welcome back, Admin. Here's what's happening today.</p>
       </div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;">
-        <button class="btn btn-outline-secondary btn-sm"><i class="fas fa-filter"></i> Filter</button>
+        <button class="btn btn-outline-secondary btn-sm" onclick="alert('Advanced filter options are currently in development and will be available in the next update.')"><i class="fas fa-filter"></i> Filter</button>
         <button class="btn btn-primary btn-sm"><i class="fas fa-download"></i> Export Report</button>
       </div>
     </div>
@@ -385,7 +385,6 @@
 </script>
 
 <script>
-// ===== Frontend Connection Code: admin dashboard.html =====
 async function apiCall(endpoint, method='GET', body=null) {
     const token = localStorage.getItem('lms_token');
     if(!token) { window.location.href = 'login.html'; return; }
@@ -395,6 +394,7 @@ async function apiCall(endpoint, method='GET', body=null) {
     if(res.status === 401 || res.status === 403) { window.location.href = 'login.html'; return; }
     return res.json();
 }
+
 document.addEventListener('DOMContentLoaded', async () => {
     if(!localStorage.getItem('lms_token')) window.location.href = 'login.html';
     
@@ -413,6 +413,36 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             const dEl = document.getElementById('stat-total-defaulters');
             if(dEl) dEl.textContent = data.totalDefaulters;
+
+            // Stat cards exist as id="totalUsers" in the HTML, not "stat-total-users"
+            if (document.getElementById('totalUsers')) document.getElementById('totalUsers').textContent = data.totalUsers;
+            if (document.getElementById('totalApplications')) document.getElementById('totalApplications').textContent = data.totalApplications;
+            if (document.getElementById('approvedLoans')) document.getElementById('approvedLoans').textContent = data.approvedLoans;
+            if (document.getElementById('totalDefaulters')) document.getElementById('totalDefaulters').textContent = data.totalDefaulters;
+
+            // Load Charts
+            if (typeof initLoanApplicationsChart === 'function') {
+                initLoanApplicationsChart('loanApplicationsChart', ['Jan','Feb','Mar','Apr','May','Jun'], data.monthlyData);
+            }
+            if (typeof initLoanStatusChart === 'function') {
+                initLoanStatusChart('loanStatusChart', data.statusDistribution);
+            }
+        }
+
+        // Fetch Recent Loans
+        const loansRes = await apiCall('/api/admin/loans');
+        if (loansRes && loansRes.success && typeof renderRecentApplications === 'function') {
+            const recentLoans = loansRes.data.slice(-5).reverse().map(l => ({
+                loanId: l._id.substring(0, 8).toUpperCase(),
+                name: l.userId ? `${l.userId.firstName} ${l.userId.lastName}` : 'Unknown',
+                email: l.userId ? l.userId.email : '',
+                amount: l.loan_amount,
+                purpose: l.loan_purpose,
+                date: new Date(l.createdAt).toLocaleDateString(),
+                status: l.status,
+                rawId: l._id
+            }));
+            renderRecentApplications(recentLoans);
         }
     } catch(err) {
         console.error(err);
