@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LoanSphere — Apply for Loan</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div id="navbar-placeholder"></div>
+
+<main>
+  <!-- Page Header -->
+  <div class="page-hero" style="padding:44px 0 36px;">
+    <div class="container">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb lms-breadcrumb mb-2">
+          <li class="breadcrumb-item"><a href="dashboard.html">Dashboard</a></li>
+          <li class="breadcrumb-item active">Apply for Loan</li>
+        </ol>
+      </nav>
+      <h1 style="font-size:1.75rem;font-weight:700;margin-bottom:6px;">Loan Application</h1>
+      <p style="color:rgba(255,255,255,0.65);margin-bottom:0;font-size:0.9375rem;">
+        Fill in the details below to submit your loan request.
+      </p>
+    </div>
+  </div>
+
+  <div class="container page-section-sm">
+    <div class="row justify-content-center">
+      <div class="col-lg-8 col-xl-7">
+
+        <!-- Progress Indicator -->
+        <div class="d-flex gap-2 align-items-center mb-4" style="font-size:0.8rem;color:var(--slate-500);">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <div style="width:24px;height:24px;border-radius:50%;background:var(--blue-600);color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:600;">1</div>
+            <span style="color:var(--blue-600);font-weight:500;">Application Details</span>
+          </div>
+          <div style="flex:1;height:1px;background:var(--slate-200);"></div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <div style="width:24px;height:24px;border-radius:50%;background:var(--slate-200);color:var(--slate-500);display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:600;">2</div>
+            <span>Review</span>
+          </div>
+          <div style="flex:1;height:1px;background:var(--slate-200);"></div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <div style="width:24px;height:24px;border-radius:50%;background:var(--slate-200);color:var(--slate-500);display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:600;">3</div>
+            <span>Confirmation</span>
+          </div>
+        </div>
+
+        <div class="lms-card fade-in-up">
+          <div class="card-header">
+            <i class="fas fa-file-signature"></i>
+            Loan Application Form
+          </div>
+          <div class="card-body">
+            <form method="POST" action="/apply_loan" id="apply-loan-form">
+
+              <div class="row g-3">
+
+                <!-- Loan Amount -->
+                <div class="col-md-6">
+                  <label class="form-label" for="loan_amount">Loan Amount <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-indian-rupee-sign"></i></span>
+                    <input type="number" id="loan_amount" name="loan_amount" class="form-control"
+                      placeholder="e.g. 500000" min="10000" max="10000000" required />
+                  </div>
+                  <div class="form-text">Min ₹10,000 — Max ₹1,00,00,000</div>
+                </div>
+
+                <!-- Loan Purpose -->
+                <div class="col-md-6">
+                  <label class="form-label" for="loan_purpose">Loan Purpose <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-tag"></i></span>
+                    <select id="loan_purpose" name="loan_purpose" class="form-select" required>
+                      <option value="" disabled selected>Select purpose…</option>
+                      <option value="home">Home Purchase / Renovation</option>
+                      <option value="education">Education</option>
+                      <option value="medical">Medical Emergency</option>
+                      <option value="vehicle">Vehicle Purchase</option>
+                      <option value="business">Business / Working Capital</option>
+                      <option value="personal">Personal / Lifestyle</option>
+                      <option value="debt">Debt Consolidation</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Monthly Income -->
+                <div class="col-md-6">
+                  <label class="form-label" for="monthly_income">Monthly Income <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-wallet"></i></span>
+                    <input type="number" id="monthly_income" name="monthly_income" class="form-control"
+                      placeholder="e.g. 80000" min="5000" required />
+                  </div>
+                </div>
+
+                <!-- Employment Type -->
+                <div class="col-md-6">
+                  <label class="form-label" for="employment_type">Employment Type <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-briefcase"></i></span>
+                    <select id="employment_type" name="employment_type" class="form-select" required>
+                      <option value="" disabled selected>Select type…</option>
+                      <option value="salaried">Salaried — Private Sector</option>
+                      <option value="salaried_govt">Salaried — Government</option>
+                      <option value="self_employed">Self-Employed / Business Owner</option>
+                      <option value="freelancer">Freelancer / Consultant</option>
+                      <option value="retired">Retired</option>
+                      <option value="student">Student</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Credit Score -->
+                <div class="col-md-6">
+                  <label class="form-label" for="credit_score">Credit Score <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-star-half-stroke"></i></span>
+                    <input type="number" id="credit_score" name="credit_score" class="form-control"
+                      placeholder="300 – 900" min="300" max="900" required />
+                  </div>
+                  <div class="form-text">CIBIL / credit score between 300 and 900.</div>
+                </div>
+
+                <!-- Loan Tenure -->
+                <div class="col-md-6">
+                  <label class="form-label" for="loan_tenure">Loan Tenure (months) <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-hourglass-half"></i></span>
+                    <select id="loan_tenure" name="loan_tenure" class="form-select" required>
+                      <option value="" disabled selected>Select tenure…</option>
+                      <option value="6">6 months</option>
+                      <option value="12">12 months (1 year)</option>
+                      <option value="24">24 months (2 years)</option>
+                      <option value="36">36 months (3 years)</option>
+                      <option value="48">48 months (4 years)</option>
+                      <option value="60">60 months (5 years)</option>
+                      <option value="84">84 months (7 years)</option>
+                      <option value="120">120 months (10 years)</option>
+                      <option value="180">180 months (15 years)</option>
+                      <option value="240">240 months (20 years)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Additional Notes -->
+                <div class="col-12">
+                  <label class="form-label" for="notes">Additional Notes <span class="text-muted">(optional)</span></label>
+                  <textarea id="notes" name="notes" class="form-control" rows="3"
+                    placeholder="Any additional information about your loan request…"></textarea>
+                </div>
+
+                <!-- Declaration -->
+                <div class="col-12">
+                  <div class="p-3 rounded" style="background:var(--blue-50);border:1px solid var(--blue-100);">
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="declaration" name="declaration" required />
+                      <label class="form-check-label" for="declaration" style="font-size:0.8125rem;color:var(--slate-700);">
+                        I declare that all the information provided above is true and accurate to the best of my knowledge. I understand that providing false information may result in rejection of my application.
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+              </div><!-- /row -->
+
+              <div class="d-flex flex-wrap gap-2 mt-4">
+                <button type="submit" class="btn btn-primary btn-lg">
+                  <i class="fas fa-paper-plane me-2"></i>Submit Application
+                </button>
+                <button type="reset" class="btn btn-outline-secondary btn-lg">
+                  <i class="fas fa-rotate-left me-2"></i>Reset Form
+                </button>
+              </div>
+
+            </form>
+          </div>
+        </div>
+
+        <!-- Info Note -->
+        <div class="mt-4 d-flex gap-3 p-3 rounded" style="background:var(--amber-100);border:1px solid #fde68a;">
+          <i class="fas fa-circle-info mt-1" style="color:var(--amber-600);flex-shrink:0;"></i>
+          <div style="font-size:0.8125rem;color:var(--amber-600);">
+            <strong>Processing Time:</strong> Loan applications are typically reviewed within 1–3 business days.
+            You will receive an email notification once your application is processed.
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</main>
+
+<div id="footer-placeholder"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script src="scripts.js"></script>
+
+<script>
+// ===== Frontend Connection Code: apply_loan.html =====
+async function apiCall(endpoint, method='GET', body=null) {
+    const token = localStorage.getItem('lms_token');
+    if(!token) { window.location.href = 'login.html'; return; }
+    const options = {
+        method,
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
+    };
+    if(body) options.body = JSON.stringify(body);
+    const res = await fetch(`http://localhost:3000${endpoint}`, options);
+    if(res.status === 401) { window.location.href = 'login.html'; return; }
+    return res.json();
+}
+document.addEventListener('DOMContentLoaded', () => {
+    if(!localStorage.getItem('lms_token')) window.location.href = 'login.html';
+    const form = document.querySelector('form') || document.getElementById('apply-loan-form');
+    if(form) {
+        // Remove old submit listener if existing
+        const newForm = form.cloneNode(true);
+        form.parentNode.replaceChild(newForm, form);
+        
+        newForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(newForm);
+            const data = Object.fromEntries(formData.entries());
+            const payload = {
+                loan_amount: Number(data.amount || data.loan_amount),
+                loan_purpose: data.purpose || data.loan_purpose,
+                loan_tenure: Number(data.tenure || data.loan_tenure),
+                monthly_income: Number(data.income || data.monthly_income),
+                employment_type: data.employment_type || 'Salaried'
+            };
+            try {
+                const result = await apiCall('/api/loans/apply', 'POST', payload);
+                if(result && result.success) {
+                    alert('Loan application submitted successfully!');
+                    window.location.href = 'my_loans.html';
+                } else {
+                    alert('Error: ' + (result ? result.error : 'Unknown error'));
+                }
+            } catch(err) {
+                alert('Connection error');
+            }
+        });
+    }
+});
+</script>
+
+</body>
+</html>

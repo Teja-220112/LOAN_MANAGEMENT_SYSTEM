@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Loan Approval — LoanSphere</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="sidebar-brand-icon"><i class="fas fa-landmark"></i></div>
+    <div class="sidebar-brand-text">
+      <span class="sidebar-brand-name">LoanSphere</span>
+      <span class="sidebar-brand-sub">Management System</span>
+    </div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Main</div>
+    <a href="dashboard.html" class="sidebar-link"><i class="fas fa-chart-pie nav-icon"></i><span class="nav-label">Dashboard</span></a>
+    <a href="users.html" class="sidebar-link"><i class="fas fa-users nav-icon"></i><span class="nav-label">Users</span></a>
+    <div class="nav-section-label">Loans</div>
+    <a href="loan_applications.html" class="sidebar-link"><i class="fas fa-file-invoice-dollar nav-icon"></i><span class="nav-label">Loan Applications</span></a>
+    <a href="loan_approval.html" class="sidebar-link active"><i class="fas fa-check-circle nav-icon"></i><span class="nav-label">Loan Approval</span></a>
+    <a href="emi_schedule.html" class="sidebar-link"><i class="fas fa-calendar-alt nav-icon"></i><span class="nav-label">EMI Schedule</span></a>
+    <div class="nav-section-label">Finance</div>
+    <a href="payments.html" class="sidebar-link"><i class="fas fa-credit-card nav-icon"></i><span class="nav-label">Payments</span></a>
+    <a href="defaulters.html" class="sidebar-link"><i class="fas fa-exclamation-triangle nav-icon"></i><span class="nav-label">Defaulter Reports</span></a>
+    <div class="nav-section-label">Insights</div>
+    <a href="analytics.html" class="sidebar-link"><i class="fas fa-chart-bar nav-icon"></i><span class="nav-label">Analytics</span></a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="sidebar-user-avatar">SA</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name">Super Admin</div>
+        <div class="sidebar-user-role">Administrator</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main-wrapper" id="mainWrapper">
+  <header class="topbar">
+    <button class="topbar-toggle" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+    <span class="topbar-title">Loan Approval</span>
+    <div class="topbar-search">
+      <i class="fas fa-search search-icon"></i>
+      <input type="text" placeholder="Search applications..."/>
+    </div>
+    <div class="topbar-actions">
+      <button class="topbar-btn"><i class="fas fa-bell"></i><span class="badge-dot"></span></button>
+      <div class="topbar-divider"></div>
+      <div class="topbar-profile" id="profileTrigger">
+        <div class="topbar-avatar">SA</div>
+        <div class="topbar-profile-info">
+          <div class="topbar-profile-name">Super Admin</div>
+          <div class="topbar-profile-role">Administrator</div>
+        </div>
+        <i class="fas fa-chevron-down ms-1" style="font-size:10px;color:#94a3b8;"></i>
+        <div class="profile-dropdown" id="profileDropdown">
+          <a href="profile.html"><i class="fas fa-user-circle"></i> My Profile</a>
+          <hr/>
+          <a href="../login.html" class="logout-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="content-area">
+
+    <div class="page-header">
+      <div class="page-header-left">
+        <div class="breadcrumb-bar">
+          <a href="dashboard.html">Home</a><span>/</span>
+          <a href="loan_applications.html">Applications</a><span>/</span>
+          <span>Review Loan</span>
+        </div>
+        <h4>Review Loan Application</h4>
+        <p>Application ID: <span id="loanIdLabel" style="font-family:monospace;color:#3b82f6;font-weight:600;">—</span></p>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <a href="loan_applications.html" class="btn btn-outline-secondary btn-sm">
+          <i class="fas fa-arrow-left"></i> Back to List
+        </a>
+        <button class="btn btn-outline-secondary btn-sm"><i class="fas fa-print"></i> Print</button>
+      </div>
+    </div>
+
+    <!-- Status Banner -->
+    <div class="loan-status-banner pending" id="statusBanner">
+      <div class="loan-status-icon"><i class="fas fa-clock"></i></div>
+      <div>
+        <div style="font-weight:700;font-size:15px;font-family:'Space Grotesk',sans-serif;color:#92400e;" id="statusTitle">
+          Awaiting Review
+        </div>
+        <div style="font-size:13px;color:#b45309;" id="statusDesc">
+          This application is pending admin review. Please evaluate and take action below.
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-3">
+
+      <!-- LEFT COLUMN -->
+      <div class="col-12 col-lg-7">
+
+        <!-- Applicant Details -->
+        <div class="info-section mb-3">
+          <div class="info-section-header">
+            <i class="fas fa-user"></i>
+            <h6 class="info-section-title">Applicant Information</h6>
+          </div>
+          <div class="info-section-body">
+            <div class="info-row">
+              <div class="info-item">
+                <div class="info-item-label">Full Name</div>
+                <div class="info-item-value" id="appName">—</div>
+              </div>
+              <div class="info-item">
+                <div class="info-item-label">Email Address</div>
+                <div class="info-item-value" id="appEmail">—</div>
+              </div>
+              <div class="info-item">
+                <div class="info-item-label">Phone Number</div>
+                <div class="info-item-value" id="appPhone">—</div>
+              </div>
+              <div class="info-item">
+                <div class="info-item-label">Employment Type</div>
+                <div class="info-item-value" id="appEmployment">—</div>
+              </div>
+              <div class="info-item">
+                <div class="info-item-label">Monthly Income</div>
+                <div class="info-item-value" id="appIncome">—</div>
+              </div>
+              <div class="info-item">
+                <div class="info-item-label">Credit Score</div>
+                <div class="info-item-value" id="appCreditScore">—</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loan Details -->
+        <div class="info-section mb-3">
+          <div class="info-section-header">
+            <i class="fas fa-file-invoice-dollar"></i>
+            <h6 class="info-section-title">Loan Details</h6>
+          </div>
+          <div class="info-section-body">
+            <div class="info-row">
+              <div class="info-item">
+                <div class="info-item-label">Loan Amount</div>
+                <div class="info-item-value" id="loanAmount">—</div>
+              </div>
+              <div class="info-item">
+                <div class="info-item-label">Loan Purpose</div>
+                <div class="info-item-value" id="loanPurpose">—</div>
+              </div>
+              <div class="info-item">
+                <div class="info-item-label">Interest Rate</div>
+                <div class="info-item-value" id="loanInterestRate">—</div>
+              </div>
+              <div class="info-item">
+                <div class="info-item-label">Loan Tenure</div>
+                <div class="info-item-value" id="loanTenure">—</div>
+              </div>
+              <div class="info-item">
+                <div class="info-item-label">Monthly EMI</div>
+                <div class="info-item-value" style="color:#3b82f6;font-size:18px;" id="loanEMI">—</div>
+              </div>
+              <div class="info-item">
+                <div class="info-item-label">Application Date</div>
+                <div class="info-item-value" id="loanDate">—</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Documents Section -->
+        <div class="info-section">
+          <div class="info-section-header">
+            <i class="fas fa-paperclip"></i>
+            <h6 class="info-section-title">Uploaded Documents</h6>
+          </div>
+          <div class="info-section-body">
+            <div id="documentsArea">
+              <p style="color:#94a3b8;font-size:13px;">
+                <i class="fas fa-info-circle me-2"></i>
+                Document list will appear here when connected to the API.
+              </p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT COLUMN -->
+      <div class="col-12 col-lg-5">
+
+        <!-- Action Card -->
+        <div class="info-section mb-3" style="border-color:#e2e8f0;">
+          <div class="info-section-header">
+            <i class="fas fa-gavel" style="background:#fffbeb;color:#f59e0b;"></i>
+            <h6 class="info-section-title">Decision Panel</h6>
+          </div>
+          <div class="info-section-body">
+            <p style="font-size:13px;color:#64748b;margin-bottom:20px;">
+              Review all applicant information carefully before making a decision. This action will notify the applicant.
+            </p>
+
+            <!-- Admin Notes -->
+            <div style="margin-bottom:18px;">
+              <label class="form-label">Admin Notes (Optional)</label>
+              <textarea class="form-control" id="adminNotes" rows="3" placeholder="Enter any internal notes or reasons for this decision..."></textarea>
+            </div>
+
+            <!-- Rejection Reason -->
+            <div style="margin-bottom:20px;">
+              <label class="form-label">Rejection Reason</label>
+              <select class="form-select" id="rejectionReason">
+                <option value="">Select reason (if rejecting)</option>
+                <option value="low_credit">Low Credit Score</option>
+                <option value="low_income">Insufficient Income</option>
+                <option value="high_debt">High Debt-to-Income Ratio</option>
+                <option value="incomplete_docs">Incomplete Documentation</option>
+                <option value="verification_failed">Verification Failed</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            <!-- Action Buttons -->
+            <div style="display:flex;gap:10px;">
+              <button class="btn btn-success" style="flex:1;" id="approveBtn" onclick="handleApprove()">
+                <i class="fas fa-check-circle me-2"></i> Approve Loan
+              </button>
+              <button class="btn btn-danger" style="flex:1;" id="rejectBtn" onclick="handleReject()">
+                <i class="fas fa-times-circle me-2"></i> Reject Loan
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Risk Assessment Card -->
+        <div class="info-section mb-3">
+          <div class="info-section-header">
+            <i class="fas fa-shield-alt" style="background:#f0fdf4;color:#22c55e;"></i>
+            <h6 class="info-section-title">Risk Assessment</h6>
+          </div>
+          <div class="info-section-body">
+            <!-- Risk Score Gauge (visual) -->
+            <div style="text-align:center;padding:10px 0 16px;">
+              <div style="font-size:40px;font-weight:800;font-family:'Space Grotesk',sans-serif;" id="riskScoreDisplay">—</div>
+              <div style="font-size:12px;color:#64748b;">Risk Score</div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:12px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-size:13px;color:#64748b;">Debt-to-Income Ratio</span>
+                <span style="font-weight:600;font-size:13px;" id="dtiRatio">—</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-size:13px;color:#64748b;">Credit Utilization</span>
+                <span style="font-weight:600;font-size:13px;" id="creditUtil">—</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-size:13px;color:#64748b;">Previous Defaults</span>
+                <span style="font-weight:600;font-size:13px;" id="prevDefaults">—</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loan History Card -->
+        <div class="info-section">
+          <div class="info-section-header">
+            <i class="fas fa-history" style="background:#eff6ff;color:#3b82f6;"></i>
+            <h6 class="info-section-title">Applicant Loan History</h6>
+          </div>
+          <div class="info-section-body">
+            <div id="loanHistoryArea">
+              <p style="color:#94a3b8;font-size:13px;">
+                <i class="fas fa-info-circle me-2"></i>
+                Loan history will load from API.
+              </p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/charts.js"></script>
+<script>
+  /**
+   * Loan Approval Detail Page
+   * TODO: Connect to /api/admin/loans/:id
+   */
+
+  // Read loan ID from URL query param
+  const urlParams = new URLSearchParams(window.location.search);
+  const loanId    = urlParams.get('id');
+
+  document.addEventListener('DOMContentLoaded', () => {
+    if (loanId) {
+      document.getElementById('loanIdLabel').textContent = loanId;
+      loadLoanDetails(loanId);
+    }
+  });
+
+  function loadLoanDetails(id) {
+    // TODO: Replace with real API call
+    // fetch(`/api/admin/loans/${id}`)
+    //   .then(r => r.json())
+    //   .then(data => populateLoanDetails(data));
+  }
+
+  function populateLoanDetails(data) {
+    document.getElementById('appName').textContent        = data.applicantName || '—';
+    document.getElementById('appEmail').textContent       = data.email         || '—';
+    document.getElementById('appPhone').textContent       = data.phone         || '—';
+    document.getElementById('appEmployment').textContent  = data.employment    || '—';
+    document.getElementById('appIncome').textContent      = data.income ? `₹${Number(data.income).toLocaleString()}` : '—';
+    document.getElementById('appCreditScore').textContent = data.creditScore   || '—';
+
+    document.getElementById('loanAmount').textContent     = data.amount ? `₹${Number(data.amount).toLocaleString()}` : '—';
+    document.getElementById('loanPurpose').textContent    = data.purpose      || '—';
+    document.getElementById('loanInterestRate').textContent = data.interestRate ? `${data.interestRate}% p.a.` : '—';
+    document.getElementById('loanTenure').textContent     = data.tenure ? `${data.tenure} Months` : '—';
+    document.getElementById('loanEMI').textContent        = data.emi ? `₹${Number(data.emi).toLocaleString()}` : '—';
+    document.getElementById('loanDate').textContent       = data.applicationDate || '—';
+
+    document.getElementById('riskScoreDisplay').textContent = data.riskScore || '—';
+    document.getElementById('dtiRatio').textContent    = data.dtiRatio     || '—';
+    document.getElementById('creditUtil').textContent  = data.creditUtil   || '—';
+    document.getElementById('prevDefaults').textContent = data.prevDefaults ?? '—';
+
+    // Update banner for existing decisions
+    if (data.status === 'Approved') {
+      const banner = document.getElementById('statusBanner');
+      banner.className = 'loan-status-banner approved';
+      banner.querySelector('.loan-status-icon').innerHTML = '<i class="fas fa-check-circle"></i>';
+      document.getElementById('statusTitle').textContent = 'Loan Approved';
+      document.getElementById('statusTitle').style.color = '#14532d';
+      document.getElementById('statusDesc').textContent  = 'This application has been approved.';
+      document.getElementById('statusDesc').style.color  = '#16a34a';
+      document.getElementById('approveBtn').disabled = true;
+      document.getElementById('rejectBtn').disabled  = true;
+    } else if (data.status === 'Rejected') {
+      const banner = document.getElementById('statusBanner');
+      banner.className = 'loan-status-banner rejected';
+      banner.querySelector('.loan-status-icon').innerHTML = '<i class="fas fa-times-circle"></i>';
+      document.getElementById('statusTitle').textContent = 'Loan Rejected';
+      document.getElementById('statusTitle').style.color = '#7f1d1d';
+      document.getElementById('statusDesc').textContent  = 'This application has been rejected.';
+      document.getElementById('statusDesc').style.color  = '#dc2626';
+      document.getElementById('approveBtn').disabled = true;
+      document.getElementById('rejectBtn').disabled  = true;
+    }
+  }
+
+  function handleApprove() {
+    if (!loanId) return;
+    const notes = document.getElementById('adminNotes').value;
+    if (!confirm('Approve this loan application? The applicant will be notified.')) return;
+
+    // TODO: fetch(`/api/admin/loans/${loanId}/approve`, { method: 'POST', body: JSON.stringify({ notes }) })
+    //   .then(r => r.json())
+    //   .then(() => { alert('Loan approved successfully!'); window.location.href = 'loan_applications.html'; });
+
+    alert(`Loan ${loanId} approval action — connect to API`);
+  }
+
+  function handleReject() {
+    if (!loanId) return;
+    const notes  = document.getElementById('adminNotes').value;
+    const reason = document.getElementById('rejectionReason').value;
+    if (!reason) { alert('Please select a rejection reason.'); return; }
+    if (!confirm('Reject this loan application? This action will notify the applicant.')) return;
+
+    // TODO: fetch(`/api/admin/loans/${loanId}/reject`, { method: 'POST', body: JSON.stringify({ notes, reason }) })
+    //   .then(r => r.json())
+    //   .then(() => { alert('Loan rejected.'); window.location.href = 'loan_applications.html'; });
+
+    alert(`Loan ${loanId} rejection action — connect to API`);
+  }
+</script>
+
+<script>
+// ===== Frontend Connection Code: admin loan_approval.html =====
+async function apiCall(endpoint, method='GET', body=null) {
+    const token = localStorage.getItem('lms_token');
+    if(!token) { window.location.href = 'login.html'; return; }
+    const options = { method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` } };
+    if(body) options.body = JSON.stringify(body);
+    const res = await fetch(`http://localhost:3000${endpoint}`, options);
+    if(res.status === 401 || res.status === 403) { window.location.href = 'login.html'; return; }
+    return res.json();
+}
+document.addEventListener('DOMContentLoaded', async () => {
+    if(!localStorage.getItem('lms_token')) window.location.href = 'login.html';
+    const urlParams = new URLSearchParams(window.location.search);
+    const loanId = urlParams.get('id');
+    if(!loanId) return alert('No loan ID');
+    
+    try {
+        const res = await apiCall(`/api/admin/loans/${loanId}`);
+        if(res && res.success) {
+            const l = res.data;
+            const u = l.userId || {};
+            // Populate fields if they exist
+            document.querySelectorAll('[id^="detail-"]').forEach(el => {
+                const key = el.id.replace('detail-', '');
+                if(key === 'name') el.textContent = `${u.firstName || ''} ${u.lastName || ''}`;
+                if(key === 'email') el.textContent = u.email;
+                if(key === 'phone') el.textContent = u.phone;
+                if(key === 'amount') el.textContent = '₹' + l.loan_amount.toLocaleString('en-IN');
+                if(key === 'purpose') el.textContent = l.loan_purpose;
+                if(key === 'tenure') el.textContent = l.loan_tenure + ' Months';
+                if(key === 'status') el.textContent = l.status;
+            });
+            
+            const btnApprove = document.getElementById('btn-approve');
+            const btnReject = document.getElementById('btn-reject');
+            
+            if(btnApprove) {
+                btnApprove.addEventListener('click', async () => {
+                    if(!confirm('Approve this loan?')) return;
+                    const r = await apiCall(`/api/admin/loans/${loanId}/approve`, 'PUT');
+                    if(r && r.success) { alert('Approved'); window.location.href = 'loan_applications.html'; }
+                    else alert('Error: ' + (r.error || ''));
+                });
+            }
+            if(btnReject) {
+                btnReject.addEventListener('click', async () => {
+                    if(!confirm('Reject this loan?')) return;
+                    const r = await apiCall(`/api/admin/loans/${loanId}/reject`, 'PUT');
+                    if(r && r.success) { alert('Rejected'); window.location.href = 'loan_applications.html'; }
+                    else alert('Error: ' + (r.error || ''));
+                });
+            }
+        }
+    } catch(err) { console.error(err); }
+});
+</script>
+
+</body>
+</html>

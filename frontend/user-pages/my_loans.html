@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LoanSphere — My Loans</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div id="navbar-placeholder"></div>
+
+<main>
+  <!-- Page Header -->
+  <div class="page-hero" style="padding:44px 0 36px;">
+    <div class="container">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb lms-breadcrumb mb-2">
+          <li class="breadcrumb-item"><a href="dashboard.html">Dashboard</a></li>
+          <li class="breadcrumb-item active">My Loans</li>
+        </ol>
+      </nav>
+      <h1 style="font-size:1.75rem;font-weight:700;margin-bottom:6px;">My Loans</h1>
+      <p style="color:rgba(255,255,255,0.65);margin-bottom:0;">
+        View and manage all your loan accounts.
+      </p>
+    </div>
+  </div>
+
+  <div class="container page-section-sm">
+
+    <!-- Toolbar -->
+    <div class="d-flex flex-wrap gap-3 align-items-center justify-content-between mb-4">
+      <div class="search-wrap" style="max-width:320px;width:100%;">
+        <i class="fas fa-magnifying-glass search-icon"></i>
+        <input type="text" id="table-search" class="form-control" placeholder="Search loans…" />
+      </div>
+      <div class="d-flex gap-2 align-items-center">
+        <select class="form-select form-select-sm" style="width:auto;" id="status-filter">
+          <option value="">All Status</option>
+          <option value="active">Active</option>
+          <option value="pending">Pending</option>
+          <option value="closed">Closed</option>
+          <option value="rejected">Rejected</option>
+        </select>
+        <a href="apply_loan.html" class="btn btn-primary btn-sm">
+          <i class="fas fa-plus me-1"></i>New Loan
+        </a>
+      </div>
+    </div>
+
+    <!-- Table Card -->
+    <div class="lms-card">
+      <div class="table-responsive">
+        <!-- Populated by backend: {% for loan in loans %} -->
+        <table class="lms-table" id="loans-table">
+          <thead>
+            <tr>
+              <th>Loan ID</th>
+              <th>Loan Amount</th>
+              <th>Interest Rate</th>
+              <th>Tenure</th>
+              <th>Monthly EMI</th>
+              <th>Purpose</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="loans-tbody">
+            <!-- Empty state — remove when backend data is present -->
+            <tr>
+              <td colspan="8">
+                <div class="empty-state">
+                  <i class="fas fa-credit-card"></i>
+                  <p>You have no loan records yet.</p>
+                  <a href="apply_loan.html" class="btn btn-primary btn-sm mt-2">
+                    <i class="fas fa-plus me-1"></i>Apply for Your First Loan
+                  </a>
+                </div>
+              </td>
+            </tr>
+            <!--
+              Backend row template (Flask/Jinja2):
+              {% for loan in loans %}
+              <tr class="searchable-row">
+                <td><span class="font-mono" style="font-family:'DM Mono',monospace;font-size:0.8125rem;">#{{ loan.id }}</span></td>
+                <td>₹{{ loan.amount | format_number }}</td>
+                <td>{{ loan.interest_rate }}% p.a.</td>
+                <td>{{ loan.tenure }} mo.</td>
+                <td>₹{{ loan.monthly_emi | format_number }}</td>
+                <td>{{ loan.purpose }}</td>
+                <td><span class="badge-status badge-{{ loan.status|lower }}">{{ loan.status }}</span></td>
+                <td>
+                  <a href="loan_details.html?id={{ loan.id }}" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-eye me-1"></i>View
+                  </a>
+                </td>
+              </tr>
+              {% endfor %}
+            -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 px-4 py-3"
+        style="border-top:1px solid var(--slate-100);">
+        <span style="font-size:0.8125rem;color:var(--slate-500);">
+          <!-- Showing {{ offset+1 }}–{{ offset+count }} of {{ total }} loans -->
+          Showing 0–0 of 0 loans
+        </span>
+        <nav>
+          <ul class="pagination lms-pagination mb-0">
+            <li class="page-item disabled">
+              <a class="page-link" href="#"><i class="fas fa-chevron-left"></i></a>
+            </li>
+            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+            <li class="page-item disabled">
+              <a class="page-link" href="#"><i class="fas fa-chevron-right"></i></a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<div id="footer-placeholder"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script src="scripts.js"></script>
+
+<script>
+// ===== Frontend Connection Code: my_loans.html =====
+async function apiCall(endpoint, method='GET', body=null) {
+    const token = localStorage.getItem('lms_token');
+    if(!token) { window.location.href = 'login.html'; return; }
+    const options = { method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` } };
+    if(body) options.body = JSON.stringify(body);
+    const res = await fetch(`http://localhost:3000${endpoint}`, options);
+    if(res.status === 401) { window.location.href = 'login.html'; return; }
+    return res.json();
+}
+document.addEventListener('DOMContentLoaded', async () => {
+    if(!localStorage.getItem('lms_token')) window.location.href = 'login.html';
+    const tbody = document.getElementById('loans-tbody') || document.querySelector('table tbody');
+    if(!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center">Loading...</td></tr>';
+    
+    try {
+        const res = await apiCall('/api/loans/my-loans');
+        if(res && res.success) {
+            tbody.innerHTML = '';
+            const loans = res.data;
+            if(loans.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center">No loans found.</td></tr>';
+            } else {
+                loans.forEach(loan => {
+                    const badgeClass = loan.status === 'Active' ? 'badge-active' : loan.status === 'Approved' ? 'badge-approved' :
+                                       loan.status === 'Pending' ? 'badge-pending' : 
+                                       loan.status === 'Rejected' ? 'badge-rejected' : 'badge-closed';
+                    const dt = new Date(loan.createdAt).toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'});
+                    tbody.innerHTML += `
+                    <tr>
+                        <td class="td-mono">${loan._id.slice(-6).toUpperCase()}</td>
+                        <td>${loan.loan_purpose}</td>
+                        <td class="td-mono">₹${loan.loan_amount.toLocaleString('en-IN')}</td>
+                        <td>${loan.loan_tenure} Months</td>
+                        <td><span class="badge-status ${badgeClass}">${loan.status}</span></td>
+                        <td><a href="loan_details.html?id=${loan._id}" class="btn btn-sm btn-outline-primary">View</a></td>
+                    </tr>`;
+                });
+            }
+        }
+    } catch(err) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Error loading data</td></tr>';
+    }
+});
+</script>
+
+</body>
+</html>
