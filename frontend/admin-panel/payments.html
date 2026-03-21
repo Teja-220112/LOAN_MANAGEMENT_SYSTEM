@@ -85,7 +85,7 @@
         <p>Track all EMI payment transactions across all loans.</p>
       </div>
       <div style="display:flex;gap:10px;">
-        <button class="btn btn-outline-secondary btn-sm"><i class="fas fa-download"></i> Export</button>
+        <button class="btn btn-outline-secondary btn-sm" onclick="exportPaymentsToCSV()"><i class="fas fa-download"></i> Export</button>
       </div>
     </div>
 
@@ -313,10 +313,33 @@ document.addEventListener('DOMContentLoaded', async () => {
                             <td><span class="badge-status ${badgeClass}">${p.status}</span></td>
                         </tr>`;
                     });
-                }
+                 }
              } catch(err) { tbody.innerHTML = '<tr><td colspan="7" class="text-center">Error</td></tr>'; }
     }
 });
+
+function exportPaymentsToCSV() {
+    const table = document.querySelector('.admin-table');
+    let csvContent = "";
+    
+    for (let row of table.rows) {
+        let rowData = [];
+        for (let cell of row.cells) {
+            rowData.push('"' + cell.innerText.replace(/"/g, '""') + '"');
+        }
+        csvContent += rowData.join(",") + "\n";
+    }
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", "payments_export.csv");
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
 </script>
 
 </body>

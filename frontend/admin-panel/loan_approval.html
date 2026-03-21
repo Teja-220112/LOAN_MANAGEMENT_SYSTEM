@@ -184,21 +184,6 @@
           </div>
         </div>
 
-        <!-- Documents Section -->
-        <div class="info-section">
-          <div class="info-section-header">
-            <i class="fas fa-paperclip"></i>
-            <h6 class="info-section-title">Uploaded Documents</h6>
-          </div>
-          <div class="info-section-body">
-            <div id="documentsArea">
-              <p style="color:#94a3b8;font-size:13px;">
-                <i class="fas fa-info-circle me-2"></i>
-                Document list will appear here when connected to the API.
-              </p>
-            </div>
-          </div>
-        </div>
 
       </div>
 
@@ -420,22 +405,36 @@ document.addEventListener('DOMContentLoaded', async () => {
         if(res && res.success) {
             const l = res.data;
             const u = l.userId || {};
-            // Populate fields if they exist
-            document.querySelectorAll('[id^="detail-"]').forEach(el => {
-                const key = el.id.replace('detail-', '');
-                if(key === 'name') el.textContent = `${u.firstName || ''} ${u.lastName || ''}`;
-                if(key === 'email') el.textContent = u.email;
-                if(key === 'phone') el.textContent = u.phone;
-                if(key === 'amount') el.textContent = '₹' + l.loan_amount.toLocaleString('en-IN');
-                if(key === 'purpose') el.textContent = l.loan_purpose;
-                if(key === 'tenure') el.textContent = l.loan_tenure + ' Months';
-                if(key === 'status') el.textContent = l.status;
-            });
+
+            // Populate fields matched by specific IDs
+            if (document.getElementById('appName')) document.getElementById('appName').textContent = `${u.firstName || ''} ${u.lastName || ''}`;
+            if (document.getElementById('appEmail')) document.getElementById('appEmail').textContent = u.email || '—';
+            if (document.getElementById('appPhone')) document.getElementById('appPhone').textContent = u.phone || '—';
+            if (document.getElementById('appEmployment')) document.getElementById('appEmployment').textContent = u.employment_type || '—';
+            if (document.getElementById('appIncome')) document.getElementById('appIncome').textContent = l.monthly_income ? '₹' + l.monthly_income.toLocaleString('en-IN') : '—';
+            if (document.getElementById('appCreditScore')) document.getElementById('appCreditScore').textContent = l.credit_score || '—';
+
+            if (document.getElementById('loanAmount')) document.getElementById('loanAmount').textContent = '₹' + l.loan_amount.toLocaleString('en-IN');
+            if (document.getElementById('loanPurpose')) document.getElementById('loanPurpose').textContent = l.loan_purpose || '—';
+            if (document.getElementById('loanInterestRate')) document.getElementById('loanInterestRate').textContent = l.interest_rate ? l.interest_rate + '% p.a.' : '10.5% p.a.';
+            if (document.getElementById('loanTenure')) document.getElementById('loanTenure').textContent = l.loan_tenure + ' Months';
             
-            const btnApprove = document.getElementById('btn-approve');
-            const btnReject = document.getElementById('btn-reject');
+            // Calculate EMI just for display
+            if (document.getElementById('loanEMI')) {
+                const P = l.loan_amount;
+                const R = (l.interest_rate || 10.5) / 12 / 100;
+                const N = l.loan_tenure;
+                const emi = (P * R * Math.pow(1 + R, N)) / (Math.pow(1 + R, N) - 1);
+                document.getElementById('loanEMI').textContent = '₹' + Math.round(emi).toLocaleString('en-IN');
+            }
+            if (document.getElementById('loanDate')) document.getElementById('loanDate').textContent = new Date(l.createdAt).toLocaleDateString();
+
+            const btnApprove = document.getElementById('approveBtn');
+            const btnReject = document.getElementById('rejectBtn');
             
             if(btnApprove) {
+                // Clear out existing inline onclick
+                btnApprove.removeAttribute('onclick');
                 btnApprove.addEventListener('click', async () => {
                     if(!confirm('Approve this loan?')) return;
                     const r = await apiCall(`/api/admin/loans/${loanId}/approve`, 'PUT');
@@ -444,7 +443,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 });
             }
             if(btnReject) {
+                // Clear out existing inline onclick
+                btnReject.removeAttribute('onclick');
                 btnReject.addEventListener('click', async () => {
+                    const reason = document.getElementById('rejectionReason').value;
+                    if(!reason) return alert('Please select a rejection reason.');
                     if(!confirm('Reject this loan?')) return;
                     const r = await apiCall(`/api/admin/loans/${loanId}/reject`, 'PUT');
                     if(r && r.success) { alert('Rejected'); window.location.href = 'loan_applications.html'; }
