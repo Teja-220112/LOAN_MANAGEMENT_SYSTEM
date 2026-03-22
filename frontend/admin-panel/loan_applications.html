@@ -85,7 +85,7 @@
         <p>Review, approve, or reject pending loan requests.</p>
       </div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;">
-        <button class="btn btn-outline-secondary btn-sm"><i class="fas fa-download"></i> Export</button>
+        <button class="btn btn-outline-secondary btn-sm" onclick="exportTableToCSV(null, 'loan_applications.csv')"><i class="fas fa-download"></i> Export</button>
       </div>
     </div>
 
@@ -368,4 +368,5 @@ document.addEventListener('DOMContentLoaded', async () => {
 </script>
 
 </body>
+<script src="js/admin-utils.js"></script>
 </html>

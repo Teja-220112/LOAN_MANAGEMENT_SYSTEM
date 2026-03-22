@@ -91,8 +91,8 @@
             <option value="">This Year</option>
           </select>
         </div>
-        <button class="btn btn-outline-secondary btn-sm"><i class="fas fa-sync-alt"></i> Refresh</button>
-        <button class="btn btn-primary btn-sm"><i class="fas fa-download"></i> Export PDF</button>
+        <button class="btn btn-outline-secondary btn-sm" onclick="window.location.reload()"><i class="fas fa-sync-alt"></i> Refresh</button>
+        <button class="btn btn-primary btn-sm" onclick="html2pdf(document.querySelector('.content-area'), {margin: 10, filename: 'analytics.pdf'})"><i class="fas fa-download"></i> Export PDF</button>
       </div>
     </div>
 
@@ -386,4 +386,6 @@
   }
 </script>
 </body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="js/admin-utils.js"></script>
 </html>
