@@ -85,7 +85,7 @@
         <p>Track all EMI payment transactions across all loans.</p>
       </div>
       <div style="display:flex;gap:10px;">
-        <button class="btn btn-outline-secondary btn-sm" onclick="exportPaymentsToCSV()"><i class="fas fa-download"></i> Export</button>
+        <button class="btn btn-outline-secondary btn-sm" onclick="exportTableToCSV('paymentsTableBody', 'payments.csv')"><i class="fas fa-download"></i> Export</button>
       </div>
     </div>
 
@@ -342,5 +342,6 @@ function exportPaymentsToCSV() {
 }
 </script>
 
+<script src="js/admin-utils.js"></script>
 </body>
 </html>

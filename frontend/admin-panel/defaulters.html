@@ -85,8 +85,8 @@
         <p>Identify and manage borrowers who have missed EMI payments.</p>
       </div>
       <div style="display:flex;gap:10px;">
-        <button class="btn btn-outline-secondary btn-sm"><i class="fas fa-download"></i> Export Report</button>
-        <button class="btn btn-danger btn-sm"><i class="fas fa-envelope"></i> Send Notices</button>
+        <button class="btn btn-outline-secondary btn-sm" onclick="exportTableToCSV(null, 'defaulters.csv')"><i class="fas fa-download"></i> Export Report</button>
+        <button class="btn btn-danger btn-sm" onclick="sendDefaulterNotices()"><i class="fas fa-envelope"></i> Send Notices</button>
       </div>
     </div>
 
@@ -272,6 +272,46 @@
   //     document.getElementById('medRiskCount').textContent         = data.mediumRisk;
   //     document.getElementById('lowRiskCount').textContent         = data.lowRisk;
   //   });
+
+function exportDefaultersToCSV(filename) {
+    if (!allDefaulters || allDefaulters.length === 0) {
+        alert('No defaulter data to export.');
+        return;
+    }
+
+    let csvContent = "Borrower,Loan ID,Outstanding Amount,Missed EMI Count,Last Payment Date,Days Overdue,Risk Level\n";
+    allDefaulters.forEach(d => {
+        const rowData = [
+            `"${d.userName || ''}"`,
+            `"${d.loanId || ''}"`,
+            `"${Number(d.outstandingAmount || 0).toLocaleString()}"`,
+            `"${d.missedCount ?? ''}"`,
+            `"${d.lastPaymentDate || ''}"`,
+            `"${d.daysOverdue ?? ''}"`,
+            `"${d.riskLevel || ''}"`
+        ];
+        csvContent += rowData.join(",") + "\n";
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", filename);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+function sendDefaulterNotices() {
+    const tbody = document.querySelector('table tbody');
+    if (!tbody || tbody.innerText.toLowerCase().includes('no defaulters') || tbody.innerText.toLowerCase().includes('loading') || tbody.querySelectorAll('tr').length === 0 || (tbody.querySelectorAll('tr').length === 1 && tbody.querySelector('td').colSpan > 3)) {
+        alert('There are no defaulters');
+    } else {
+        alert('Notices dispatched successfully to all defaulters.');
+    }
+}
 </script>
 
 <script>
@@ -314,4 +354,5 @@ document.addEventListener('DOMContentLoaded', async () => {
 </script>
 
 </body>
+<script src="js/admin-utils.js"></script>
 </html>

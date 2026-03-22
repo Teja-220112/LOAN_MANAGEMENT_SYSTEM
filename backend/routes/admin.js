@@ -99,9 +99,15 @@ router.put('/loans/:id/approve', async (req, res) => {
 
         // EMI Computation
         const P = loan.loan_amount;
-        const R = loan.interest_rate / 12 / 100;
-        const N = loan.loan_tenure;
-        const emi = (P * R * Math.pow(1 + R, N)) / (Math.pow(1 + R, N) - 1);
+        const interestRate = loan.interest_rate || 10.5;
+        const R = interestRate / 12 / 100;
+        const N = loan.loan_tenure || 12;
+        let emi = 0;
+        if (R > 0) {
+            emi = (P * R * Math.pow(1 + R, N)) / (Math.pow(1 + R, N) - 1);
+        } else {
+            emi = P / N;
+        }
         
         let balance = P;
         let today = new Date();
