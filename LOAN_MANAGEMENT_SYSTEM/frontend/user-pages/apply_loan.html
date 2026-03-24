@@ -150,6 +150,16 @@
                   </div>
                 </div>
 
+                <!-- Proof Document -->
+                <div class="col-12">
+                  <label class="form-label" for="document">Upload Required Document (ID, Payslip, etc.) <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-file-upload"></i></span>
+                    <input type="file" id="document" name="document" class="form-control" accept=".jpg,.png,.pdf" required />
+                  </div>
+                  <div class="form-text">Accepted formats: JPG, PNG, PDF. Max size: 5MB.</div>
+                </div>
+
                 <!-- Additional Notes -->
                 <div class="col-12">
                   <label class="form-label" for="notes">Additional Notes <span class="text-muted">(optional)</span></label>
@@ -228,16 +238,28 @@ document.addEventListener('DOMContentLoaded', () => {
         newForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const formData = new FormData(newForm);
-            const data = Object.fromEntries(formData.entries());
-            const payload = {
-                loan_amount: Number(data.amount || data.loan_amount),
-                loan_purpose: data.purpose || data.loan_purpose,
-                loan_tenure: Number(data.tenure || data.loan_tenure),
-                monthly_income: Number(data.income || data.monthly_income),
-                employment_type: data.employment_type || 'Salaried'
-            };
+            
+            // Re-format field names since the HTML uses normal forms and our backend expects them explicitly
+            const payload = new FormData();
+            payload.append('loan_amount', formData.get('loan_amount'));
+            payload.append('loan_purpose', formData.get('loan_purpose'));
+            payload.append('loan_tenure', formData.get('loan_tenure'));
+            payload.append('monthly_income', formData.get('monthly_income'));
+            payload.append('employment_type', formData.get('employment_type') || 'Salaried');
+            
+            if (formData.get('document')) {
+                payload.append('document', formData.get('document'));
+            }
+
             try {
-                const result = await apiCall('/api/loans/apply', 'POST', payload);
+                const token = localStorage.getItem('lms_token');
+                const res = await fetch('http://localhost:3000/api/loans/apply', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: payload
+                });
+                const result = await res.json();
+                
                 if(result && result.success) {
                     alert('Loan application submitted successfully!');
                     window.location.href = 'my_loans.html';

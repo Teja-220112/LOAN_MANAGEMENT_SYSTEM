@@ -56,7 +56,7 @@
       <input type="text" placeholder="Search applications..."/>
     </div>
     <div class="topbar-actions">
-      <button class="topbar-btn"><i class="fas fa-bell"></i><span class="badge-dot"></span></button>
+      <button class="topbar-btn"><i class="fas fa-bell"></i></button>
       <div class="topbar-divider"></div>
       <div class="topbar-profile" id="profileTrigger">
         <div class="topbar-avatar">SA</div>
@@ -203,7 +203,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="js/charts.js"></script>
 <script>
   /**
    * Loan Applications Page
@@ -224,7 +223,7 @@
 
     tbody.innerHTML = apps.map(app => `
       <tr>
-        <td><span style="font-family:monospace;font-weight:600;color:#3b82f6;">${app.loanId}</span></td>
+        <td><span style="font-family:monospace;font-weight:600;color:#3b82f6;">${app.loanId.slice(-6).toUpperCase()}</span></td>
         <td>
           <div class="user-cell">
             <div class="user-avatar-sm">${(app.userName || '?').charAt(0)}</div>
@@ -337,33 +336,83 @@ document.addEventListener('DOMContentLoaded', async () => {
     const tbody = document.getElementById('loans-tbody') || document.querySelector('table tbody');
     if(tbody) {
         const fetchLoans = async () => {
-             tbody.innerHTML = '<tr><td colspan="7" class="text-center">Loading...</td></tr>';
+             tbody.innerHTML = '<tr><td colspan="9" class="text-center">Loading...</td></tr>';
              try {
                 const res = await apiCall('/api/admin/loans');
                 if(res && res.success) {
-                    tbody.innerHTML = '';
-                    if(res.data.length === 0) return tbody.innerHTML = '<tr><td colspan="7" class="text-center">No loan applications found.</td></tr>';
-                    res.data.forEach(l => {
-                        const badgeClass = l.status === 'Approved' ? 'badge-approved' : l.status === 'Pending' ? 'badge-pending' : 'badge-rejected';
-                        const name = l.userId ? `${l.userId.firstName} ${l.userId.lastName}` : 'Unknown';
-                        tbody.innerHTML += `
-                        <tr>
-                            <td>${l._id.slice(-6).toUpperCase()}</td>
-                            <td>${name}</td>
-                            <td>${l.loan_purpose}</td>
-                            <td class="td-mono">₹${l.loan_amount.toLocaleString('en-IN')}</td>
-                            <td><span class="badge-status ${badgeClass}">${l.status}</span></td>
-                            <td>${new Date(l.createdAt).toLocaleDateString()}</td>
-                            <td>
-                                <a href="loan_approval.html?id=${l._id}" class="btn btn-sm btn-primary">Review</a>
-                            </td>
-                        </tr>`;
-                    });
+                    allApplications = res.data.map(l => ({
+                        loanId: l._id,
+                        userName: l.userId ? `${l.userId.firstName || ''} ${l.userId.lastName || ''}`.trim() : 'Unknown',
+                        loanAmount: l.loan_amount || 0,
+                        income: l.userId && l.userId.monthly_income ? l.userId.monthly_income : 0,
+                        creditScore: l.userId && l.userId.credit_score ? l.userId.credit_score : 700,
+                        purpose: l.loan_purpose || 'Personal',
+                        applicationDate: l.createdAt ? new Date(l.createdAt).toLocaleDateString() : '—',
+                        status: l.status || 'Pending'
+                    }));
+                    renderApplications(allApplications);
+                    
+                    if(document.getElementById('appPaginationInfo')) document.getElementById('appPaginationInfo').textContent = `Showing ${allApplications.length} applications`;
+                    
+                    const penCount = allApplications.filter(a=>a.status==='Pending' || a.status==='Under Review').length;
+                    const appCount = allApplications.filter(a=>a.status==='Approved').length;
+                    const rejCount = allApplications.filter(a=>a.status==='Rejected').length;
+                    
+                    const eTotal = document.getElementById('statTotal'); if(eTotal) eTotal.textContent = allApplications.length;
+                    const ePen = document.getElementById('statPending'); if(ePen) ePen.textContent = penCount;
+                    const eApp = document.getElementById('statApproved'); if(eApp) eApp.textContent = appCount;
+                    const eRej = document.getElementById('statRejected'); if(eRej) eRej.textContent = rejCount;
+                    
+                    const exportBtn = document.querySelector('.btn-outline-secondary');
+                    if(exportBtn) exportBtn.addEventListener('click', () => exportToCSV(allApplications, 'applications_export.csv'));
                 }
-             } catch(err) { tbody.innerHTML = '<tr><td colspan="7" class="text-center">Error</td></tr>'; }
-        };
+             } catch(err) { tbody.innerHTML = '<tr><td colspan="9" class="text-center text-danger">Error loading applications</td></tr>'; }
+         };
         fetchLoans();
+        
+        window.quickApprove = async function(loanId) {
+            const r = await apiCall(`/api/admin/loans/${loanId}/approve`, 'PUT');
+            if(r && r.success) { alert('Approved'); fetchLoans(); }
+            else alert('Error: ' + (r.error || ''));
+        };
+        window.quickReject = async function(loanId) {
+            const r = await apiCall(`/api/admin/loans/${loanId}/reject`, 'PUT');
+            if(r && r.success) { alert('Rejected'); fetchLoans(); }
+            else alert('Error: ' + (r.error || ''));
+        };
     }
+    
+    // Global UI Fixes
+    const topSearch = document.querySelector('.topbar-search input');
+    if(topSearch) {
+        topSearch.addEventListener('input', (e) => {
+            const localSearch = document.querySelector('.table-search input');
+            if(localSearch) {
+                localSearch.value = e.target.value;
+                localSearch.dispatchEvent(new Event('input'));
+            }
+        });
+    }
+    const notifBtn = document.querySelector('.topbar-btn');
+    if(notifBtn) {
+        notifBtn.addEventListener('click', () => alert('You have 0 new notifications.'));
+    }
+    document.querySelectorAll('.logout-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem('lms_token');
+            window.location.href = '../login.html';
+        });
+    });
+    window.exportToCSV = function(data, filename) {
+        if(!data || !data.length) return alert('No data to export');
+        const headers = Object.keys(data[0]);
+        const csvRows = [headers.join(','), ...data.map(r => headers.map(h => `"${String(r[h] ?? '').replace(/"/g, '""')}"`).join(','))];
+        const blob = new Blob([csvRows.join('\\n')], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
+        window.URL.revokeObjectURL(url);
+    };
 });
 </script>
 

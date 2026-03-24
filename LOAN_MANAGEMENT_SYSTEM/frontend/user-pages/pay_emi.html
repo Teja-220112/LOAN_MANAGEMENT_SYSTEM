@@ -7,6 +7,7 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
   <link href="style.css" rel="stylesheet">
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <style>
     .card-number-input { letter-spacing: 3px; font-family: 'Courier New', monospace; font-size: 1.05rem; }
     .upi-logo { font-size: 1.8rem; font-weight: 900; font-style: italic; }
@@ -336,214 +337,261 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
 <script src="scripts.js"></script>
 <script>
-  renderNavbar('My Loans');
+  renderNavbar('Pay EMI');
+
+  // ---- Shared Connection Helper ----
+  async function apiCall(endpoint, method='GET', body=null) {
+    const token = localStorage.getItem('lms_token');
+    if(!token) { window.location.href = 'login.html'; return; }
+    const options = { 
+        method, 
+        headers: { 
+            'Content-Type': 'application/json', 
+            'Authorization': `Bearer ${token}` 
+        } 
+    };
+    if(body) options.body = JSON.stringify(body);
+    try {
+        const res = await fetch(`http://localhost:3000${endpoint}`, options);
+        if(res.status === 401) { window.location.href = 'login.html'; return; }
+        return res.json();
+    } catch(err) {
+        console.error('API Call Error:', err);
+        return { success: false, error: 'Network Error' };
+    }
+  }
 
   // ---- State ----
-  let selectedMethod = null;
-  const emiAmount = 12450; // Replace with backend data
-  const loanId = 'LN-0042'; // Replace with URL param from backend
-  const dueDate = 'Jan 15, 2026';
+  let currentEmi = null;
+  let loanSummary = null;
+  let selectedMethod = 'Card'; // Default
 
-  // ---- Populate header/summary from backend data ----
-  document.getElementById('headerLoanId').textContent = loanId;
-  document.getElementById('headerAmount').textContent = '₹' + emiAmount.toLocaleString('en-IN');
-  document.getElementById('headerDueDate').textContent = dueDate;
+  // ---- Initialization ----
+  document.addEventListener('DOMContentLoaded', async () => {
+    if(!localStorage.getItem('lms_token')) window.location.href = 'login.html';
+    
+    try {
+        const keyRes = await apiCall('/api/payments/key');
+        if(keyRes && keyRes.success) {
+            localStorage.setItem('razorpay_key', keyRes.key);
+        }
 
-  document.getElementById('sumLoanId').textContent   = '#' + loanId;
-  document.getElementById('sumAmount').textContent   = '₹5,00,000';
-  document.getElementById('sumRate').textContent     = '10.5% p.a.';
-  document.getElementById('sumTenure').textContent   = '48 months';
-  document.getElementById('sumPaid').textContent     = '26 / 48';
-  document.getElementById('sumOutstanding').textContent = '₹2,79,450';
-  document.getElementById('sumProgress').style.width  = '54%';
-  document.getElementById('sumPct').textContent       = '54%';
+        const res = await apiCall('/api/payments/next-due');
+        if(res && res.success && res.data) {
+            currentEmi = res.data.emi;
+            loanSummary = res.data.loanSummary;
+            updateUI();
+        } else {
+            // No pending EMIs handling
+            document.querySelector('main').innerHTML = `
+                <div class="container py-5 text-center">
+                    <div class="lms-card p-5">
+                        <div class="check-circle mb-3"><i class="fa-solid fa-check"></i></div>
+                        <h4>All Caught Up!</h4>
+                        <p class="text-muted">You have no pending or overdue EMIs at the moment.</p>
+                        <a href="dashboard.html" class="btn-primary-lms d-inline-flex">Go to Dashboard</a>
+                    </div>
+                </div>
+            `;
+        }
+    } catch(err) {
+        console.error(err);
+    }
+  });
 
-  // ---- Method Selection ----
+  // ---- UI Updates ----
+  function updateUI() {
+    if(!currentEmi) return;
+
+    const fmt = (n) => '₹' + (n||0).toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2});
+    const dt = d => new Date(d).toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'});
+
+    // Header values
+    document.getElementById('headerLoanId').textContent = currentEmi.loanId._id.slice(-6).toUpperCase();
+    document.getElementById('headerAmount').textContent = fmt(currentEmi.emi_amount);
+    document.getElementById('headerDueDate').textContent = dt(currentEmi.due_date);
+
+    // Summary Card
+    document.getElementById('sumLoanId').textContent      = '#' + currentEmi.loanId._id.slice(-6).toUpperCase();
+    document.getElementById('sumAmount').textContent      = fmt(loanSummary.loanAmount);
+    document.getElementById('sumRate').textContent        = (loanSummary.interestRate || 10.5) + '% p.a.';
+    document.getElementById('sumTenure').textContent      = (loanSummary.tenure || 0) + ' months';
+    document.getElementById('sumPaid').textContent        = `${loanSummary.paidCount} / ${loanSummary.tenure}`;
+    document.getElementById('sumOutstanding').textContent = fmt(loanSummary.outstanding);
+
+    const pct = Math.round((loanSummary.paidCount / loanSummary.tenure) * 100);
+    document.getElementById('sumProgress').style.width    = pct + '%';
+    document.getElementById('sumPct').textContent          = pct + '%';
+
+    // Step 3 (Confirmation) values
+    document.getElementById('confirmLoanId').textContent    = '#' + currentEmi.loanId._id.slice(-6).toUpperCase();
+    document.getElementById('confirmAmt').textContent       = fmt(currentEmi.emi_amount);
+    document.getElementById('confirmDue').textContent       = dt(currentEmi.due_date);
+    document.getElementById('confirmAmtInline').textContent = fmt(currentEmi.emi_amount);
+  }
+
+  // ---- Payment Flow Logic ----
   function selectMethod(method, btn) {
-    selectedMethod = method;
+    selectedMethod = method.charAt(0).toUpperCase() + method.slice(1);
     document.querySelectorAll('#methodGrid .payment-method-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById('nextBtn1').disabled = false;
   }
 
-  function selectWallet(btn) {
-    document.querySelectorAll('#walletForm .payment-method-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-  }
-
-  // ---- Step Navigation ----
   function goStep(n) {
-    [1,2,3].forEach(i => {
-      document.getElementById('step'+i).style.display = i === n ? 'block' : 'none';
+    const steps = [1, 2, 3];
+    steps.forEach(i => {
+      document.getElementById('step' + i).style.display = i === n ? 'block' : 'none';
+      const circle = document.getElementById(`step${i}c`);
+      if(i < n) {
+        circle.className = 'step-circle done';
+        circle.innerHTML = '<i class="fa-solid fa-check"></i>';
+      } else if (i === n) {
+        circle.className = 'step-circle active';
+        circle.innerHTML = i;
+      } else {
+        circle.className = 'step-circle';
+        circle.innerHTML = i;
+      }
     });
 
-    // Step circles
-    for (let i = 1; i <= 3; i++) {
-      const c = document.getElementById('step'+i+'c');
-      if (!c) return;
-      if (i < n)  { c.className = 'step-circle done'; c.innerHTML = '<i class="fa-solid fa-check" style="font-size:.65rem"></i>'; }
-      else if (i === n) { c.className = 'step-circle active'; c.textContent = i; }
-      else        { c.className = 'step-circle'; c.textContent = i; }
-    }
-    if (document.getElementById('line1')) {
-      document.getElementById('line1').className = n > 1 ? 'step-line done' : 'step-line';
-      document.getElementById('line2').className = n > 2 ? 'step-line done' : 'step-line';
-    }
+    const lines = [1, 2];
+    lines.forEach(l => {
+        const line = document.getElementById(`line${l}`);
+        if(l < n) line.className = 'step-line done';
+        else line.className = 'step-line';
+    });
 
-    // Show correct method form in step 2
     if (n === 2) {
       ['card','netbanking','wallet'].forEach(m => {
-        document.getElementById(m+'Form').style.display = m === selectedMethod ? 'block' : 'none';
+        const lowerSelected = selectedMethod.toLowerCase();
+        document.getElementById(m+'Form').style.display = m === lowerSelected ? 'block' : 'none';
       });
     }
 
-    // Populate confirm step
     if (n === 3) {
-      const methodLabels = { card: 'Debit/Credit Card', netbanking: 'Net Banking', wallet: 'Mobile Wallet' };
-      document.getElementById('confirmLoanId').textContent      = '#' + loanId;
-      document.getElementById('confirmAmt').textContent         = '₹' + emiAmount.toLocaleString('en-IN');
-      document.getElementById('confirmAmtInline').textContent   = '₹' + emiAmount.toLocaleString('en-IN');
-      document.getElementById('confirmMethod').textContent      = methodLabels[selectedMethod] || selectedMethod;
-      document.getElementById('confirmDue').textContent         = dueDate;
+      document.getElementById('confirmMethod').textContent = selectedMethod;
     }
   }
 
-  // Card number auto-format
-  document.getElementById('cardNum')?.addEventListener('input', function() {
-    let v = this.value.replace(/\D/g,'').substring(0,16);
-    this.value = v.replace(/(.{4})/g,'$1  ').trim();
-  });
-
-  // Card expiry auto-format
-  document.getElementById('cardExp')?.addEventListener('input', function() {
-    let v = this.value.replace(/\D/g,'');
-    if (v.length >= 2) v = v.slice(0,2) + '/' + v.slice(2,4);
-    this.value = v;
-  });
-
-  // ---- Process Payment ----
-  function processPayment() {
+  async function processPayment() {
     if (!document.getElementById('confirmCheck').checked) {
-      alert('Please authorise the payment by checking the box.'); return;
+      alert('Please authorise the payment by checking the box.');
+      return;
     }
+
     const btn = document.getElementById('payNowBtn');
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Processing…';
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Opening Gateway...';
     btn.disabled = true;
 
-    // Simulate processing delay (replace with actual API call)
-    setTimeout(() => {
-      const txnId = 'TXN' + Date.now().toString().slice(-10);
-      document.getElementById('successAmt').textContent  = '₹' + emiAmount.toLocaleString('en-IN');
-      document.getElementById('successTxn').textContent  = txnId;
-      document.getElementById('successDate').textContent = new Date().toLocaleString('en-IN');
-      document.getElementById('successOverlay').classList.add('show');
-      btn.innerHTML = '<i class="fa-solid fa-lock me-1"></i> Pay Now';
-      btn.disabled = false;
-    }, 2200);
+    try {
+        // Step 1: Create Order on Backend
+        const orderRes = await apiCall('/api/payments/create-order', 'POST', {
+            amount: currentEmi.emi_amount,
+            emiScheduleId: currentEmi._id
+        });
 
-    /* ----------------------------------------------------------------
-       INTEGRATION HINT (Flask):
-       fetch('/api/payments/pay', {
-         method: 'POST',
-         headers: { 'Content-Type': 'application/json' },
-         body: JSON.stringify({
-           loan_id: loanId,
-           amount: emiAmount,
-           method: selectedMethod,
-           // method-specific details…
-         })
-       }).then(r => r.json()).then(data => {
-         if (data.success) { showSuccess(data.txn_id); }
-         else { showError(data.message); }
-       });
-    ---------------------------------------------------------------- */
+        if(!orderRes || !orderRes.success) {
+            throw new Error(orderRes?.error || 'Failed to create order');
+        }
+
+        const order = orderRes.data;
+
+        // If it's a mock order (Razorpay keys not set on server)
+        if(order.orderId.startsWith('mock_order_')) {
+            console.log('Using Mock Payment Flow');
+            completeMockPayment(order.orderId);
+            return;
+        }
+
+        // Step 2: Open Razorpay Modal
+        const options = {
+            key: localStorage.getItem('razorpay_key') || 'rzp_test_yourkeyhere', // Ideally fetch from server config
+            amount: order.amount,
+            currency: "INR",
+            name: "LoanSphere LMS",
+            description: `EMI Payment for Loan ${currentEmi.loanId._id.slice(-6).toUpperCase()}`,
+            order_id: order.orderId,
+            handler: async function (response) {
+                // Step 3: Verify Payment on Backend
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Verifying...';
+                
+                const verifyRes = await apiCall('/api/payments/verify', 'POST', {
+                    razorpay_order_id: response.razorpay_order_id,
+                    razorpay_payment_id: response.razorpay_payment_id,
+                    razorpay_signature: response.razorpay_signature,
+                    emiScheduleId: currentEmi._id,
+                    method: selectedMethod
+                });
+
+                if(verifyRes && verifyRes.success) {
+                    showSuccess(verifyRes.data);
+                } else {
+                    alert('Payment verification failed. Please contact support.');
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-lock me-1"></i> Pay Now';
+                }
+            },
+            prefill: {
+                name: "", // Will be filled from current user session if needed
+                email: "",
+                contact: ""
+            },
+            theme: { color: "#304ffe" }
+        };
+
+        const rzp = new Razorpay(options);
+        rzp.on('payment.failed', function (response){
+            alert('Payment execution failed: ' + response.error.description);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-lock me-1"></i> Pay Now';
+        });
+        rzp.open();
+
+    } catch(err) {
+        alert(err.message);
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-lock me-1"></i> Pay Now';
+    }
+  }
+
+  async function completeMockPayment(mockOrderId) {
+      const btn = document.getElementById('payNowBtn');
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Processing Mock Payment...';
+      
+      // Simulate verification delay
+      setTimeout(async () => {
+          const verifyRes = await apiCall('/api/payments/verify', 'POST', {
+              razorpay_order_id: mockOrderId,
+              razorpay_payment_id: 'pay_mock_' + Date.now().toString().slice(-8),
+              emiScheduleId: currentEmi._id,
+              method: selectedMethod
+          });
+
+          if(verifyRes && verifyRes.success) {
+              showSuccess(verifyRes.data);
+          } else {
+              alert('Mock payment processing failed');
+              btn.disabled = false;
+              btn.innerHTML = '<i class="fa-solid fa-lock me-1"></i> Pay Now';
+          }
+      }, 1500);
+  }
+
+  function showSuccess(paymentData) {
+      document.getElementById('successAmt').textContent  = '₹' + paymentData.amount_paid.toLocaleString('en-IN', {minimumFractionDigits:2});
+      document.getElementById('successTxn').textContent  = paymentData.transaction_id;
+      document.getElementById('successDate').textContent = new Date(paymentData.payment_date).toLocaleString('en-IN');
+      document.getElementById('successOverlay').classList.add('show');
   }
 
   function printReceipt() {
     window.print();
   }
 </script>
+</body>
+</html>
 
-<script>
-// ===== Frontend Connection Code: pay_emi.html =====
-async function apiCall(endpoint, method='GET', body=null) {
-    const token = localStorage.getItem('lms_token');
-    if(!token) { window.location.href = 'login.html'; return; }
-    const options = { method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` } };
-    if(body) options.body = JSON.stringify(body);
-    const res = await fetch(`http://localhost:3000${endpoint}`, options);
-    if(res.status === 401) { window.location.href = 'login.html'; return; }
-    return res.json();
-}
-document.addEventListener('DOMContentLoaded', async () => {
-    if(!localStorage.getItem('lms_token')) window.location.href = 'login.html';
-    
-    // Fetch pending EMIs to populate logic
-    // This assumes loans API provides a way to find pending EMIs globally or we fetch all loans then their EMIs
-    // Since we don't have a global /api/loans/pending-emis route, let's just make the payment form mock a payment directly
-    // or fetch from my loans and find first pending EMI.
-    
-    let pendingEmiId = null;
-    let pendingEmiAmount = 0;
-    
-    try {
-        const loansRes = await apiCall('/api/loans/my-loans');
-        if(loansRes && loansRes.success) {
-            for(let loan of loansRes.data) {
-                if(loan.status === 'Approved' || loan.status === 'Active') {
-                    const emiRes = await apiCall(`/api/loans/${loan._id}/emi-schedule`);
-                    if(emiRes && emiRes.success) {
-                        const pending = emiRes.data.find(e => e.status === 'Pending' || e.status === 'Overdue');
-                        if(pending) {
-                            pendingEmiId = pending._id;
-                            pendingEmiAmount = pending.emi_amount;
-                            
-                            const amountEl = document.querySelector('.emi-due-amount') || document.querySelector('.amount-display');
-                            if(amountEl) amountEl.textContent = '₹' + pending.emi_amount.toLocaleString('en-IN');
-                            
-                            const labelEl = document.querySelector('.emi-due-meta') || document.getElementById('detail-date');
-                            if(labelEl) labelEl.textContent = 'Due Date: ' + new Date(pending.due_date).toLocaleDateString('en-GB');
-                            
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        
-        const form = document.querySelector('form') || document.getElementById('payment-form');
-        const payBtn = document.getElementById('payNowBtn');
-        if(payBtn) {
-            // Replace click listener
-            const newBtn = payBtn.cloneNode(true);
-            payBtn.parentNode.replaceChild(newBtn, payBtn);
-            
-            newBtn.addEventListener('click', async (e) => {
-                e.preventDefault();
-                if(!pendingEmiId) return alert('No pending EMIs found!');
-                
-                try {
-                    const res = await apiCall('/api/payments/pay', 'POST', {
-                        emiScheduleId: pendingEmiId,
-                        method: 'Card',
-                        amount: pendingEmiAmount
-                    });
-                    if(res && res.success) {
-                        alert('Payment Successful!');
-                        window.location.href = 'payments.html';
-                    } else {
-                        alert('Payment Failed: ' + (res ? res.error : 'Unknown'));
-                    }
-                } catch(err) {
-                    alert('Connection Error');
-                }
-            });
-        }
-    } catch(err) {
-        console.error(err);
-    }
-});
-</script>
 
 </body>
 </html>

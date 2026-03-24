@@ -4,35 +4,66 @@ const User = require('../models/User');
 const Loan = require('../models/Loan');
 const Payment = require('../models/Payment');
 const EMISchedule = require('../models/EMISchedule');
+const bcrypt = require('bcryptjs');
 const { protect, admin } = require('../middleware/auth');
 
 router.use(protect, admin);
 
+// Helper: mark overdue EMIs at query time
+async function updateOverdueEmis() {
+    try {
+        await EMISchedule.updateMany(
+            { status: 'Pending', due_date: { $lt: new Date() } },
+            { $set: { status: 'Overdue' } }
+        );
+    } catch (e) { /* silent */ }
+}
+
 router.get('/dashboard/stats', async (req, res) => {
     try {
+        await updateOverdueEmis();
+
         const totalUsers = await User.countDocuments({ role: 'customer' });
         const totalApplications = await Loan.countDocuments({});
         const approvedLoans = await Loan.countDocuments({ status: 'Approved' });
         
         // Find defaulters (users with overdue EMIs)
-       const overdueEmis = await EMISchedule.find({ status: 'Overdue' }).distinct('userId');
-       const totalDefaulters = overdueEmis.length;
+        const overdueEmis = await EMISchedule.find({ status: 'Overdue' }).distinct('userId');
+        const totalDefaulters = overdueEmis.length;
 
-       res.json({
-           success: true,
-           data: {
-               totalUsers,
-               totalApplications,
-               approvedLoans,
-               totalDefaulters,
-               monthlyData: [10, 20, 15, 30, 45, 60], // Mock Data
-               statusDistribution: {
-                   Approved: approvedLoans,
-                   Pending: await Loan.countDocuments({ status: 'Pending' }),
-                   Rejected: await Loan.countDocuments({ status: 'Rejected' })
-               }
-           }
-       });
+        // Real monthly loan application data (last 6 months)
+        const now = new Date();
+        const monthlyData = [];
+        for (let i = 5; i >= 0; i--) {
+            const start = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            const end = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
+            const count = await Loan.countDocuments({ createdAt: { $gte: start, $lt: end } });
+            monthlyData.push(count);
+        }
+
+        // Total disbursed amount
+        const disbursedAgg = await Loan.aggregate([
+            { $match: { status: { $in: ['Approved', 'Active'] } } },
+            { $group: { _id: null, total: { $sum: '$loan_amount' } } }
+        ]);
+        const totalDisbursed = disbursedAgg.length > 0 ? disbursedAgg[0].total : 0;
+
+        res.json({
+            success: true,
+            data: {
+                totalUsers,
+                totalApplications,
+                approvedLoans,
+                totalDefaulters,
+                totalDisbursed,
+                monthlyData,
+                statusDistribution: {
+                    Approved: approvedLoans,
+                    Pending: await Loan.countDocuments({ status: 'Pending' }),
+                    Rejected: await Loan.countDocuments({ status: 'Rejected' })
+                }
+            }
+        });
     } catch (error) {
         res.status(500).json({ success: false, error: 'Server Error' });
     }
@@ -54,6 +85,44 @@ router.get('/users', async (req, res) => {
         res.json({ success: true, data: users });
     } catch(err) {
         res.status(500).json({ success: false, error: 'Server Error' });
+    }
+});
+
+router.post('/users', async (req, res) => {
+    try {
+        const { firstName, lastName, email, phone, password, national_id, role } = req.body;
+        const exists = await User.findOne({ email });
+        if (exists) return res.status(400).json({ success: false, error: 'User already exists' });
+        const user = await User.create({
+            firstName, lastName, email, phone,
+            password: password || 'Welcome@123',
+            national_id,
+            role: role || 'customer'
+        });
+        const userData = user.toObject();
+        delete userData.password;
+        res.status(201).json({ success: true, data: userData });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+router.put('/users/:id', async (req, res) => {
+    try {
+        const { firstName, lastName, phone, status, kyc_verified } = req.body;
+        const user = await User.findById(req.params.id);
+        if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+        if (firstName) user.firstName = firstName;
+        if (lastName) user.lastName = lastName;
+        if (phone) user.phone = phone;
+        if (status) user.status = status;
+        if (kyc_verified !== undefined) user.kyc_verified = kyc_verified;
+        await user.save();
+        const userData = user.toObject();
+        delete userData.password;
+        res.json({ success: true, data: userData });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
     }
 });
 
@@ -91,43 +160,56 @@ router.put('/loans/:id/approve', async (req, res) => {
     try {
         const loan = await Loan.findById(req.params.id);
         if(!loan) return res.status(404).json({ success: false, error: 'Loan not found' });
-        
+
+        // Prevent generating duplicate EMIs if already approved
+        const existingEMIs = await EMISchedule.countDocuments({ loanId: loan._id });
+        if (loan.status === 'Approved' && existingEMIs > 0) {
+            return res.json({ success: true, data: loan, message: 'Loan already approved' });
+        }
+
         loan.status = 'Approved';
         loan.approved_by = req.user._id;
         loan.approved_at = Date.now();
         await loan.save();
 
-        // EMI Computation
+        // Delete any stale/partial EMI schedules for this loan before creating fresh ones
+        await EMISchedule.deleteMany({ loanId: loan._id });
+
+        // EMI Computation (reducing balance method)
         const P = loan.loan_amount;
         const R = loan.interest_rate / 12 / 100;
         const N = loan.loan_tenure;
         const emi = (P * R * Math.pow(1 + R, N)) / (Math.pow(1 + R, N) - 1);
-        
+
         let balance = P;
-        let today = new Date();
+        const today = new Date();
+        const emiDocs = [];
         for (let i = 1; i <= N; i++) {
-            let interest = balance * R;
-            let principal = emi - interest;
+            const interest = balance * R;
+            const principal = emi - interest;
             balance -= principal;
-            
-            let dueDate = new Date();
-            dueDate.setMonth(today.getMonth() + i);
-            
-            await EMISchedule.create({
+
+            const dueDate = new Date(today.getFullYear(), today.getMonth() + i, today.getDate());
+
+            emiDocs.push({
                 loanId: loan._id,
                 userId: loan.userId,
                 installment_number: i,
                 due_date: dueDate,
-                principal: principal,
-                interest: interest,
-                emi_amount: emi,
-                balance: balance > 0 ? balance : 0,
+                principal: parseFloat(principal.toFixed(2)),
+                interest: parseFloat(interest.toFixed(2)),
+                emi_amount: parseFloat(emi.toFixed(2)),
+                balance: parseFloat((balance > 0 ? balance : 0).toFixed(2)),
                 status: 'Pending'
             });
         }
 
+        // Bulk insert all EMIs in one go (faster & atomic)
+        await EMISchedule.insertMany(emiDocs);
+
         res.json({ success: true, data: loan });
     } catch(err) {
+        console.error(err);
         res.status(500).json({ success: false, error: 'Server Error' });
     }
 });
@@ -163,6 +245,7 @@ router.get('/payments', async (req, res) => {
 
 router.get('/defaulters', async (req, res) => {
     try {
+        await updateOverdueEmis();
         // Aggregate users with pending/overdue EMIs
         const emis = await EMISchedule.find({ status: { $in: ['Pending', 'Overdue'] } }).populate('userId', 'firstName lastName email phone');
         
@@ -196,6 +279,62 @@ router.get('/defaulters', async (req, res) => {
 
         res.json({ success: true, data: defaulters });
     } catch(err) { res.status(500).json({ success: false, error: err.message }) }
+});
+
+// One-time cleanup: removes duplicate EMI records keeping only the correct set per loan
+router.post('/cleanup-duplicate-emis', async (req, res) => {
+    try {
+        // Get all unique loan IDs that have EMI schedules
+        const loanIds = await EMISchedule.distinct('loanId');
+        let cleaned = 0;
+
+        for (const loanId of loanIds) {
+            const loan = await Loan.findById(loanId);
+            if (!loan) continue;
+
+            const expectedCount = loan.loan_tenure;
+            const totalEMIs = await EMISchedule.countDocuments({ loanId });
+
+            // If there are more EMIs than the tenure, duplicates exist
+            if (totalEMIs > expectedCount) {
+                // Delete all EMIs for this loan
+                await EMISchedule.deleteMany({ loanId });
+
+                // Recreate correct set
+                const P = loan.loan_amount;
+                const R = loan.interest_rate / 12 / 100;
+                const N = loan.loan_tenure;
+                const emi = (P * R * Math.pow(1 + R, N)) / (Math.pow(1 + R, N) - 1);
+
+                let balance = P;
+                const today = loan.approved_at ? new Date(loan.approved_at) : new Date();
+                const emiDocs = [];
+                for (let i = 1; i <= N; i++) {
+                    const interest = balance * R;
+                    const principal = emi - interest;
+                    balance -= principal;
+                    const dueDate = new Date(today.getFullYear(), today.getMonth() + i, today.getDate());
+                    emiDocs.push({
+                        loanId: loan._id,
+                        userId: loan.userId,
+                        installment_number: i,
+                        due_date: dueDate,
+                        principal: parseFloat(principal.toFixed(2)),
+                        interest: parseFloat(interest.toFixed(2)),
+                        emi_amount: parseFloat(emi.toFixed(2)),
+                        balance: parseFloat((balance > 0 ? balance : 0).toFixed(2)),
+                        status: 'Pending'
+                    });
+                }
+                await EMISchedule.insertMany(emiDocs);
+                cleaned++;
+            }
+        }
+
+        res.json({ success: true, data: { message: `Cleaned ${cleaned} loan(s) with duplicate EMIs` } });
+    } catch(err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
 });
 
 module.exports = router;

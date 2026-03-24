@@ -237,6 +237,10 @@ function initPayEMI() {
 document.addEventListener('DOMContentLoaded', function () {
   injectLayout();   // inject navbar on all pages; footer on all except dashboard
   initPayEMI();     // pay_emi page specific setup
+  initEMICalculator(); // initialize EMI calculator
+  initTableSearch();
+  initApplyLoanForm();
+  initPasswordToggle();
 });
 /* Auto-assign names for FormData */
 document.addEventListener('DOMContentLoaded', () => {

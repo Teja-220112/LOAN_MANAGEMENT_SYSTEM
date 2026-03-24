@@ -16,7 +16,8 @@ const loanSchema = new mongoose.Schema({
     },
     notes: { type: String },
     approved_by: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    approved_at: { type: Date }
+    approved_at: { type: Date },
+    document_url: { type: String }
 }, {
     timestamps: true
 });

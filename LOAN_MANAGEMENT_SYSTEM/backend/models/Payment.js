@@ -8,7 +8,7 @@ const paymentSchema = new mongoose.Schema({
     payment_date: { type: Date, default: Date.now },
     method: { 
         type: String, 
-        enum: ['UPI', 'Card', 'Net Banking', 'Cash'], 
+        enum: ['UPI', 'Card', 'Net Banking', 'Netbanking', 'Wallet', 'Cash'], 
         required: true 
     },
     status: { 

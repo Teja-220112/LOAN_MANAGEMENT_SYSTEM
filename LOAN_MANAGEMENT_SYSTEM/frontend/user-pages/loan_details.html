@@ -221,26 +221,62 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         
         if(emiRes && emiRes.success) {
-            const tbody = document.getElementById('emi-schedule-tbody') || document.querySelector('table tbody');
+            const tbody = document.getElementById('emi-schedule-tbody');
             if(tbody) {
-                tbody.innerHTML = '';
-                const formatCur = (n) => '₹' + (n||0).toLocaleString('en-IN');
-                const dt = d => d ? new Date(d).toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'}) : 'N/A';
-                
-                emiRes.data.forEach(emi => {
-                    const badgeClass = emi.status === 'Paid' ? 'badge-active' : 
-                                       emi.status === 'Pending' ? 'badge-pending' : 'badge-failed';
-                    tbody.innerHTML += `
-                    <tr>
-                        <td>${emi.installment_number}</td>
-                        <td>${dt(emi.due_date)}</td>
-                        <td class="td-mono">${formatCur(emi.emi_amount)}</td>
-                        <td class="td-mono">${formatCur(emi.principal)}</td>
-                        <td class="td-mono">${formatCur(emi.interest)}</td>
-                        <td class="td-mono">${formatCur(emi.balance)}</td>
-                        <td><span class="badge-status ${badgeClass}">${emi.status}</span></td>
-                    </tr>`;
-                });
+                if (emiRes.data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state py-4">
+                        <i class="fas fa-calendar-xmark"></i>
+                        <p class="mt-2">No EMI schedule found for this loan.</p>
+                    </div></td></tr>`;
+                } else {
+                    tbody.innerHTML = '';
+                    const formatCur = (n) => '₹' + (n||0).toLocaleString('en-IN', {maximumFractionDigits:2});
+                    const dt = d => d ? new Date(d).toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'}) : 'N/A';
+                    
+                    let paidCount = 0, paidAmount = 0;
+                    emiRes.data.forEach(emi => {
+                        const badgeClass = emi.status === 'Paid' ? 'badge-active' : 
+                                           emi.status === 'Overdue' ? 'badge-failed' : 'badge-pending';
+                        if (emi.status === 'Paid') { paidCount++; paidAmount += (emi.emi_amount || 0); }
+                        tbody.innerHTML += `
+                        <tr>
+                            <td>${emi.installment_number}</td>
+                            <td>${dt(emi.due_date)}</td>
+                            <td class="td-mono">${formatCur(emi.emi_amount)}</td>
+                            <td class="td-mono">${formatCur(emi.principal)}</td>
+                            <td class="td-mono">${formatCur(emi.interest)}</td>
+                            <td class="td-mono">${formatCur(emi.balance)}</td>
+                            <td><span class="badge-status ${badgeClass}">${emi.status}</span></td>
+                        </tr>`;
+                    });
+
+                    // Update progress card
+                    const total = emiRes.data.length;
+                    const remaining = total - paidCount;
+                    const R = (loan.interest_rate||10.5)/12/100;
+                    const P = loan.loan_amount||0;
+                    const N = loan.loan_tenure||1;
+                    const emiAmt = (P * R * Math.pow(1+R,N)) / (Math.pow(1+R,N)-1);
+                    const totalPayable = emiAmt * N;
+                    const amtRemaining = emiAmt * remaining;
+                    const pct = total > 0 ? Math.round((paidCount/total)*100) : 0;
+
+                    const progLabel = document.getElementById('emi-progress-label');
+                    const progBar = document.getElementById('emi-progress-bar');
+                    const amtPaidEl = document.getElementById('amount-paid');
+                    const amtRemEl = document.getElementById('amount-remaining');
+                    const detailEmiEl = document.getElementById('detail-emi');
+                    const detailTotalEl = document.getElementById('detail-total');
+                    const detailRateEl = document.getElementById('detail-rate');
+
+                    if(progLabel) progLabel.textContent = `${paidCount} / ${total}`;
+                    if(progBar)   progBar.style.width = pct + '%';
+                    if(amtPaidEl)  amtPaidEl.textContent = '₹' + paidAmount.toLocaleString('en-IN', {maximumFractionDigits:2});
+                    if(amtRemEl)   amtRemEl.textContent  = '₹' + amtRemaining.toLocaleString('en-IN', {maximumFractionDigits:2});
+                    if(detailEmiEl)   detailEmiEl.textContent = '₹' + emiAmt.toLocaleString('en-IN', {maximumFractionDigits:2});
+                    if(detailTotalEl) detailTotalEl.textContent = '₹' + totalPayable.toLocaleString('en-IN', {maximumFractionDigits:2});
+                    if(detailRateEl)  detailRateEl.textContent = (loan.interest_rate||10.5) + '% p.a.';
+                }
             }
         }
     } catch(err) {

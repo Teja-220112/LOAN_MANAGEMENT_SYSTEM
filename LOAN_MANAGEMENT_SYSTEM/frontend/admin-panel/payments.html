@@ -56,7 +56,7 @@
       <input type="text" placeholder="Search payments..."/>
     </div>
     <div class="topbar-actions">
-      <button class="topbar-btn"><i class="fas fa-bell"></i><span class="badge-dot"></span></button>
+      <button class="topbar-btn"><i class="fas fa-bell"></i></button>
       <div class="topbar-divider"></div>
       <div class="topbar-profile" id="profileTrigger">
         <div class="topbar-avatar">SA</div>
@@ -297,25 +297,64 @@ document.addEventListener('DOMContentLoaded', async () => {
              try {
                 const res = await apiCall('/api/admin/payments');
                 if(res && res.success) {
-                    tbody.innerHTML = '';
-                    if(res.data.length === 0) return tbody.innerHTML = '<tr><td colspan="7" class="text-center">No records.</td></tr>';
-                    res.data.forEach(p => {
-                        const badgeClass = p.status === 'Paid' ? 'badge-active' : 'badge-failed';
-                        const name = p.userId ? `${p.userId.firstName} ${p.userId.lastName}` : 'Unknown';
-                        tbody.innerHTML += `
-                        <tr>
-                            <td>${p.transaction_id || p._id.slice(-6).toUpperCase()}</td>
-                            <td>${name}</td>
-                            <td>${p.loanId ? p.loanId._id.slice(-6).toUpperCase() : 'N/A'}</td>
-                            <td class="td-mono">₹${p.amount_paid.toLocaleString('en-IN')}</td>
-                            <td>${new Date(p.payment_date).toLocaleDateString()}</td>
-                            <td>${p.method}</td>
-                            <td><span class="badge-status ${badgeClass}">${p.status}</span></td>
-                        </tr>`;
-                    });
+                    allPayments = res.data.map(p => ({
+                        paymentId: p.transaction_id || p._id.slice(-6).toUpperCase(),
+                        loanId: p.loanId ? p.loanId._id.slice(-6).toUpperCase() : 'N/A',
+                        userName: p.userId ? `${p.userId.firstName || ''} ${p.userId.lastName || ''}`.trim() : 'Unknown',
+                        amountPaid: p.amount_paid || 0,
+                        method: p.method || 'Online',
+                        paymentDate: p.payment_date ? new Date(p.payment_date).toLocaleDateString() : '—',
+                        status: p.status || 'Pending'
+                    }));
+                    renderPayments(allPayments);
+                    
+                    if(document.getElementById('payPaginationInfo')) document.getElementById('payPaginationInfo').textContent = `Showing ${allPayments.length} payments`;
+                    
+                    const totCol = allPayments.filter(p=>p.status==='Paid').reduce((sum, p)=>sum + Number(p.amountPaid), 0);
+                    const penCount = allPayments.filter(p=>p.status==='Pending').length;
+                    const failCount = allPayments.filter(p=>p.status==='Failed').length;
+                    
+                    if(document.getElementById('totalCollected')) document.getElementById('totalCollected').textContent = '₹' + totCol.toLocaleString('en-IN');
+                    if(document.getElementById('totalPending')) document.getElementById('totalPending').textContent = penCount;
+                    if(document.getElementById('totalFailed')) document.getElementById('totalFailed').textContent = failCount;
+                    
+                    const exportBtn = document.querySelector('.btn-outline-secondary');
+                    if(exportBtn) exportBtn.addEventListener('click', () => exportToCSV(allPayments, 'payments_export.csv'));
                 }
-             } catch(err) { tbody.innerHTML = '<tr><td colspan="7" class="text-center">Error</td></tr>'; }
+             } catch(err) { tbody.innerHTML = '<tr><td colspan="8" class="text-center text-danger">Error loading payments</td></tr>'; }
     }
+    
+    // Global UI Fixes
+    const topSearch = document.querySelector('.topbar-search input');
+    if(topSearch) {
+        topSearch.addEventListener('input', (e) => {
+            const localSearch = document.querySelector('.table-search input');
+            if(localSearch) {
+                localSearch.value = e.target.value;
+                localSearch.dispatchEvent(new Event('input'));
+            }
+        });
+    }
+    const notifBtn = document.querySelector('.topbar-btn');
+    if(notifBtn) {
+        notifBtn.addEventListener('click', () => alert('You have 0 new notifications.'));
+    }
+    document.querySelectorAll('.logout-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem('lms_token');
+            window.location.href = '../login.html';
+        });
+    });
+    window.exportToCSV = function(data, filename) {
+        if(!data || !data.length) return alert('No data to export');
+        const headers = Object.keys(data[0]);
+        const csvRows = [headers.join(','), ...data.map(r => headers.map(h => `"${String(r[h] ?? '').replace(/"/g, '""')}"`).join(','))];
+        const blob = new Blob([csvRows.join('\\n')], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
+        window.URL.revokeObjectURL(url);
+    };
 });
 </script>
 

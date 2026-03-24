@@ -262,13 +262,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         const res = await apiCall('/api/user/profile');
         if(res && res.success) {
             const u = res.data;
-            document.querySelectorAll('input').forEach(input => {
-                if(input.name === 'firstName' || input.id === 'firstName') input.value = u.firstName || '';
-                if(input.name === 'lastName' || input.id === 'lastName') input.value = u.lastName || '';
+            const fullName = `${u.firstName || ''} ${u.lastName || ''}`.trim();
+            const fullNameInput = document.getElementById('full_name');
+            if (fullNameInput) fullNameInput.value = fullName;
+            
+            if(document.getElementById('profile-name')) document.getElementById('profile-name').textContent = fullName || 'No Name';
+            if(document.getElementById('profile-email')) document.getElementById('profile-email').textContent = u.email || 'No Email';
+            if(document.getElementById('member-since')) document.getElementById('member-since').textContent = u.createdAt ? new Date(u.createdAt).toLocaleDateString('en-GB') : '—';
+            
+            document.querySelectorAll('input, select, textarea').forEach(input => {
                 if(input.name === 'email' || input.id === 'email') input.value = u.email || '';
                 if(input.name === 'phone' || input.id === 'phone') input.value = u.phone || '';
                 if(input.name === 'address' || input.id === 'address') input.value = u.address || '';
                 if(input.name === 'dob' || input.id === 'dob') input.value = u.dob ? u.dob.split('T')[0] : '';
+                if(input.name === 'national_id' || input.id === 'national_id') input.value = u.national_id || '';
+                if(input.name === 'employment_type' || input.id === 'employment_type') input.value = u.employment_type || '';
             });
         }
         
@@ -281,6 +289,13 @@ document.addEventListener('DOMContentLoaded', async () => {
                 e.preventDefault();
                 const formData = new FormData(newForm);
                 const data = Object.fromEntries(formData.entries());
+                
+                // Map full_name to firstName and lastName
+                if (data.full_name) {
+                    const parts = data.full_name.trim().split(' ');
+                    data.firstName = parts[0] || '';
+                    data.lastName = parts.slice(1).join(' ') || '';
+                }
                 
                 // Exclude empty password fields if any
                 const res = await apiCall('/api/user/profile/update', 'PUT', data);

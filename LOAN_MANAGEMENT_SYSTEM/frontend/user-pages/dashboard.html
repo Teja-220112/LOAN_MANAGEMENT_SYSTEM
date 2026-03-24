@@ -56,16 +56,16 @@
       <div class="col-6 col-lg-3 fade-in-up fade-in-up-3">
         <div class="stat-card green">
           <div class="stat-icon-wrap green"><i class="fas fa-circle-check"></i></div>
-          <div class="stat-value" id="stat-emi-paid">—</div>
+          <div class="stat-value" id="stat-emi-paid">0</div>
           <div class="stat-label">EMIs Paid</div>
         </div>
       </div>
       <!-- Next EMI Due -->
       <div class="col-6 col-lg-3 fade-in-up fade-in-up-4">
-        <div class="stat-card gold">
-          <div class="stat-icon-wrap gold"><i class="fas fa-calendar-day"></i></div>
-          <div class="stat-value" id="stat-next-emi">—</div>
-          <div class="stat-label">Next EMI Due</div>
+        <div class="stat-card red">
+          <div class="stat-icon-wrap red"><i class="fas fa-calendar-day"></i></div>
+          <div class="stat-value" id="stat-next-emi">₹0</div>
+          <div class="stat-label" id="stat-next-emi-label">Next EMI Due</div>
         </div>
       </div>
     </div>
@@ -192,11 +192,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             const emiPaidEl = document.getElementById('stat-emi-paid') || document.querySelector('.stat-card.green .stat-value');
             if(emiPaidEl) emiPaidEl.textContent = data.emisPaid;
             
-            const nextEmiEl = document.getElementById('stat-next-emi') || document.querySelector('.stat-card.red .stat-value');
+            const nextEmiEl = document.getElementById('stat-next-emi');
             if(nextEmiEl) nextEmiEl.textContent = formatCur(data.nextEmiAmount);
             
-            const nextEmiDateEl = document.querySelector('.stat-card.red .stat-label');
-            if(nextEmiDateEl && data.nextEmiDate) nextEmiDateEl.textContent = `Next EMI Due: ${dt(data.nextEmiDate)}`;
+            const nextEmiDateEl = document.getElementById('stat-next-emi-label');
+            if(nextEmiDateEl && data.nextEmiDate) {
+                nextEmiDateEl.textContent = `Next Due: ${dt(data.nextEmiDate)}`;
+            }
         }
         
         // Fetch recent loans

@@ -1,12 +1,30 @@
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
+const path = require('path');
 const Loan = require('../models/Loan');
 const EMISchedule = require('../models/EMISchedule');
 const { protect } = require('../middleware/auth');
 
-router.post('/apply', protect, async (req, res) => {
+// Setup array of storage engines
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'uploads/');
+    },
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + '-' + file.originalname);
+    }
+});
+const upload = multer({ storage: storage });
+
+router.post('/apply', protect, upload.single('document'), async (req, res) => {
     try {
         const { loan_amount, loan_purpose, loan_tenure, monthly_income, employment_type } = req.body;
+        
+        let document_url = null;
+        if (req.file) {
+            document_url = `/uploads/${req.file.filename}`;
+        }
 
         const loan = await Loan.create({
             userId: req.user._id,
@@ -15,6 +33,7 @@ router.post('/apply', protect, async (req, res) => {
             loan_tenure,
             monthly_income,
             employment_type,
+            document_url,
             status: 'Pending'
         });
 

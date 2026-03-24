@@ -116,7 +116,7 @@
       <!-- Notifications -->
       <button class="topbar-btn" aria-label="Notifications">
         <i class="fas fa-bell"></i>
-        <span class="badge-dot"></span>
+        
       </button>
 
       <div class="topbar-divider"></div>
@@ -299,5 +299,31 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="js/charts.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Global UI Fixes
+    const topSearch = document.querySelector('.topbar-search input');
+    if(topSearch) {
+        topSearch.addEventListener('input', (e) => {
+            const localSearch = document.querySelector('.table-search input');
+            if(localSearch) {
+                localSearch.value = e.target.value;
+                localSearch.dispatchEvent(new Event('input'));
+            }
+        });
+    }
+    const notifBtn = document.querySelector('.topbar-btn');
+    if(notifBtn) {
+        notifBtn.addEventListener('click', () => alert('You have 0 new notifications.'));
+    }
+    document.querySelectorAll('.logout-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem('lms_token');
+            window.location.href = '../login.html';
+        });
+    });
+  });
+</script>
 </body>
 </html>

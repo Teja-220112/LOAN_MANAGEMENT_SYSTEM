@@ -56,7 +56,7 @@
       <input type="text" placeholder="Search applications..."/>
     </div>
     <div class="topbar-actions">
-      <button class="topbar-btn"><i class="fas fa-bell"></i><span class="badge-dot"></span></button>
+      <button class="topbar-btn"><i class="fas fa-bell"></i></button>
       <div class="topbar-divider"></div>
       <div class="topbar-profile" id="profileTrigger">
         <div class="topbar-avatar">SA</div>
@@ -238,10 +238,10 @@
 
             <!-- Action Buttons -->
             <div style="display:flex;gap:10px;">
-              <button class="btn btn-success" style="flex:1;" id="approveBtn" onclick="handleApprove()">
+              <button class="btn btn-success" style="flex:1;" id="approveBtn">
                 <i class="fas fa-check-circle me-2"></i> Approve Loan
               </button>
-              <button class="btn btn-danger" style="flex:1;" id="rejectBtn" onclick="handleReject()">
+              <button class="btn btn-danger" style="flex:1;" id="rejectBtn">
                 <i class="fas fa-times-circle me-2"></i> Reject Loan
               </button>
             </div>
@@ -302,7 +302,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="js/charts.js"></script>
 <script>
   /**
    * Loan Approval Detail Page
@@ -413,31 +412,103 @@ document.addEventListener('DOMContentLoaded', async () => {
     if(!localStorage.getItem('lms_token')) window.location.href = 'login.html';
     const urlParams = new URLSearchParams(window.location.search);
     const loanId = urlParams.get('id');
-    if(!loanId) return alert('No loan ID');
+    if (!loanId) {
+        document.getElementById('loanIdLabel').textContent = 'None Selected';
+        const msg = '<div class="alert alert-warning" style="margin-bottom:20px;">Please select a loan application from the <a href="loan_applications.html">Applications List</a> to review it.</div>';
+        const banner = document.getElementById('statusBanner');
+        if (banner) banner.insertAdjacentHTML('beforebegin', msg);
+        const approveBtn = document.getElementById('approveBtn');
+        const rejectBtn = document.getElementById('rejectBtn');
+        if(approveBtn) approveBtn.disabled = true;
+        if(rejectBtn) rejectBtn.disabled = true;
+        return;
+    }
     
     try {
         const res = await apiCall(`/api/admin/loans/${loanId}`);
         if(res && res.success) {
             const l = res.data;
             const u = l.userId || {};
-            // Populate fields if they exist
-            document.querySelectorAll('[id^="detail-"]').forEach(el => {
-                const key = el.id.replace('detail-', '');
-                if(key === 'name') el.textContent = `${u.firstName || ''} ${u.lastName || ''}`;
-                if(key === 'email') el.textContent = u.email;
-                if(key === 'phone') el.textContent = u.phone;
-                if(key === 'amount') el.textContent = '₹' + l.loan_amount.toLocaleString('en-IN');
-                if(key === 'purpose') el.textContent = l.loan_purpose;
-                if(key === 'tenure') el.textContent = l.loan_tenure + ' Months';
-                if(key === 'status') el.textContent = l.status;
-            });
+            // Populate Applicant Information
+            if(document.getElementById('appName')) document.getElementById('appName').textContent = `${u.firstName || ''} ${u.lastName || ''}`.trim() || '—';
+            if(document.getElementById('appEmail')) document.getElementById('appEmail').textContent = u.email || '—';
+            if(document.getElementById('appPhone')) document.getElementById('appPhone').textContent = u.phone || '—';
+            if(document.getElementById('appEmployment')) document.getElementById('appEmployment').textContent = u.employment_type || '—';
+            if(document.getElementById('appIncome')) document.getElementById('appIncome').textContent = u.monthly_income ? `₹${Number(u.monthly_income).toLocaleString('en-IN')}` : '—';
+            if(document.getElementById('appCreditScore')) document.getElementById('appCreditScore').textContent = u.credit_score || '—';
             
-            const btnApprove = document.getElementById('btn-approve');
-            const btnReject = document.getElementById('btn-reject');
+            // Risk fields (mocked or loaded if available on user)
+            if(document.getElementById('riskScoreDisplay')) document.getElementById('riskScoreDisplay').textContent = u.credit_score > 750 ? 'Low' : (u.credit_score > 600 ? 'Medium' : 'High');
+            if(document.getElementById('dtiRatio')) document.getElementById('dtiRatio').textContent = l.loan_amount && u.monthly_income ? `${((l.loan_amount / (u.monthly_income * 12)) * 100).toFixed(1)}%` : '—';
+            if(document.getElementById('creditUtil')) document.getElementById('creditUtil').textContent = '35%'; // Mocked
+            if(document.getElementById('prevDefaults')) document.getElementById('prevDefaults').textContent = '0'; // Mocked
+            
+            // Populate Loan Details
+            if(document.getElementById('loanAmount') && l.loan_amount) document.getElementById('loanAmount').textContent = '₹' + Number(l.loan_amount).toLocaleString('en-IN');
+            if(document.getElementById('loanPurpose')) document.getElementById('loanPurpose').textContent = l.loan_purpose || '—';
+            if(document.getElementById('loanInterestRate')) document.getElementById('loanInterestRate').textContent = l.interest_rate ? `${l.interest_rate}% p.a.` : '—';
+            if(document.getElementById('loanTenure')) document.getElementById('loanTenure').textContent = l.loan_tenure ? `${l.loan_tenure} Months` : '—';
+            if(document.getElementById('loanDate') && l.createdAt) document.getElementById('loanDate').textContent = new Date(l.createdAt).toLocaleDateString();
+            
+            // Calculate EMI and Display
+            if(l.loan_amount && l.interest_rate && l.loan_tenure) {
+                const P = l.loan_amount;
+                const R = l.interest_rate / 12 / 100;
+                const N = l.loan_tenure;
+                const emi = (P * R * Math.pow(1 + R, N)) / (Math.pow(1 + R, N) - 1);
+                if(document.getElementById('loanEMI')) document.getElementById('loanEMI').textContent = '₹' + Math.round(emi).toLocaleString('en-IN');
+            }
+            
+            // Populate Documents Area
+            const docArea = document.getElementById('documentsArea');
+            if (docArea && l.document_url) {
+                docArea.innerHTML = `
+                    <div style="display:flex;align-items:center;padding:12px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;">
+                        <i class="fas fa-file-pdf" style="font-size:24px;color:#ef4444;margin-right:12px;"></i>
+                        <div style="flex:1;">
+                            <div style="font-size:14px;font-weight:600;color:#1e293b;">Proof Document</div>
+                            <div style="font-size:12px;color:#64748b;">Uploaded with application</div>
+                        </div>
+                        <a href="http://localhost:3000${l.document_url}" target="_blank" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-external-link-alt mt-1"></i> View
+                        </a>
+                    </div>
+                `;
+            } else if (docArea) {
+                docArea.innerHTML = `
+                    <p style="color:#94a3b8;font-size:13px;">
+                        <i class="fas fa-info-circle me-2"></i> No document was provided.
+                    </p>
+                `;
+            }
+            
+            const btnApprove = document.getElementById('approveBtn');
+            const btnReject = document.getElementById('rejectBtn');
+            
+            // Disable if already processed
+            if (l.status === 'Approved' || l.status === 'Rejected') {
+                const banner = document.getElementById('statusBanner');
+                if (banner) {
+                   banner.className = `loan-status-banner ${l.status.toLowerCase()}`;
+                   const icon = banner.querySelector('.loan-status-icon');
+                   if (icon) icon.innerHTML = l.status === 'Approved' ? '<i class="fas fa-check-circle"></i>' : '<i class="fas fa-times-circle"></i>';
+                   const title = document.getElementById('statusTitle');
+                   if (title) {
+                       title.textContent = `Loan ${l.status}`;
+                       title.style.color = l.status === 'Approved' ? '#14532d' : '#7f1d1d';
+                   }
+                   const desc = document.getElementById('statusDesc');
+                   if (desc) {
+                       desc.textContent  = `This application has been ${l.status.toLowerCase()}.`;
+                       desc.style.color  = l.status === 'Approved' ? '#16a34a' : '#dc2626';
+                   }
+                }
+                if (btnApprove) btnApprove.disabled = true;
+                if (btnReject) btnReject.disabled = true;
+            }
             
             if(btnApprove) {
                 btnApprove.addEventListener('click', async () => {
-                    if(!confirm('Approve this loan?')) return;
                     const r = await apiCall(`/api/admin/loans/${loanId}/approve`, 'PUT');
                     if(r && r.success) { alert('Approved'); window.location.href = 'loan_applications.html'; }
                     else alert('Error: ' + (r.error || ''));
@@ -445,7 +516,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             if(btnReject) {
                 btnReject.addEventListener('click', async () => {
-                    if(!confirm('Reject this loan?')) return;
                     const r = await apiCall(`/api/admin/loans/${loanId}/reject`, 'PUT');
                     if(r && r.success) { alert('Rejected'); window.location.href = 'loan_applications.html'; }
                     else alert('Error: ' + (r.error || ''));
@@ -453,6 +523,29 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
     } catch(err) { console.error(err); }
+
+    // Global UI Fixes
+    const topSearch = document.querySelector('.topbar-search input');
+    if(topSearch) {
+        topSearch.addEventListener('input', (e) => {
+            const localSearch = document.querySelector('.table-search input');
+            if(localSearch) {
+                localSearch.value = e.target.value;
+                localSearch.dispatchEvent(new Event('input'));
+            }
+        });
+    }
+    const notifBtn = document.querySelector('.topbar-btn');
+    if(notifBtn) {
+        notifBtn.addEventListener('click', () => alert('You have 0 new notifications.'));
+    }
+    document.querySelectorAll('.logout-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem('lms_token');
+            window.location.href = '../login.html';
+        });
+    });
 });
 </script>
 

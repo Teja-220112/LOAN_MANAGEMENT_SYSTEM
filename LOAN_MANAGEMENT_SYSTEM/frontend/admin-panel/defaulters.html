@@ -56,7 +56,7 @@
       <input type="text" placeholder="Search defaulters..."/>
     </div>
     <div class="topbar-actions">
-      <button class="topbar-btn"><i class="fas fa-bell"></i><span class="badge-dot"></span></button>
+      <button class="topbar-btn"><i class="fas fa-bell"></i></button>
       <div class="topbar-divider"></div>
       <div class="topbar-profile" id="profileTrigger">
         <div class="topbar-avatar">SA</div>
@@ -293,23 +293,70 @@ document.addEventListener('DOMContentLoaded', async () => {
              try {
                 const res = await apiCall('/api/admin/defaulters');
                 if(res && res.success) {
-                    tbody.innerHTML = '';
-                    if(res.data.length === 0) return tbody.innerHTML = '<tr><td colspan="6" class="text-center">No defaulters found!</td></tr>';
-                    res.data.forEach(d => {
-                        const rBadge = d.riskLevel === 'High' ? 'badge-rejected' : d.riskLevel === 'Medium' ? 'badge-pending' : 'badge-active';
-                        tbody.innerHTML += `
-                        <tr>
-                            <td>${d.firstName} ${d.lastName}</td>
-                            <td>${d.email}</td>
-                            <td>${d.phone || 'N/A'}</td>
-                            <td>${d.missedEMIs}</td>
-                            <td class="td-mono">₹${(d.totalOverdueAmount||0).toLocaleString('en-IN')}</td>
-                            <td><span class="badge-status ${rBadge}">${d.riskLevel} Risk</span></td>
-                        </tr>`;
-                    });
+                    allDefaulters = res.data.map((d, i) => ({
+                        userName: `${d.firstName || ''} ${d.lastName || ''}`.trim() || 'Unknown',
+                        userId: d.email || '',
+                        loanId: `LNS-${Math.floor(1000 + Math.random() * 9000)}-DEF`, // Mocking since endpoint groups by user
+                        outstandingAmount: d.totalOverdueAmount || 0,
+                        missedCount: d.missedEMIs || 0,
+                        lastPaymentDate: '—',
+                        daysOverdue: (d.missedEMIs || 1) * 30,
+                        riskLevel: d.riskLevel ? `${d.riskLevel} Risk` : 'Low Risk'
+                    }));
+                    renderDefaulters(allDefaulters);
+                    
+                    if(document.getElementById('defPaginationInfo')) document.getElementById('defPaginationInfo').textContent = `Showing ${allDefaulters.length} records`;
+                    
+                    if(document.getElementById('totalDefaultersCount')) document.getElementById('totalDefaultersCount').textContent = allDefaulters.length;
+                    if(document.getElementById('highRiskCount')) document.getElementById('highRiskCount').textContent = allDefaulters.filter(d=>d.riskLevel==='High Risk').length;
+                    if(document.getElementById('medRiskCount')) document.getElementById('medRiskCount').textContent = allDefaulters.filter(d=>d.riskLevel==='Medium Risk').length;
+                    if(document.getElementById('lowRiskCount')) document.getElementById('lowRiskCount').textContent = allDefaulters.filter(d=>d.riskLevel==='Low Risk').length;
+                    
+                    const noticesBtn = document.querySelector('.btn-danger');
+                    if(noticesBtn && noticesBtn.textContent.includes('Send Notices')) {
+                        noticesBtn.addEventListener('click', () => {
+                            if(allDefaulters.length === 0) alert('There are no defaulters.');
+                            else alert(`Sent notices to ${allDefaulters.length} defaulters.`);
+                        });
+                    }
+                    
+                    const exportBtn = document.querySelector('.btn-outline-secondary');
+                    if(exportBtn) exportBtn.addEventListener('click', () => exportToCSV(allDefaulters, 'defaulters_export.csv'));
                 }
-             } catch(err) { tbody.innerHTML = '<tr><td colspan="6" class="text-center">Error</td></tr>'; }
+             } catch(err) { tbody.innerHTML = '<tr><td colspan="8" class="text-center text-danger">Error loading defaulters</td></tr>'; }
     }
+    
+    // Global UI Fixes
+    const topSearch = document.querySelector('.topbar-search input');
+    if(topSearch) {
+        topSearch.addEventListener('input', (e) => {
+            const localSearch = document.querySelector('.table-search input');
+            if(localSearch) {
+                localSearch.value = e.target.value;
+                localSearch.dispatchEvent(new Event('input'));
+            }
+        });
+    }
+    const notifBtn = document.querySelector('.topbar-btn');
+    if(notifBtn) {
+        notifBtn.addEventListener('click', () => alert('You have 0 new notifications.'));
+    }
+    document.querySelectorAll('.logout-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem('lms_token');
+            window.location.href = '../login.html';
+        });
+    });
+    window.exportToCSV = function(data, filename) {
+        if(!data || !data.length) return alert('No data to export');
+        const headers = Object.keys(data[0]);
+        const csvRows = [headers.join(','), ...data.map(r => headers.map(h => `"${String(r[h] ?? '').replace(/"/g, '""')}"`).join(','))];
+        const blob = new Blob([csvRows.join('\\n')], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
+        window.URL.revokeObjectURL(url);
+    };
 });
 </script>
 

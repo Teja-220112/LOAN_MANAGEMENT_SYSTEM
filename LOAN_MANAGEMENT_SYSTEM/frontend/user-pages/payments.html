@@ -208,16 +208,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if(payments.length === 0) tbody.innerHTML = '<tr><td colspan="7" class="text-center">No payment records found.</td></tr>';
                 
                 payments.forEach(p => {
-                    const badgeClass = p.status === 'Paid' ? 'badge-active' : p.status === 'Pending' ? 'badge-pending' : 'badge-failed';
+                    const badgeClass = p.status === 'Paid' ? 'badge-paid' : p.status === 'Pending' ? 'badge-pending' : 'badge-failed';
                     tbody.innerHTML += `
                     <tr>
-                        <td class="td-mono">${p.transaction_id || 'N/A'}</td>
-                        <td>${dt(p.payment_date)}</td>
-                        <td>${p.loanId ? p.loanId.loan_purpose : 'N/A'}</td>
-                        <td>Inst #${p.installment_number}</td>
+                        <td class="td-mono" style="font-size:0.75rem;">${p.transaction_id || 'N/A'}</td>
+                        <td><a href="loan_details.html?id=${p.loanId?._id || p.loanId}">#${(p.loanId?._id || p.loanId).slice(-6).toUpperCase()}</a></td>
+                        <td>${p.installment_number}</td>
                         <td class="td-mono">${formatCur(p.amount_paid)}</td>
+                        <td>${dt(p.payment_date)}</td>
                         <td>${p.method}</td>
                         <td><span class="badge-status ${badgeClass}">${p.status}</span></td>
+                        <td>—</td>
                     </tr>`;
                 });
             }

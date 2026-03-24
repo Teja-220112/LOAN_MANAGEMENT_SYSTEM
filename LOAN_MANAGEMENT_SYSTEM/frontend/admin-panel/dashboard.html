@@ -116,7 +116,7 @@
       <!-- Notifications -->
       <button class="topbar-btn" aria-label="Notifications">
         <i class="fas fa-bell"></i>
-        <span class="badge-dot"></span>
+        
       </button>
 
       <div class="topbar-divider"></div>
@@ -402,21 +402,65 @@ document.addEventListener('DOMContentLoaded', async () => {
         const statsRes = await apiCall('/api/admin/dashboard/stats');
         if(statsRes && statsRes.success) {
             const data = statsRes.data;
-            const uEl = document.getElementById('stat-total-users');
+            const uEl = document.getElementById('totalUsers');
             if(uEl) uEl.textContent = data.totalUsers;
             
-            const appEl = document.getElementById('stat-total-applications');
+            const appEl = document.getElementById('totalApplications');
             if(appEl) appEl.textContent = data.totalApplications;
             
-            const appLoanEl = document.getElementById('stat-approved-loans');
+            const appLoanEl = document.getElementById('approvedLoans');
             if(appLoanEl) appLoanEl.textContent = data.approvedLoans;
             
-            const dEl = document.getElementById('stat-total-defaulters');
+            const dEl = document.getElementById('totalDefaulters');
             if(dEl) dEl.textContent = data.totalDefaulters;
+        }
+        
+        // Fetch recent loans
+        const loansRes = await apiCall('/api/admin/loans');
+        if(loansRes && loansRes.success) {
+            const recent = loansRes.data.slice(0, 5).map(l => ({
+                loanId: l._id.slice(-6).toUpperCase(),
+                name: l.userId ? `${l.userId.firstName || ''} ${l.userId.lastName || ''}`.trim() : 'Unknown',
+                email: l.userId ? l.userId.email : '',
+                amount: l.loan_amount || 0,
+                purpose: l.loan_purpose || 'Personal',
+                date: l.createdAt ? new Date(l.createdAt).toLocaleDateString() : '—',
+                status: l.status || 'Pending'
+            }));
+            if(typeof renderRecentApplications === 'function') {
+                renderRecentApplications(recent);
+            }
+        }
+        
+        const exportBtn = document.querySelector('.btn-primary');
+        if(exportBtn && exportBtn.textContent.includes('Export Report')) {
+            exportBtn.addEventListener('click', () => window.print());
         }
     } catch(err) {
         console.error(err);
     }
+    // Global UI Fixes
+    const topSearch = document.querySelector('.topbar-search input');
+    if(topSearch) {
+        topSearch.addEventListener('input', (e) => {
+            const localSearch = document.querySelector('.table-search input');
+            if(localSearch) {
+                localSearch.value = e.target.value;
+                localSearch.dispatchEvent(new Event('input'));
+            }
+        });
+    }
+    const notifBtn = document.querySelector('.topbar-btn');
+    if(notifBtn) {
+        notifBtn.addEventListener('click', () => alert('You have 0 new notifications.'));
+    }
+    document.querySelectorAll('.logout-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem('lms_token');
+            window.location.href = '../login.html';
+        });
+    });
 });
 </script>
 
