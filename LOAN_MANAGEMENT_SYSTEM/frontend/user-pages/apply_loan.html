@@ -121,11 +121,21 @@
                 <!-- Credit Score -->
                 <div class="col-md-6">
                   <label class="form-label" for="credit_score">Credit Score <span class="text-danger">*</span></label>
-                  <div class="input-group">
-                    <span class="input-group-text"><i class="fas fa-star-half-stroke"></i></span>
-                    <input type="number" id="credit_score" name="credit_score" class="form-control"
-                      placeholder="300 – 900" min="300" max="900" required />
+                  <div class="credit-score-verify-row d-flex flex-column flex-sm-row gap-2 align-items-stretch">
+                    <div class="input-group flex-grow-1">
+                      <span class="input-group-text"><i class="fas fa-star-half-stroke"></i></span>
+                      <input type="number" id="credit_score" name="credit_score" class="form-control"
+                        placeholder="300 – 900" min="300" max="900" required />
+                    </div>
+
+                    <check-credit-score-button></check-credit-score-button>
                   </div>
+
+                  <div class="lms-credit-score-warning mt-1" role="alert">
+                    <span class="warn-icon" aria-hidden="true">⚠️</span>
+                    You must verify your credit score before applying.
+                  </div>
+
                   <div class="form-text">CIBIL / credit score between 300 and 900.</div>
                 </div>
 

@@ -248,3 +248,33 @@ document.addEventListener('DOMContentLoaded', () => {
     if(el.id && !el.name) el.name = el.id;
   });
 });
+
+/* ── Reusable Web Component: Check Credit Score ───────────────────── */
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+if (!customElements.get('check-credit-score-button')) {
+  class CheckCreditScoreButton extends HTMLElement {
+    connectedCallback() {
+      const href = this.getAttribute('href') || 'https://www.cibil.com/freecibilscore';
+      const tooltip = this.getAttribute('tooltip') || 'Check your official credit score from CIBIL';
+      const label = this.getAttribute('label') || 'Check Score';
+
+      this.innerHTML = `
+        <a class="check-score-btn" href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer"
+          data-tooltip="${escapeHtml(tooltip)}" aria-label="${escapeHtml(tooltip)}">
+          <span class="check-score-btn-label">${escapeHtml(label)}</span>
+          <i class="fas fa-external-link-alt" aria-hidden="true"></i>
+        </a>
+      `;
+    }
+  }
+
+  customElements.define('check-credit-score-button', CheckCreditScoreButton);
+}

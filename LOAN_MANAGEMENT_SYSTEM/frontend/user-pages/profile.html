@@ -164,6 +164,26 @@
           </div>
         </div>
 
+        <!-- Financial Details -->
+        <div class="lms-card mt-4">
+          <div class="card-header"><i class="fas fa-chart-line"></i> Financial Details</div>
+          <div class="card-body">
+            <div class="d-flex flex-column flex-sm-row align-items-sm-center gap-3">
+              <div class="flex-grow-1">
+                <label class="form-label" for="profile_credit_score">Credit Score</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="fas fa-star-half-stroke"></i></span>
+                  <input type="number" id="profile_credit_score" name="credit_score" class="form-control"
+                    readonly placeholder="—" />
+                </div>
+                <div class="form-text">Your score helps us evaluate eligibility and offers.</div>
+              </div>
+
+              <check-credit-score-button></check-credit-score-button>
+            </div>
+          </div>
+        </div>
+
         <!-- Delete Account -->
         <div class="lms-card mt-4" style="border-color:var(--red-100);">
           <div class="card-body d-flex align-items-center justify-content-between flex-wrap gap-3">
@@ -277,6 +297,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if(input.name === 'dob' || input.id === 'dob') input.value = u.dob ? u.dob.split('T')[0] : '';
                 if(input.name === 'national_id' || input.id === 'national_id') input.value = u.national_id || '';
                 if(input.name === 'employment_type' || input.id === 'employment_type') input.value = u.employment_type || '';
+                if(input.name === 'credit_score' || input.id === 'profile_credit_score') input.value = u.credit_score ?? '';
             });
         }
         
