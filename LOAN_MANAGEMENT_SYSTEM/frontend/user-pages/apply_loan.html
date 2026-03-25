@@ -162,12 +162,20 @@
 
                 <!-- Proof Document -->
                 <div class="col-12">
-                  <label class="form-label" for="document">Upload Required Document (ID, Payslip, etc.) <span class="text-danger">*</span></label>
+                  <label class="form-label" for="documents">Upload Required Documents (PAN, Aadhaar, Bank + Income Proof) <span class="text-danger">*</span></label>
                   <div class="input-group">
                     <span class="input-group-text"><i class="fas fa-file-upload"></i></span>
-                    <input type="file" id="document" name="document" class="form-control" accept=".jpg,.png,.pdf" required />
+                    <input type="file" id="documents" name="documents" class="form-control" accept=".jpg,.png,.pdf"
+                      multiple required />
                   </div>
-                  <div class="form-text">Accepted formats: JPG, PNG, PDF. Max size: 5MB.</div>
+                  <div class="form-text">
+                    Upload multiple files (max 10). Supported: JPG, PNG, PDF. Each file size <= 5MB.
+                  </div>
+                  <div class="form-text" id="documents-selected-info">Selected files: 0</div>
+                  <div class="lms-credit-score-warning mt-2" role="alert">
+                    <span class="warn-icon" aria-hidden="true">⚠️</span>
+                    Mandatory: PAN, Aadhaar, Bank Statement (last 6 months), Income Proof (Salaried: last 3 salary slips; Self-employed: ITR), and your CIBIL credit score screenshot.
+                  </div>
                 </div>
 
                 <!-- Additional Notes -->
@@ -244,6 +252,47 @@ document.addEventListener('DOMContentLoaded', () => {
         // Remove old submit listener if existing
         const newForm = form.cloneNode(true);
         form.parentNode.replaceChild(newForm, form);
+
+        const MAX_FILES = 10;
+        const docsInput = newForm.querySelector('#documents');
+        const docsInfoEl = newForm.querySelector('#documents-selected-info');
+        let selectedFiles = [];
+        const updateDocsInfo = (files) => {
+            if (!docsInfoEl) return;
+            const list = (files || []).map(f => f.name);
+            const shown = list.slice(0, 2);
+            const moreCount = Math.max(0, list.length - shown.length);
+            const moreText = moreCount > 0 ? ` +${moreCount} more` : '';
+            docsInfoEl.textContent = `Selected files: ${list.length}${list.length ? ` (${shown.join(', ')}${moreText})` : ''}`;
+        };
+        if (docsInput) {
+            docsInput.addEventListener('change', () => {
+                const newFiles = docsInput.files ? Array.from(docsInput.files) : [];
+                if (newFiles.length === 0) return;
+
+                // Accumulate files across multiple picker selections.
+                // Browsers replace the previous selection on each picker action, so we keep our own list.
+                const signature = (f) => `${f.name}__${f.size}__${f.lastModified}`;
+                const existing = new Set(selectedFiles.map(signature));
+
+                newFiles.forEach(f => {
+                    if (existing.has(signature(f))) return;
+                    if (selectedFiles.length >= MAX_FILES) return;
+                    selectedFiles.push(f);
+                });
+
+                if (selectedFiles.length >= MAX_FILES && newFiles.length > 0) {
+                    // Inform only when user tries to exceed.
+                    if (selectedFiles.length === MAX_FILES) {
+                        // Keep first MAX_FILES; remaining are ignored.
+                        // (No verbose UI needed; count indicator shows the cap.)
+                    }
+                }
+
+                updateDocsInfo(selectedFiles);
+            });
+            updateDocsInfo([]);
+        }
         
         newForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -256,9 +305,14 @@ document.addEventListener('DOMContentLoaded', () => {
             payload.append('loan_tenure', formData.get('loan_tenure'));
             payload.append('monthly_income', formData.get('monthly_income'));
             payload.append('employment_type', formData.get('employment_type') || 'Salaried');
+            payload.append('credit_score', formData.get('credit_score'));
             
-            if (formData.get('document')) {
-                payload.append('document', formData.get('document'));
+            const docsToSend = (selectedFiles && selectedFiles.length > 0)
+                ? selectedFiles
+                : (formData.getAll('documents') || []);
+
+            if (docsToSend.length > 0) {
+                docsToSend.forEach(d => payload.append('documents', d));
             }
 
             try {
@@ -268,16 +322,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     headers: { 'Authorization': `Bearer ${token}` },
                     body: payload
                 });
-                const result = await res.json();
+                const result = await res.json().catch(() => null);
                 
-                if(result && result.success) {
+                if(res.ok && result && result.success) {
                     alert('Loan application submitted successfully!');
                     window.location.href = 'my_loans.html';
                 } else {
-                    alert('Error: ' + (result ? result.error : 'Unknown error'));
+                    alert('Error: ' + (result && result.error ? result.error : `Request failed (${res.status})`));
                 }
             } catch(err) {
-                alert('Connection error');
+                alert('Connection error: backend not reachable at http://localhost:3000. Please start the backend server and try again.');
             }
         });
     }
