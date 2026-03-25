@@ -4,7 +4,7 @@
 
 'use strict';
 
-/* ── Shared HTML Partials ───────────────────────────────────────── */
+/* ── Shared HTML Partials *───────────────────────────────────────── */
 const NAVBAR_HTML = `
 <nav class="navbar navbar-expand-lg lms-navbar">
   <div class="container">
