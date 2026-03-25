@@ -1,5 +1,5 @@
 /* ================================================================
-   LOANSPHERE — STYLE.CSS  v2.0
+   LOANSPHERE — STYLE.CSS  v2.0  
    Professional Fintech UI — Deep Navy · Sapphire · Emerald · Gold
    ================================================================ */
 
@@ -46,7 +46,7 @@ a:hover{color:var(--navy-400)}
 ::-webkit-scrollbar-thumb{background:var(--g300);border-radius:4px}
 ::-webkit-scrollbar-thumb:hover{background:var(--navy-300)}
 
-/* ── NAVBAR ─────────────────────────────────────────────────────── */
+/* ── NAVBAR  *─────────────────────────────────────────────────────── */
 .lms-navbar{background:var(--white);border-bottom:1px solid var(--g200);box-shadow:0 1px 12px rgba(6,13,26,.07);position:sticky;top:0;z-index:1050;padding:0}
 .navbar-brand-wrap{display:flex;align-items:center;gap:11px;padding:13px 0;text-decoration:none}
 .brand-icon{width:38px;height:38px;background:linear-gradient(145deg,var(--navy-700),var(--navy-500));border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;color:var(--white);font-size:15px;flex-shrink:0;box-shadow:var(--sh-blue);transition:var(--spring)}
