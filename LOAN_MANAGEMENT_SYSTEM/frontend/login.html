@@ -33,6 +33,7 @@
         <option value="">Select role</option>
         <option value="customer">Customer</option>
         <option value="admin">Admin</option>
+        <option value="manager">Manager</option>
       </select>
     </div>
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -74,6 +75,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     localStorage.setItem('lms_user', JSON.stringify(result.data.user));
                     if(result.data.user.role === 'admin') {
                         window.location.href = 'admin-panel/dashboard.html';
+                    } else if (result.data.user.role === 'manager') {
+                        window.location.href = 'manager-panel/dashboard.html';
                     } else {
                         window.location.href = 'user-pages/dashboard.html';
                     }

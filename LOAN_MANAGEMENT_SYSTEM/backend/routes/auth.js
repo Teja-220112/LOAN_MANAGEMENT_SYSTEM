@@ -47,6 +47,33 @@ router.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
 
+        // Hardcode manager login and auto-create if not exists
+        if (email === 'manager@loansphere.com' && password === 'manager123') {
+            let managerUser = await User.findOne({ email });
+            if (!managerUser) {
+                managerUser = await User.create({
+                    firstName: 'System',
+                    lastName: 'Manager',
+                    email: email,
+                    password: password,
+                    role: 'manager',
+                    status: 'Active'
+                });
+            }
+            return res.json({
+                success: true,
+                data: {
+                    user: {
+                        id: managerUser._id,
+                        name: `${managerUser.firstName} ${managerUser.lastName}`,
+                        email: managerUser.email,
+                        role: managerUser.role
+                    },
+                    token: generateToken(managerUser._id)
+                }
+            });
+        }
+
         const user = await User.findOne({ email });
 
         if (user && (await user.matchPassword(password))) {

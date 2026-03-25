@@ -88,7 +88,7 @@
       <div class="sidebar-user-avatar">SA</div>
       <div class="sidebar-user-info">
         <div class="sidebar-user-name">Super Admin</div>
-        <div class="sidebar-user-role">Administrator</div>
+        <div class="sidebar-user-role">Loan Agent</div>
       </div>
     </div>
   </div>
@@ -126,7 +126,7 @@
         <div class="topbar-avatar">SA</div>
         <div class="topbar-profile-info">
           <div class="topbar-profile-name">Super Admin</div>
-          <div class="topbar-profile-role">Administrator</div>
+          <div class="topbar-profile-role">Loan Agent</div>
         </div>
         <i class="fas fa-chevron-down ms-1" style="font-size:10px;color:#94a3b8;"></i>
 
@@ -413,6 +413,20 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             const dEl = document.getElementById('totalDefaulters');
             if(dEl) dEl.textContent = data.totalDefaulters;
+            
+            // Re-render charts with actual data
+            const chartLabels = ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar']; // Static for now
+            if (typeof initLoanApplicationsChart === 'function') {
+                const oldChart = Chart.getChart('loanApplicationsChart');
+                if (oldChart) oldChart.destroy();
+                initLoanApplicationsChart('loanApplicationsChart', chartLabels, data.monthlyData.reverse());
+            }
+            if (typeof initLoanStatusChart === 'function') {
+                const st = data.statusDistribution;
+                const oldStatusChart = Chart.getChart('loanStatusChart');
+                if (oldStatusChart) oldStatusChart.destroy();
+                initLoanStatusChart('loanStatusChart', ['Approved', 'Pending', 'Rejected'], [st.Approved || 0, st.Pending || 0, st.Rejected || 0]);
+            }
         }
         
         // Fetch recent loans

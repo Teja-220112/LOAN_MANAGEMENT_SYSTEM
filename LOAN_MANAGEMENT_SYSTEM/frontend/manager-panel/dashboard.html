@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manager Dashboard — LoanSphere</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="../admin-panel/css/style.css" />
+</head>
+
+<body>
+
+  <!-- Sidebar Overlay (mobile) -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- ============================================================
+  SIDEBAR
+============================================================ -->
+  <aside class="sidebar" id="sidebar">
+
+    <!-- Brand -->
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-icon"><i class="fas fa-landmark"></i></div>
+      <div class="sidebar-brand-text">
+        <span class="sidebar-brand-name">LoanSphere</span>
+        <span class="sidebar-brand-sub">Management System</span>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="sidebar-nav">
+
+      <div class="nav-section-label">Main</div>
+
+      <a href="dashboard.html" class="sidebar-link active">
+        <i class="fas fa-chart-pie nav-icon"></i>
+        <span class="nav-label">Dashboard</span>
+      </a>
+
+    </nav>
+
+    <!-- Footer / User -->
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar">SM</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name">System Manager</div>
+          <div class="sidebar-user-role">Manager</div>
+        </div>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- ============================================================
+  MAIN WRAPPER
+============================================================ -->
+  <div class="main-wrapper" id="mainWrapper">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <button class="topbar-toggle" id="sidebarToggle" aria-label="Toggle Sidebar">
+        <i class="fas fa-bars"></i>
+      </button>
+      <span class="topbar-title">Manager Dashboard</span>
+
+      <div class="topbar-search">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" placeholder="Search anything..." />
+      </div>
+
+      <div class="topbar-actions">
+        <!-- Profile -->
+        <div class="topbar-profile" id="profileTrigger" role="button" tabindex="0">
+          <div class="topbar-avatar">SM</div>
+          <div class="topbar-profile-info">
+            <div class="topbar-profile-name">System Manager</div>
+            <div class="topbar-profile-role">Manager</div>
+          </div>
+          <i class="fas fa-chevron-down ms-1" style="font-size:10px;color:#94a3b8;"></i>
+
+          <!-- Dropdown -->
+          <div class="profile-dropdown" id="profileDropdown">
+            <a href="../login.html" class="logout-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT -->
+    <main class="content-area">
+
+      <!-- Page Header -->
+      <div class="page-header">
+        <div class="page-header-left">
+          <div class="breadcrumb-bar">
+            <a href="dashboard.html">Home</a>
+            <span>/</span>
+            <span>Manager Dashboard</span>
+          </div>
+          <h4>Overview Dashboard</h4>
+          <p>Welcome back, Manager. Review and process loan applications here.</p>
+        </div>
+      </div>
+
+      <!-- ==========================================
+      STAT CARDS
+    ========================================== -->
+      <div class="row g-3 mb-4">
+
+        <div class="col-12 col-sm-6 col-xl-3">
+          <div class="stat-card blue">
+            <div class="stat-card-icon"><i class="fas fa-users"></i></div>
+            <div class="stat-card-value" id="totalUsers">—</div>
+            <div class="stat-card-label">Total Registered Users</div>
+            <div class="stat-card-trend up">
+              <i class="fas fa-arrow-up"></i>
+              <strong>—%</strong>
+              <span>vs last month</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+          <div class="stat-card orange">
+            <div class="stat-card-icon"><i class="fas fa-file-invoice-dollar"></i></div>
+            <div class="stat-card-value" id="totalApplications">—</div>
+            <div class="stat-card-label">Total Loan Applications</div>
+            <div class="stat-card-trend up">
+              <i class="fas fa-arrow-up"></i>
+              <strong>—%</strong>
+              <span>vs last month</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+          <div class="stat-card green">
+            <div class="stat-card-icon"><i class="fas fa-check-circle"></i></div>
+            <div class="stat-card-value" id="approvedLoans">—</div>
+            <div class="stat-card-label">Approved Loans</div>
+            <div class="stat-card-trend up">
+              <i class="fas fa-arrow-up"></i>
+              <strong>—%</strong>
+              <span>approval rate</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-sm-6 col-xl-3">
+          <div class="stat-card red">
+            <div class="stat-card-icon"><i class="fas fa-exclamation-triangle"></i></div>
+            <div class="stat-card-value" id="totalDefaulters">—</div>
+            <div class="stat-card-label">Total Defaulters</div>
+            <div class="stat-card-trend down">
+              <i class="fas fa-arrow-up"></i>
+              <strong>—%</strong>
+              <span>risk level</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+      <!-- /STAT CARDS -->
+
+      <!-- ==========================================
+      CHARTS ROW
+    ========================================== -->
+      <div class="row g-3 mb-4">
+        <div class="col-12 col-lg-8">
+          <div class="chart-card">
+            <div class="chart-card-header">
+              <div>
+                <div class="chart-card-title">Loan Applications per Month</div>
+                <div class="chart-card-sub">Monthly trend of incoming applications</div>
+              </div>
+            </div>
+            <div class="chart-wrapper" style="height:260px;">
+              <canvas id="loanApplicationsChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12 col-lg-4">
+          <div class="chart-card h-100">
+            <div class="chart-card-header">
+              <div>
+                <div class="chart-card-title">Loan Status</div>
+                <div class="chart-card-sub">Distribution by status</div>
+              </div>
+            </div>
+            <div class="chart-wrapper" style="height:260px;">
+              <canvas id="loanStatusChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- /CHARTS ROW -->
+
+      <!-- ==========================================
+      PENDING APPLICATIONS TABLE (For Manager Approval)
+    ========================================== -->
+      <div class="table-container">
+        <div class="table-header">
+          <div class="table-header-left">
+            <div class="card-title">Pending Loan Applications</div>
+            <div class="card-subtitle">Review applications requiring your decision</div>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="admin-table" id="pendingApplicationsTable">
+            <thead>
+              <tr>
+                <th>Loan ID</th>
+                <th>Applicant Name</th>
+                <th>Amount</th>
+                <th>Purpose</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Decisions</th>
+              </tr>
+            </thead>
+            <tbody id="pendingApplicationsBody">
+              <tr>
+                <td colspan="7">
+                  <div class="empty-state">
+                    <i class="fas fa-inbox d-block"></i>
+                    <p>Loading pending applications...</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="../admin-panel/js/charts.js"></script>
+
+  <script>
+    function statusBadge(status) {
+      const map = {
+        'Approved': 'badge-success',
+        'Pending': 'badge-warning',
+        'Rejected': 'badge-danger',
+      };
+      return `<span class="badge ${map[status] || 'badge-secondary'}">${status}</span>`;
+    }
+
+    async function apiCall(endpoint, method = 'GET', body = null) {
+      const token = localStorage.getItem('lms_token');
+      if (!token) { window.location.href = '../login.html'; return; }
+      const options = { method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` } };
+      if (body) options.body = JSON.stringify(body);
+      const res = await fetch(`http://localhost:3000${endpoint}`, options);
+      if (res.status === 401 || res.status === 403) { window.location.href = '../login.html'; return; }
+      return res.json();
+    }
+
+    async function updateLoanStatus(loanId, action) {
+      if (!confirm(`Are you sure you want to ${action} this loan?`)) return;
+
+      try {
+        const res = await apiCall(`/api/admin/loans/${loanId}/${action}`, 'PUT');
+        if (res && res.success) {
+          alert(`Loan highly successfully ${action}ed!`);
+          window.location.reload();
+        } else {
+          alert('Operation failed: ' + (res.error || 'Unknown error'));
+        }
+      } catch (err) {
+        alert('Network Error');
+        console.error(err);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (!localStorage.getItem('lms_token')) window.location.href = '../login.html';
+
+      const user = JSON.parse(localStorage.getItem('lms_user') || '{}');
+      const nameEl = document.querySelector('.sidebar-user-name');
+      if (nameEl && user.name) nameEl.textContent = user.name;
+      const topNameEl = document.querySelector('.topbar-profile-name');
+      if (topNameEl && user.name) topNameEl.textContent = user.name;
+
+      // Dropdown toggle since external script might not handle it if copied manually
+      const profileTrigger = document.getElementById('profileTrigger');
+      if (profileTrigger) {
+        profileTrigger.addEventListener('click', () => {
+          profileTrigger.classList.toggle('active');
+        });
+      }
+
+      try {
+        // Stats
+        const statsRes = await apiCall('/api/admin/dashboard/stats');
+        if (statsRes && statsRes.success) {
+          const data = statsRes.data;
+          document.getElementById('totalUsers').textContent = data.totalUsers;
+          document.getElementById('totalApplications').textContent = data.totalApplications;
+          document.getElementById('approvedLoans').textContent = data.approvedLoans;
+          document.getElementById('totalDefaulters').textContent = data.totalDefaulters;
+
+          // Re-render charts with actual data
+          const chartLabels = ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar']; // Static for now
+          if (typeof initLoanApplicationsChart === 'function') {
+            const oldChart = Chart.getChart('loanApplicationsChart');
+            if (oldChart) oldChart.destroy();
+            initLoanApplicationsChart('loanApplicationsChart', chartLabels, data.monthlyData.reverse());
+          }
+          if (typeof initLoanStatusChart === 'function') {
+            const st = data.statusDistribution;
+            const oldStatusChart = Chart.getChart('loanStatusChart');
+            if (oldStatusChart) oldStatusChart.destroy();
+            initLoanStatusChart('loanStatusChart', ['Approved', 'Pending', 'Rejected'], [st.Approved || 0, st.Pending || 0, st.Rejected || 0]);
+          }
+        }
+
+        // Fetch Pending Loans
+        const loansRes = await apiCall('/api/admin/loans?status=Pending');
+        if (loansRes && loansRes.success) {
+          const tbody = document.getElementById('pendingApplicationsBody');
+          if (loansRes.data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><i class="fas fa-inbox d-block"></i><p>No pending applications to review.</p></div></td></tr>`;
+          } else {
+            tbody.innerHTML = loansRes.data.map(l => `
+                      <tr>
+                        <td><span style="font-family:monospace;font-weight:600;color:#3b82f6;">${l._id.slice(-6).toUpperCase()}</span></td>
+                        <td>
+                          <div class="user-cell">
+                            <div>
+                              <div class="user-name">${l.userId ? l.userId.firstName + ' ' + l.userId.lastName : 'Unknown'}</div>
+                              <div class="user-id">${l.userId ? l.userId.email : ''}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td><strong>₹${Number(l.loan_amount).toLocaleString()}</strong></td>
+                        <td>${l.loan_purpose || '—'}</td>
+                        <td>${new Date(l.createdAt).toLocaleDateString()}</td>
+                        <td>${statusBadge(l.status)}</td>
+                        <td>
+                          <a href="loan_approval.html?id=${l._id}" class="btn btn-primary btn-sm btn-icon" title="Review">
+                            <i class="fas fa-eye"></i> Review & Decide
+                          </a>
+                        </td>
+                      </tr>
+                  `).join('');
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      }
+
+      document.querySelectorAll('.logout-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          localStorage.removeItem('lms_token');
+          window.location.href = '../login.html';
+        });
+      });
+    });
+  </script>
+
+</body>
+
+</html>

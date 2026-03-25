@@ -31,7 +31,7 @@
         <i class="fas fa-landmark"></i>
       </div>
       <div class="login-title">LoanSphere</div>
-      <div class="login-subtitle">Loan Management System — Admin Portal</div>
+      <div class="login-subtitle">Loan Management System — Staff Portal</div>
     </div>
 
     <!-- Card Body -->
@@ -47,7 +47,7 @@
               type="email"
               id="adminEmail"
               class="form-control"
-              placeholder="admin@loanpro.com"
+              placeholder="staff@loanpro.com"
               autocomplete="email"
               required
             />
@@ -141,12 +141,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     body: JSON.stringify({ email: data.email, password: data.password })
                 });
                 const result = await res.json();
-                if(result.success && result.data.user.role === 'admin') {
+                if(result.success && (result.data.user.role === 'admin' || result.data.user.role === 'manager')) {
                     localStorage.setItem('lms_token', result.data.token);
                     localStorage.setItem('lms_user', JSON.stringify(result.data.user));
-                    window.location.href = 'dashboard.html';
+                    if (result.data.user.role === 'manager') {
+                        window.location.href = '../manager-panel/dashboard.html';
+                    } else {
+                        window.location.href = 'dashboard.html';
+                    }
                 } else {
-                    alert('Error: ' + (result.error || 'Not authorized as admin'));
+                    alert('Error: ' + (result.error || 'Not authorized as staff'));
                 }
             } catch (err) {
                 alert('Connection error');
