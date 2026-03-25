@@ -461,25 +461,40 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             // Populate Documents Area
             const docArea = document.getElementById('documentsArea');
-            if (docArea && l.document_url) {
-                docArea.innerHTML = `
-                    <div style="display:flex;align-items:center;padding:12px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;">
-                        <i class="fas fa-file-pdf" style="font-size:24px;color:#ef4444;margin-right:12px;"></i>
-                        <div style="flex:1;">
-                            <div style="font-size:14px;font-weight:600;color:#1e293b;">Proof Document</div>
-                            <div style="font-size:12px;color:#64748b;">Uploaded with application</div>
+            if (docArea) {
+                const urls = Array.isArray(l.document_urls) ? l.document_urls : [];
+                const legacyUrl = l.document_url ? [l.document_url] : [];
+                const allUrls = urls.length ? urls : legacyUrl;
+
+                if (!allUrls || allUrls.length === 0) {
+                    docArea.innerHTML = `
+                        <p style="color:#94a3b8;font-size:13px;">
+                            <i class="fas fa-info-circle me-2"></i> No document was provided.
+                        </p>
+                    `;
+                } else {
+                    const iconFor = (url) => {
+                        const lower = String(url || '').toLowerCase();
+                        if (lower.endsWith('.pdf')) return 'fa-file-pdf';
+                        if (lower.endsWith('.png') || lower.endsWith('.jpg') || lower.endsWith('.jpeg')) return 'fa-file-image';
+                        return 'fa-file';
+                    };
+
+                    docArea.innerHTML = allUrls.map((u, idx) => `
+                        <div style="display:flex;align-items:center;padding:12px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;margin-bottom:10px;">
+                            <i class="fas ${iconFor(u)}" style="font-size:22px;color:#3b82f6;margin-right:12px;"></i>
+                            <div style="flex:1;">
+                                <div style="font-size:14px;font-weight:600;color:#1e293b;">Uploaded Document ${idx + 1}</div>
+                                <div style="font-size:12px;color:#64748b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:320px;">
+                                    ${String(u).replace('/uploads/','')}
+                                </div>
+                            </div>
+                            <a href="http://localhost:3000${u}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-external-link-alt mt-1"></i> View
+                            </a>
                         </div>
-                        <a href="http://localhost:3000${l.document_url}" target="_blank" class="btn btn-sm btn-outline-primary">
-                            <i class="fas fa-external-link-alt mt-1"></i> View
-                        </a>
-                    </div>
-                `;
-            } else if (docArea) {
-                docArea.innerHTML = `
-                    <p style="color:#94a3b8;font-size:13px;">
-                        <i class="fas fa-info-circle me-2"></i> No document was provided.
-                    </p>
-                `;
+                    `).join('');
+                }
             }
             
             const btnApprove = document.getElementById('approveBtn');
