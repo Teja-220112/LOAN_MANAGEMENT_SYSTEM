@@ -15,16 +15,26 @@ const storage = multer.diskStorage({
         cb(null, Date.now() + '-' + file.originalname);
     }
 });
-const upload = multer({ storage: storage });
+const MAX_FILES = 10;
+const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
+const ALLOWED_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'application/pdf']);
 
-router.post('/apply', protect, upload.single('document'), async (req, res) => {
+const upload = multer({
+    storage: storage,
+    limits: { files: MAX_FILES, fileSize: MAX_FILE_SIZE_BYTES },
+    fileFilter: (req, file, cb) => {
+        if (ALLOWED_MIME_TYPES.has(file.mimetype)) return cb(null, true);
+        return cb(new Error('Invalid file type. Only JPG, PNG, and PDF are allowed.'));
+    }
+});
+
+router.post('/apply', protect, upload.array('documents', MAX_FILES), async (req, res) => {
     try {
-        const { loan_amount, loan_purpose, loan_tenure, monthly_income, employment_type } = req.body;
-        
-        let document_url = null;
-        if (req.file) {
-            document_url = `/uploads/${req.file.filename}`;
-        }
+        const { loan_amount, loan_purpose, loan_tenure, monthly_income, employment_type, credit_score } = req.body;
+
+        const docs = req.files || [];
+        const document_urls = docs.map(f => `/uploads/${f.filename}`);
+        const document_url = document_urls.length > 0 ? document_urls[0] : null;
 
         const loan = await Loan.create({
             userId: req.user._id,
@@ -33,13 +43,16 @@ router.post('/apply', protect, upload.single('document'), async (req, res) => {
             loan_tenure,
             monthly_income,
             employment_type,
+            credit_score,
             document_url,
+            document_urls,
             status: 'Pending'
         });
 
         res.status(201).json({ success: true, data: loan });
     } catch (error) {
-        res.status(500).json({ success: false, error: 'Server error during loan application' });
+        // Multer errors (like invalid file type / too many files) surface here as well
+        res.status(400).json({ success: false, error: error.message || 'Server error during loan application' });
     }
 });
 
