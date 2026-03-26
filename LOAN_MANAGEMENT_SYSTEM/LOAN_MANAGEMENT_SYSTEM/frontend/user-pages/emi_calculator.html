@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LoanSphere — EMI Calculator</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div id="navbar-placeholder"></div>
+
+<main>
+  <!-- Page Header -->
+  <div class="page-hero" style="padding:44px 0 36px;">
+    <div class="container">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb lms-breadcrumb mb-2">
+          <li class="breadcrumb-item"><a href="dashboard.html">Dashboard</a></li>
+          <li class="breadcrumb-item active">EMI Calculator</li>
+        </ol>
+      </nav>
+      <h1 style="font-size:1.75rem;font-weight:700;margin-bottom:6px;">EMI Calculator</h1>
+      <p style="color:rgba(255,255,255,0.65);margin-bottom:0;">
+        Estimate your monthly EMI before applying for a loan.
+      </p>
+    </div>
+  </div>
+
+  <div class="container page-section-sm">
+    <div class="row justify-content-center">
+      <div class="col-lg-7 col-xl-6">
+
+        <div class="lms-card fade-in-up">
+          <div class="card-header">
+            <i class="fas fa-calculator"></i> Calculate Your EMI
+          </div>
+          <div class="card-body">
+
+            <form id="emi-form">
+              <div class="mb-4">
+                <label class="form-label" for="loan-amount">Loan Amount (₹)</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="fas fa-indian-rupee-sign"></i></span>
+                  <input type="number" id="loan-amount" name="loan_amount" class="form-control"
+                    placeholder="e.g. 500000" min="1000" required />
+                </div>
+                <div class="d-flex justify-content-between mt-1" style="font-size:0.75rem;color:var(--slate-400);">
+                  <span>₹1,000</span><span>₹1,00,00,000</span>
+                </div>
+              </div>
+
+              <div class="mb-4">
+                <label class="form-label" for="interest-rate">Annual Interest Rate (%)</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="fas fa-percent"></i></span>
+                  <input type="number" id="interest-rate" name="interest_rate" class="form-control"
+                    placeholder="e.g. 10.5" step="0.01" min="0.1" max="36" required />
+                </div>
+                <div class="d-flex justify-content-between mt-1" style="font-size:0.75rem;color:var(--slate-400);">
+                  <span>0.1%</span><span>36%</span>
+                </div>
+              </div>
+
+              <div class="mb-4">
+                <label class="form-label" for="loan-tenure">Loan Tenure (months)</label>
+                <div class="input-group">
+                  <span class="input-group-text"><i class="fas fa-hourglass-half"></i></span>
+                  <input type="number" id="loan-tenure" name="loan_tenure" class="form-control"
+                    placeholder="e.g. 60" min="1" max="360" required />
+                </div>
+                <div class="d-flex justify-content-between mt-1" style="font-size:0.75rem;color:var(--slate-400);">
+                  <span>1 month</span><span>360 months (30 yrs)</span>
+                </div>
+              </div>
+
+              <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary btn-lg flex-fill">
+                  <i class="fas fa-calculator me-2"></i>Calculate EMI
+                </button>
+                <button type="reset" class="btn btn-outline-secondary btn-lg">
+                  <i class="fas fa-rotate-left"></i>
+                </button>
+              </div>
+            </form>
+
+            <!-- Result Section -->
+            <div id="calc-result" class="mt-4 d-none">
+              <div class="calc-result-card">
+                <div class="text-center mb-3" style="font-size:0.75rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,255,255,0.5);">
+                  Calculation Result
+                </div>
+                <div class="d-flex flex-column flex-sm-row">
+                  <div class="calc-result-item flex-fill">
+                    <div class="label">Monthly EMI</div>
+                    <div class="value" id="result-emi">₹0</div>
+                  </div>
+                  <div class="calc-divider d-none d-sm-block"></div>
+                  <div class="calc-result-item flex-fill">
+                    <div class="label">Total Interest</div>
+                    <div class="value" id="result-interest">₹0</div>
+                  </div>
+                  <div class="calc-divider d-none d-sm-block"></div>
+                  <div class="calc-result-item flex-fill">
+                    <div class="label">Total Payment</div>
+                    <div class="value" id="result-total">₹0</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Breakdown Bar -->
+              <div class="mt-4 p-3 rounded" style="background:var(--slate-50);border:1px solid var(--slate-200);">
+                <div class="d-flex justify-content-between align-items-center mb-2" style="font-size:0.8rem;">
+                  <div class="d-flex align-items-center gap-2">
+                    <div style="width:10px;height:10px;border-radius:2px;background:var(--blue-600);"></div>
+                    <span style="color:var(--slate-600);">Principal</span>
+                  </div>
+                  <div class="d-flex align-items-center gap-2">
+                    <div style="width:10px;height:10px;border-radius:2px;background:var(--amber-600);"></div>
+                    <span style="color:var(--slate-600);">Interest</span>
+                  </div>
+                </div>
+                <div class="progress" style="height:10px;border-radius:100px;">
+                  <div id="bar-principal" class="progress-bar" style="background:var(--blue-600);"></div>
+                  <div id="bar-interest" class="progress-bar" style="background:var(--amber-600);"></div>
+                </div>
+              </div>
+
+              <div class="mt-3 text-center">
+                <a href="apply_loan.html" class="btn btn-outline-primary btn-sm">
+                  <i class="fas fa-file-signature me-1"></i>Apply for This Loan
+                </a>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Info Box -->
+        <div class="lms-card mt-4">
+          <div class="card-header"><i class="fas fa-circle-info"></i> How EMI is Calculated</div>
+          <div class="card-body">
+            <p style="font-size:0.875rem;color:var(--slate-600);margin-bottom:12px;">
+              EMI (Equated Monthly Installment) is calculated using the standard reducing balance formula:
+            </p>
+            <div class="p-3 rounded text-center" style="background:var(--slate-50);border:1px solid var(--slate-200);font-family:'DM Mono',monospace;font-size:0.85rem;color:var(--slate-700);">
+              EMI = P × r × (1 + r)<sup>n</sup> / ((1 + r)<sup>n</sup> − 1)
+            </div>
+            <ul style="font-size:0.8125rem;color:var(--slate-500);margin-top:12px;margin-bottom:0;padding-left:18px;">
+              <li><strong>P</strong> = Principal loan amount</li>
+              <li><strong>r</strong> = Monthly interest rate (annual rate ÷ 12 ÷ 100)</li>
+              <li><strong>n</strong> = Number of monthly installments (tenure)</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</main>
+
+<div id="footer-placeholder"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script src="scripts.js"></script>
+<script>
+  // Extended: update breakdown bar after calculation
+  document.getElementById('emi-form').addEventListener('submit', function () {
+    setTimeout(function () {
+      const P = parseFloat(document.getElementById('loan-amount').value);
+      const annualRate = parseFloat(document.getElementById('interest-rate').value);
+      const N = parseInt(document.getElementById('loan-tenure').value);
+      if (!P || !annualRate || !N) return;
+      const r = annualRate / 12 / 100;
+      const emi = (P * r * Math.pow(1 + r, N)) / (Math.pow(1 + r, N) - 1);
+      const total = emi * N;
+      const interest = total - P;
+      const principalPct = (P / total * 100).toFixed(1);
+      const interestPct = (interest / total * 100).toFixed(1);
+      document.getElementById('bar-principal').style.width = principalPct + '%';
+      document.getElementById('bar-interest').style.width = interestPct + '%';
+    }, 50);
+  });
+</script>
+</body>
+</html>

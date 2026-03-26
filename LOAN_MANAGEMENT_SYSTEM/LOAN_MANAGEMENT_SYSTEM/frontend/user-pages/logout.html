@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LoanSphere — Logout</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div id="navbar-placeholder"></div>
+
+<main>
+  <!-- Page Header -->
+  <div class="page-hero" style="padding:44px 0 36px;">
+    <div class="container">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb lms-breadcrumb mb-2">
+          <li class="breadcrumb-item"><a href="dashboard.html">Dashboard</a></li>
+          <li class="breadcrumb-item active">Logout</li>
+        </ol>
+      </nav>
+      <h1 style="font-size:1.75rem;font-weight:700;margin-bottom:6px;">Logout</h1>
+      <p style="color:rgba(255,255,255,0.65);margin-bottom:0;">You have been successfully logged out.</p>
+    </div>
+  </div>
+
+  <div class="container page-section-sm">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <div class="lms-card text-center">
+          <div class="card-body py-5">
+            <div class="mb-4">
+              <i class="fas fa-check-circle" style="font-size:3rem;color:var(--em-500);"></i>
+            </div>
+            <h4 class="mb-3">Logged Out Successfully</h4>
+            <p class="text-muted mb-4">Thank you for using LoanSphere. You have been securely logged out of your account.</p>
+            <a href="../login.html" class="btn btn-primary">
+              <i class="fas fa-sign-in-alt me-2"></i>Login Again
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div id="footer-placeholder"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script src="scripts.js"></script>
+
+<script>
+// ===== Frontend Connection Code: logout.html =====
+document.addEventListener('DOMContentLoaded', () => {
+    localStorage.removeItem('lms_token');
+    localStorage.removeItem('lms_user');
+    window.location.href = '../login.html';
+});
+</script>
+
+</body>
+</html>

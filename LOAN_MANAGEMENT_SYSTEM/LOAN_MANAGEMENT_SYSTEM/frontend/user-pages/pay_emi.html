@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LoanMS — Pay EMI</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <link href="style.css" rel="stylesheet">
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <style>
+    .card-number-input { letter-spacing: 3px; font-family: 'Courier New', monospace; font-size: 1.05rem; }
+    .upi-logo { font-size: 1.8rem; font-weight: 900; font-style: italic; }
+    .upi-logo .u { color: #097939; }
+    .upi-logo .p { color: #ed752e; }
+    .upi-logo .i { color: #c1272d; }
+    .success-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:9999; align-items:center; justify-content:center; }
+    .success-overlay.show { display:flex; }
+    .success-box { background:#fff; border-radius:var(--radius-lg); padding:2.5rem; text-align:center; max-width:380px; width:90%; animation: pop .3s ease; }
+    @keyframes pop { from { transform:scale(.85); opacity:0; } to { transform:scale(1); opacity:1; } }
+    .check-circle { width:72px; height:72px; background:var(--success-light); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 1.25rem; font-size:2rem; color:var(--success); }
+  </style>
+</head>
+<body>
+<div id="lms-navbar-placeholder"></div>
+
+<!-- Success Overlay -->
+<div class="success-overlay" id="successOverlay">
+  <div class="success-box">
+    <div class="check-circle"><i class="fa-solid fa-check"></i></div>
+    <h4 class="fw-600 mb-2">Payment Successful!</h4>
+    <p style="color:var(--gray-600);font-size:.875rem">Your EMI payment has been processed successfully.</p>
+    <div class="lms-card mt-3 mb-3" style="box-shadow:none;background:var(--gray-50)">
+      <div class="card-body py-2 px-3">
+        <div class="d-flex justify-content-between text-sm mb-1">
+          <span style="color:var(--gray-400)">Amount Paid</span>
+          <span class="fw-600 text-success-lms" id="successAmt">₹—</span>
+        </div>
+        <div class="d-flex justify-content-between text-sm mb-1">
+          <span style="color:var(--gray-400)">Transaction ID</span>
+          <span class="fw-600" id="successTxn" style="font-family:monospace;font-size:.78rem">—</span>
+        </div>
+        <div class="d-flex justify-content-between text-sm">
+          <span style="color:var(--gray-400)">Date & Time</span>
+          <span class="fw-600" id="successDate">—</span>
+        </div>
+      </div>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn-outline-lms flex-fill justify-content-center" onclick="printReceipt()"><i class="fa-solid fa-print"></i> Receipt</button>
+      <a href="payments.html" class="flex-fill"><button class="btn-primary-lms w-100 justify-content-center"><i class="fa-solid fa-list"></i> View History</button></a>
+    </div>
+  </div>
+</div>
+
+<main>
+  <div class="page-header">
+    <div class="container">
+      <div class="d-flex align-items-center gap-3">
+        <a href="my_loans.html" style="color:var(--gray-400);font-size:.875rem"><i class="fa-solid fa-arrow-left me-1"></i>My Loans</a>
+        <span style="color:var(--gray-200)">/</span>
+        <h2 class="mb-0"><i class="fa-solid fa-credit-card me-2 text-primary-lms"></i>Pay EMI</h2>
+      </div>
+      <p class="mt-1">Secure EMI payment portal</p>
+    </div>
+  </div>
+
+  <div class="container pb-5">
+    <div class="row justify-content-center">
+      <div class="col-lg-9">
+        <div class="row g-4">
+
+          <!-- Left: Payment Form -->
+          <div class="col-md-7">
+            <div class="lms-card overflow-hidden">
+              <!-- Header -->
+              <div class="pay-emi-header">
+                <div style="font-size:.75rem;opacity:.8;text-transform:uppercase;letter-spacing:.8px">EMI Due — Loan #<span id="headerLoanId">Loading…</span></div>
+                <div class="amount-display" id="headerAmount">₹ —</div>
+                <div style="font-size:.8rem;opacity:.75;margin-top:.25rem">Due date: <strong id="headerDueDate">—</strong></div>
+              </div>
+
+              <!-- Step Indicator -->
+              <div class="card-body pb-0">
+                <div class="step-indicator" id="stepIndicator">
+                  <div class="step-wrapper flex-fill">
+                    <div class="d-flex align-items-center">
+                      <div class="step-circle active" id="step1c">1</div>
+                      <div class="step-line" id="line1"></div>
+                    </div>
+                    <div class="step-label" style="color:var(--primary)">Method</div>
+                  </div>
+                  <div class="step-wrapper flex-fill">
+                    <div class="d-flex align-items-center">
+                      <div class="step-circle" id="step2c">2</div>
+                      <div class="step-line" id="line2"></div>
+                    </div>
+                    <div class="step-label" id="step2l">Details</div>
+                  </div>
+                  <div class="step-wrapper">
+                    <div class="d-flex align-items-center">
+                      <div class="step-circle" id="step3c">3</div>
+                    </div>
+                    <div class="step-label" id="step3l">Confirm</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- STEP 1: Choose Method -->
+              <div class="card-body" id="step1">
+                <h6 class="fw-600 mb-3">Choose Payment Method</h6>
+                <div class="row g-2 mb-4" id="methodGrid">
+                  <div class="col-6">
+                    <button class="payment-method-btn w-100" onclick="selectMethod('card',this)">
+                      <i class="fa-solid fa-credit-card"></i>
+                      Debit / Credit Card
+                    </button>
+                  </div>
+                  <div class="col-6">
+                    <button class="payment-method-btn w-100" onclick="selectMethod('netbanking',this)">
+                      <i class="fa-solid fa-building-columns"></i>
+                      Net Banking
+                    </button>
+                  </div>
+                  <div class="col-6">
+                    <button class="payment-method-btn w-100" onclick="selectMethod('wallet',this)">
+                      <i class="fa-solid fa-wallet"></i>
+                      Mobile Wallet
+                    </button>
+                  </div>
+                </div>
+                <button class="btn-primary-lms w-100 justify-content-center" id="nextBtn1" onclick="goStep(2)" disabled style="padding:12px">
+                  Next <i class="fa-solid fa-arrow-right ms-1"></i>
+                </button>
+              </div>
+
+              <!-- STEP 2: Payment Details -->
+              <div class="card-body" id="step2" style="display:none">
+                <!-- Card -->
+                <div id="cardForm" style="display:none">
+                  <h6 class="fw-600 mb-3"><i class="fa-brands fa-cc-visa me-1" style="color:#1a1f71"></i><i class="fa-brands fa-cc-mastercard ms-1" style="color:#eb001b"></i> Card Payment</h6>
+                  <div class="form-group">
+                    <label class="form-label-lms">Card Number</label>
+                    <input type="text" class="form-control-lms card-number-input" id="cardNum" placeholder="0000  0000  0000  0000" maxlength="19" autocomplete="off">
+                  </div>
+                  <div class="row g-3">
+                    <div class="col-6">
+                      <div class="form-group">
+                        <label class="form-label-lms">Expiry (MM/YY)</label>
+                        <input type="text" class="form-control-lms" id="cardExp" placeholder="MM/YY" maxlength="5">
+                      </div>
+                    </div>
+                    <div class="col-6">
+                      <div class="form-group">
+                        <label class="form-label-lms">CVV</label>
+                        <input type="password" class="form-control-lms" id="cardCvv" placeholder="•••" maxlength="4">
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label-lms">Cardholder Name</label>
+                    <input type="text" class="form-control-lms" id="cardName" placeholder="As printed on card">
+                  </div>
+                </div>
+
+                <!-- Net Banking -->
+                <div id="netbankingForm" style="display:none">
+                  <h6 class="fw-600 mb-3"><i class="fa-solid fa-building-columns me-2 text-primary-lms"></i>Net Banking</h6>
+                  <div class="form-group">
+                    <label class="form-label-lms">Select Your Bank</label>
+                    <select class="form-select-lms" id="bankSelect">
+                      <option value="">— Choose bank —</option>
+                      <option>State Bank of India</option>
+                      <option>HDFC Bank</option>
+                      <option>ICICI Bank</option>
+                      <option>Axis Bank</option>
+                      <option>Kotak Mahindra Bank</option>
+                      <option>Punjab National Bank</option>
+                      <option>Bank of Baroda</option>
+                      <option>Yes Bank</option>
+                      <option>Other</option>
+                    </select>
+                  </div>
+                  <div class="lms-alert lms-alert-info">
+                    <i class="fa-solid fa-info-circle"></i>
+                    <span>You will be redirected to your bank's secure login page.</span>
+                  </div>
+                </div>
+
+                <!-- Wallet -->
+                <div id="walletForm" style="display:none">
+                  <h6 class="fw-600 mb-3"><i class="fa-solid fa-wallet me-2 text-primary-lms"></i>Mobile Wallet</h6>
+                  <div class="row g-2 mb-3">
+                    <div class="col-6"><button class="payment-method-btn w-100" onclick="selectWallet(this)"><i class="fa-solid fa-mobile-screen-button"></i> PhonePe</button></div>
+                    <div class="col-6"><button class="payment-method-btn w-100" onclick="selectWallet(this)"><i class="fa-brands fa-google-pay"></i> Google Pay</button></div>
+                    <div class="col-6"><button class="payment-method-btn w-100" onclick="selectWallet(this)"><i class="fa-solid fa-p"></i> Paytm</button></div>
+                    <div class="col-6"><button class="payment-method-btn w-100" onclick="selectWallet(this)"><i class="fa-solid fa-a"></i> Amazon Pay</button></div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label-lms">Registered Mobile Number</label>
+                    <input type="tel" class="form-control-lms" id="walletPhone" placeholder="+91 98765 43210">
+                  </div>
+                </div>
+
+                <div class="d-flex gap-2 mt-2">
+                  <button class="btn-outline-lms" onclick="goStep(1)" style="padding:10px 20px"><i class="fa-solid fa-arrow-left"></i> Back</button>
+                  <button class="btn-primary-lms flex-fill justify-content-center" onclick="goStep(3)" style="padding:12px">
+                    Review Payment <i class="fa-solid fa-arrow-right ms-1"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- STEP 3: Confirm -->
+              <div class="card-body" id="step3" style="display:none">
+                <h6 class="fw-600 mb-3"><i class="fa-solid fa-shield-halved me-2 text-success-lms"></i>Confirm Payment</h6>
+
+                <div class="lms-card mb-3" style="box-shadow:none;background:var(--gray-50)">
+                  <div class="card-body py-2 px-3">
+                    <div class="info-row" style="padding:.7rem 0">
+                      <span class="info-label">Loan ID</span>
+                      <span class="info-value" id="confirmLoanId">#—</span>
+                    </div>
+                    <div class="info-row" style="padding:.7rem 0">
+                      <span class="info-label">EMI Amount</span>
+                      <span class="info-value fw-600 text-primary-lms" id="confirmAmt">₹—</span>
+                    </div>
+                    <div class="info-row" style="padding:.7rem 0">
+                      <span class="info-label">Payment Method</span>
+                      <span class="info-value" id="confirmMethod">—</span>
+                    </div>
+                    <div class="info-row" style="padding:.7rem 0">
+                      <span class="info-label">Due Date</span>
+                      <span class="info-value" id="confirmDue">—</span>
+                    </div>
+                    <div class="info-row" style="padding:.7rem 0;border:none">
+                      <span class="info-label">Processing Fee</span>
+                      <span class="info-value text-success-lms">₹0 (waived)</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="lms-alert lms-alert-success mb-3">
+                  <i class="fa-solid fa-lock"></i>
+                  <span>Your payment is protected by 256-bit SSL encryption.</span>
+                </div>
+
+                <label style="display:flex;align-items:flex-start;gap:8px;font-size:.82rem;cursor:pointer;margin-bottom:1.25rem">
+                  <input type="checkbox" id="confirmCheck" style="accent-color:var(--primary);margin-top:2px">
+                  I authorise LoanMS to debit <strong id="confirmAmtInline">₹—</strong> from my account for this EMI payment.
+                </label>
+
+                <div class="d-flex gap-2">
+                  <button class="btn-outline-lms" onclick="goStep(2)" style="padding:10px 20px"><i class="fa-solid fa-arrow-left"></i> Back</button>
+                  <button class="btn-success-lms flex-fill justify-content-center" id="payNowBtn" onclick="processPayment()" style="padding:12px">
+                    <i class="fa-solid fa-lock me-1"></i> Pay Now
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Loan Summary + Security -->
+          <div class="col-md-5">
+            <!-- Loan Summary -->
+            <div class="lms-card mb-3">
+              <div class="card-body">
+                <h6 class="fw-600 mb-3"><i class="fa-solid fa-file-lines me-2 text-primary-lms"></i>Loan Summary</h6>
+                <div id="loanSummary">
+                  <div class="info-row" style="padding:.6rem 0">
+                    <span class="info-label">Loan ID</span>
+                    <span class="info-value" id="sumLoanId">#—</span>
+                  </div>
+                  <div class="info-row" style="padding:.6rem 0">
+                    <span class="info-label">Loan Amount</span>
+                    <span class="info-value" id="sumAmount">₹—</span>
+                  </div>
+                  <div class="info-row" style="padding:.6rem 0">
+                    <span class="info-label">Interest Rate</span>
+                    <span class="info-value" id="sumRate">—</span>
+                  </div>
+                  <div class="info-row" style="padding:.6rem 0">
+                    <span class="info-label">Tenure</span>
+                    <span class="info-value" id="sumTenure">—</span>
+                  </div>
+                  <div class="info-row" style="padding:.6rem 0">
+                    <span class="info-label">EMIs Paid</span>
+                    <span class="info-value" id="sumPaid">—</span>
+                  </div>
+                  <div class="info-row" style="padding:.6rem 0;border:none">
+                    <span class="info-label">Outstanding</span>
+                    <span class="info-value fw-600" style="color:var(--danger)" id="sumOutstanding">₹—</span>
+                  </div>
+                </div>
+                <!-- Progress -->
+                <div style="height:6px;background:var(--gray-100);border-radius:4px;overflow:hidden;margin-top:.75rem">
+                  <div id="sumProgress" style="height:100%;width:0;background:linear-gradient(90deg,var(--primary),var(--accent));border-radius:4px;transition:width .5s"></div>
+                </div>
+                <div class="d-flex justify-content-between mt-1">
+                  <span class="text-sm text-muted-lms">Repaid</span>
+                  <span class="text-sm fw-600 text-primary-lms" id="sumPct">0%</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Security Badges -->
+            <div class="lms-card">
+              <div class="card-body">
+                <h6 class="fw-600 mb-3 text-sm"><i class="fa-solid fa-shield-halved me-2 text-success-lms"></i>Secure Payment</h6>
+                <div class="d-flex flex-column gap-2">
+                  <div class="d-flex align-items-center gap-2 text-sm" style="color:var(--gray-600)">
+                    <i class="fa-solid fa-lock text-success-lms"></i> 256-bit SSL Encryption
+                  </div>
+                  <div class="d-flex align-items-center gap-2 text-sm" style="color:var(--gray-600)">
+                    <i class="fa-solid fa-shield text-success-lms"></i> RBI Compliant Gateway
+                  </div>
+                  <div class="d-flex align-items-center gap-2 text-sm" style="color:var(--gray-600)">
+                    <i class="fa-solid fa-eye-slash text-success-lms"></i> PCI-DSS Certified
+                  </div>
+                  <div class="d-flex align-items-center gap-2 text-sm" style="color:var(--gray-600)">
+                    <i class="fa-solid fa-rotate text-success-lms"></i> Instant Confirmation
+                  </div>
+                </div>
+                <hr class="divider">
+                <div class="text-sm" style="color:var(--gray-400)">
+                  <i class="fa-solid fa-headset me-1"></i> Need help? <a href="tel:1800000LOAN" class="fw-600">1800-000-LOAN</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div id="lms-footer-placeholder"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script src="scripts.js"></script>
+<script>
+  renderNavbar('Pay EMI');
+
+  // ---- Shared Connection Helper ----
+  async function apiCall(endpoint, method='GET', body=null) {
+    const token = localStorage.getItem('lms_token');
+    if(!token) { window.location.href = 'login.html'; return; }
+    const options = { 
+        method, 
+        headers: { 
+            'Content-Type': 'application/json', 
+            'Authorization': `Bearer ${token}` 
+        } 
+    };
+    if(body) options.body = JSON.stringify(body);
+    try {
+        const res = await fetch(`http://localhost:3000${endpoint}`, options);
+        if(res.status === 401) { window.location.href = 'login.html'; return; }
+        return res.json();
+    } catch(err) {
+        console.error('API Call Error:', err);
+        return { success: false, error: 'Network Error' };
+    }
+  }
+
+  // ---- State ----
+  let currentEmi = null;
+  let loanSummary = null;
+  let selectedMethod = 'Card'; // Default
+
+  // ---- Initialization ----
+  document.addEventListener('DOMContentLoaded', async () => {
+    if(!localStorage.getItem('lms_token')) window.location.href = 'login.html';
+    
+    try {
+        const keyRes = await apiCall('/api/payments/key');
+        if(keyRes && keyRes.success) {
+            localStorage.setItem('razorpay_key', keyRes.key);
+        }
+
+        const res = await apiCall('/api/payments/next-due');
+        if(res && res.success && res.data) {
+            currentEmi = res.data.emi;
+            loanSummary = res.data.loanSummary;
+            updateUI();
+        } else {
+            // No pending EMIs handling
+            document.querySelector('main').innerHTML = `
+                <div class="container py-5 text-center">
+                    <div class="lms-card p-5">
+                        <div class="check-circle mb-3"><i class="fa-solid fa-check"></i></div>
+                        <h4>All Caught Up!</h4>
+                        <p class="text-muted">You have no pending or overdue EMIs at the moment.</p>
+                        <a href="dashboard.html" class="btn-primary-lms d-inline-flex">Go to Dashboard</a>
+                    </div>
+                </div>
+            `;
+        }
+    } catch(err) {
+        console.error(err);
+    }
+  });
+
+  // ---- UI Updates ----
+  function updateUI() {
+    if(!currentEmi) return;
+
+    const fmt = (n) => '₹' + (n||0).toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2});
+    const dt = d => new Date(d).toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'});
+
+    // Header values
+    document.getElementById('headerLoanId').textContent = currentEmi.loanId._id.slice(-6).toUpperCase();
+    document.getElementById('headerAmount').textContent = fmt(currentEmi.emi_amount);
+    document.getElementById('headerDueDate').textContent = dt(currentEmi.due_date);
+
+    // Summary Card
+    document.getElementById('sumLoanId').textContent      = '#' + currentEmi.loanId._id.slice(-6).toUpperCase();
+    document.getElementById('sumAmount').textContent      = fmt(loanSummary.loanAmount);
+    document.getElementById('sumRate').textContent        = (loanSummary.interestRate || 10.5) + '% p.a.';
+    document.getElementById('sumTenure').textContent      = (loanSummary.tenure || 0) + ' months';
+    document.getElementById('sumPaid').textContent        = `${loanSummary.paidCount} / ${loanSummary.tenure}`;
+    document.getElementById('sumOutstanding').textContent = fmt(loanSummary.outstanding);
+
+    const pct = Math.round((loanSummary.paidCount / loanSummary.tenure) * 100);
+    document.getElementById('sumProgress').style.width    = pct + '%';
+    document.getElementById('sumPct').textContent          = pct + '%';
+
+    // Step 3 (Confirmation) values
+    document.getElementById('confirmLoanId').textContent    = '#' + currentEmi.loanId._id.slice(-6).toUpperCase();
+    document.getElementById('confirmAmt').textContent       = fmt(currentEmi.emi_amount);
+    document.getElementById('confirmDue').textContent       = dt(currentEmi.due_date);
+    document.getElementById('confirmAmtInline').textContent = fmt(currentEmi.emi_amount);
+  }
+
+  // ---- Payment Flow Logic ----
+  function selectMethod(method, btn) {
+    selectedMethod = method.charAt(0).toUpperCase() + method.slice(1);
+    document.querySelectorAll('#methodGrid .payment-method-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('nextBtn1').disabled = false;
+  }
+
+  function goStep(n) {
+    const steps = [1, 2, 3];
+    steps.forEach(i => {
+      document.getElementById('step' + i).style.display = i === n ? 'block' : 'none';
+      const circle = document.getElementById(`step${i}c`);
+      if(i < n) {
+        circle.className = 'step-circle done';
+        circle.innerHTML = '<i class="fa-solid fa-check"></i>';
+      } else if (i === n) {
+        circle.className = 'step-circle active';
+        circle.innerHTML = i;
+      } else {
+        circle.className = 'step-circle';
+        circle.innerHTML = i;
+      }
+    });
+
+    const lines = [1, 2];
+    lines.forEach(l => {
+        const line = document.getElementById(`line${l}`);
+        if(l < n) line.className = 'step-line done';
+        else line.className = 'step-line';
+    });
+
+    if (n === 2) {
+      ['card','netbanking','wallet'].forEach(m => {
+        const lowerSelected = selectedMethod.toLowerCase();
+        document.getElementById(m+'Form').style.display = m === lowerSelected ? 'block' : 'none';
+      });
+    }
+
+    if (n === 3) {
+      document.getElementById('confirmMethod').textContent = selectedMethod;
+    }
+  }
+
+  async function processPayment() {
+    if (!document.getElementById('confirmCheck').checked) {
+      alert('Please authorise the payment by checking the box.');
+      return;
+    }
+
+    const btn = document.getElementById('payNowBtn');
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Opening Gateway...';
+    btn.disabled = true;
+
+    try {
+        // Step 1: Create Order on Backend
+        const orderRes = await apiCall('/api/payments/create-order', 'POST', {
+            amount: currentEmi.emi_amount,
+            emiScheduleId: currentEmi._id
+        });
+
+        if(!orderRes || !orderRes.success) {
+            throw new Error(orderRes?.error || 'Failed to create order');
+        }
+
+        const order = orderRes.data;
+
+        // If it's a mock order (Razorpay keys not set on server)
+        if(order.orderId.startsWith('mock_order_')) {
+            console.log('Using Mock Payment Flow');
+            completeMockPayment(order.orderId);
+            return;
+        }
+
+        // Step 2: Open Razorpay Modal
+        const options = {
+            key: localStorage.getItem('razorpay_key') || 'rzp_test_yourkeyhere', // Ideally fetch from server config
+            amount: order.amount,
+            currency: "INR",
+            name: "LoanSphere LMS",
+            description: `EMI Payment for Loan ${currentEmi.loanId._id.slice(-6).toUpperCase()}`,
+            order_id: order.orderId,
+            handler: async function (response) {
+                // Step 3: Verify Payment on Backend
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Verifying...';
+                
+                const verifyRes = await apiCall('/api/payments/verify', 'POST', {
+                    razorpay_order_id: response.razorpay_order_id,
+                    razorpay_payment_id: response.razorpay_payment_id,
+                    razorpay_signature: response.razorpay_signature,
+                    emiScheduleId: currentEmi._id,
+                    method: selectedMethod
+                });
+
+                if(verifyRes && verifyRes.success) {
+                    showSuccess(verifyRes.data);
+                } else {
+                    alert('Payment verification failed. Please contact support.');
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-lock me-1"></i> Pay Now';
+                }
+            },
+            prefill: {
+                name: "", // Will be filled from current user session if needed
+                email: "",
+                contact: ""
+            },
+            theme: { color: "#304ffe" }
+        };
+
+        const rzp = new Razorpay(options);
+        rzp.on('payment.failed', function (response){
+            alert('Payment execution failed: ' + response.error.description);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-lock me-1"></i> Pay Now';
+        });
+        rzp.open();
+
+    } catch(err) {
+        alert(err.message);
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-lock me-1"></i> Pay Now';
+    }
+  }
+
+  async function completeMockPayment(mockOrderId) {
+      const btn = document.getElementById('payNowBtn');
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1"></i> Processing Mock Payment...';
+      
+      // Simulate verification delay
+      setTimeout(async () => {
+          const verifyRes = await apiCall('/api/payments/verify', 'POST', {
+              razorpay_order_id: mockOrderId,
+              razorpay_payment_id: 'pay_mock_' + Date.now().toString().slice(-8),
+              emiScheduleId: currentEmi._id,
+              method: selectedMethod
+          });
+
+          if(verifyRes && verifyRes.success) {
+              showSuccess(verifyRes.data);
+          } else {
+              alert('Mock payment processing failed');
+              btn.disabled = false;
+              btn.innerHTML = '<i class="fa-solid fa-lock me-1"></i> Pay Now';
+          }
+      }, 1500);
+  }
+
+  function showSuccess(paymentData) {
+      document.getElementById('successAmt').textContent  = '₹' + paymentData.amount_paid.toLocaleString('en-IN', {minimumFractionDigits:2});
+      document.getElementById('successTxn').textContent  = paymentData.transaction_id;
+      document.getElementById('successDate').textContent = new Date(paymentData.payment_date).toLocaleString('en-IN');
+      document.getElementById('successOverlay').classList.add('show');
+  }
+
+  function printReceipt() {
+    window.print();
+  }
+</script>
+</body>
+</html>
+
+
+</body>
+</html>

@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EMI Schedule — LoanSphere</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="sidebar-brand-icon"><i class="fas fa-landmark"></i></div>
+    <div class="sidebar-brand-text">
+      <span class="sidebar-brand-name">LoanSphere</span>
+      <span class="sidebar-brand-sub">Management System</span>
+    </div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Main</div>
+    <a href="dashboard.html" class="sidebar-link"><i class="fas fa-chart-pie nav-icon"></i><span class="nav-label">Dashboard</span></a>
+    <a href="users.html" class="sidebar-link"><i class="fas fa-users nav-icon"></i><span class="nav-label">Users</span></a>
+    <div class="nav-section-label">Loans</div>
+    <a href="loan_applications.html" class="sidebar-link"><i class="fas fa-file-invoice-dollar nav-icon"></i><span class="nav-label">Loan Applications</span></a>
+    <a href="loan_approval.html" class="sidebar-link"><i class="fas fa-check-circle nav-icon"></i><span class="nav-label">Loan Approval</span></a>
+    <a href="emi_schedule.html" class="sidebar-link active"><i class="fas fa-calendar-alt nav-icon"></i><span class="nav-label">EMI Schedule</span></a>
+    <div class="nav-section-label">Finance</div>
+    <a href="payments.html" class="sidebar-link"><i class="fas fa-credit-card nav-icon"></i><span class="nav-label">Payments</span></a>
+    <a href="defaulters.html" class="sidebar-link"><i class="fas fa-exclamation-triangle nav-icon"></i><span class="nav-label">Defaulter Reports</span></a>
+    <div class="nav-section-label">Insights</div>
+    <a href="analytics.html" class="sidebar-link"><i class="fas fa-chart-bar nav-icon"></i><span class="nav-label">Analytics</span></a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="sidebar-user-avatar">SA</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name">Super Admin</div>
+        <div class="sidebar-user-role">Administrator</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main-wrapper" id="mainWrapper">
+  <header class="topbar">
+    <button class="topbar-toggle" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+    <span class="topbar-title">EMI Schedule</span>
+    <div class="topbar-search">
+      <i class="fas fa-search search-icon"></i>
+      <input type="text" placeholder="Search schedules..."/>
+    </div>
+    <div class="topbar-actions">
+      <button class="topbar-btn"><i class="fas fa-bell"></i></button>
+      <div class="topbar-divider"></div>
+      <div class="topbar-profile" id="profileTrigger">
+        <div class="topbar-avatar">SA</div>
+        <div class="topbar-profile-info">
+          <div class="topbar-profile-name">Super Admin</div>
+          <div class="topbar-profile-role">Administrator</div>
+        </div>
+        <i class="fas fa-chevron-down ms-1" style="font-size:10px;color:#94a3b8;"></i>
+        <div class="profile-dropdown" id="profileDropdown">
+          <a href="profile.html"><i class="fas fa-user-circle"></i> My Profile</a>
+          <hr/>
+          <a href="../login.html" class="logout-link"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="content-area">
+
+    <div class="page-header">
+      <div class="page-header-left">
+        <div class="breadcrumb-bar">
+          <a href="dashboard.html">Home</a><span>/</span><span>EMI Schedule</span>
+        </div>
+        <h4>EMI Payment Schedule</h4>
+        <p>Track all EMI due dates and payment statuses.</p>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-outline-secondary btn-sm"><i class="fas fa-download"></i> Export</button>
+        <button class="btn btn-outline-secondary btn-sm"><i class="fas fa-print"></i> Print</button>
+      </div>
+    </div>
+
+    <!-- Summary Mini Cards -->
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-3">
+        <div class="mini-stat">
+          <div class="mini-stat-icon green"><i class="fas fa-check-circle"></i></div>
+          <div>
+            <div class="mini-stat-value" id="paidCount">—</div>
+            <div class="mini-stat-label">EMIs Paid</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="mini-stat">
+          <div class="mini-stat-icon orange"><i class="fas fa-clock"></i></div>
+          <div>
+            <div class="mini-stat-value" id="pendingCount">—</div>
+            <div class="mini-stat-label">Pending EMIs</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="mini-stat">
+          <div class="mini-stat-icon red"><i class="fas fa-exclamation-circle"></i></div>
+          <div>
+            <div class="mini-stat-value" id="overdueCount">—</div>
+            <div class="mini-stat-label">Overdue EMIs</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="mini-stat">
+          <div class="mini-stat-icon" style="background:#eff6ff;color:#3b82f6;"><i class="fas fa-rupee-sign"></i></div>
+          <div>
+            <div class="mini-stat-value" id="totalDue">—</div>
+            <div class="mini-stat-label">Total Due This Month</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EMI Table -->
+    <div class="table-container">
+      <div class="table-header">
+        <div class="table-header-left">
+          <div class="card-title">EMI Schedule</div>
+          <div class="card-subtitle">All installments and their due statuses</div>
+        </div>
+        <div class="table-header-right">
+          <div class="table-search">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="emiSearchInput" placeholder="Search by Loan ID or User..."/>
+          </div>
+          <div class="filter-bar">
+            <select id="emiStatusFilter" aria-label="Filter by status">
+              <option value="">All Statuses</option>
+              <option value="Paid">Paid</option>
+              <option value="Pending">Pending</option>
+              <option value="Overdue">Overdue</option>
+            </select>
+            <select id="emiMonthFilter" aria-label="Filter by month">
+              <option value="">All Months</option>
+              <option value="1">January</option>
+              <option value="2">February</option>
+              <option value="3">March</option>
+              <option value="4">April</option>
+              <option value="5">May</option>
+              <option value="6">June</option>
+              <option value="7">July</option>
+              <option value="8">August</option>
+              <option value="9">September</option>
+              <option value="10">October</option>
+              <option value="11">November</option>
+              <option value="12">December</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Loan ID</th>
+              <th>Borrower</th>
+              <th>EMI Amount</th>
+              <th>Principal</th>
+              <th>Interest</th>
+              <th>Due Date</th>
+              <th>Payment Date</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="emiTableBody">
+            <tr>
+              <td colspan="9">
+                <div class="empty-state">
+                  <i class="fas fa-calendar-alt d-block"></i>
+                  <p>No EMI schedule data. Connect to your API to display EMI records.</p>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-footer">
+        <div class="pagination-info" id="emiPaginationInfo">Showing 0 records</div>
+        <div class="pagination-controls">
+          <button disabled><i class="fas fa-chevron-left"></i></button>
+          <button class="active">1</button>
+          <button disabled><i class="fas fa-chevron-right"></i></button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/charts.js"></script>
+<script>
+  const API_BASE = 'http://localhost:3000';
+  let allEMIs = [];
+
+  /* ── Auth helper ─────────────────────────────────────────────── */
+  async function apiCall(endpoint, method = 'GET', body = null) {
+    const token = localStorage.getItem('lms_token');
+    if (!token) { window.location.href = 'login.html'; return null; }
+    const opts = {
+      method,
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
+    };
+    if (body) opts.body = JSON.stringify(body);
+    const res = await fetch(`${API_BASE}${endpoint}`, opts);
+    if (res.status === 401 || res.status === 403) { window.location.href = 'login.html'; return null; }
+    return res.json();
+  }
+
+  /* ── Status badge ─────────────────────────────────────────────── */
+  function emiStatusBadge(status) {
+    const map = { 'Paid': 'badge-success', 'Pending': 'badge-warning', 'Overdue': 'badge-danger' };
+    return `<span class="badge ${map[status] || 'badge-secondary'}">${status || '—'}</span>`;
+  }
+
+  /* ── Render table ─────────────────────────────────────────────── */
+  function renderEMITable(rows) {
+    const tbody = document.getElementById('emiTableBody');
+    if (!rows || rows.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state">
+        <i class="fas fa-calendar-alt d-block"></i>
+        <p>No EMI records match your filter.</p>
+      </div></td></tr>`;
+      return;
+    }
+    tbody.innerHTML = rows.map(row => `
+      <tr>
+        <td><span style="font-family:monospace;font-weight:600;color:#3b82f6;">${row.loanId}</span></td>
+        <td>
+          <div class="user-cell">
+            <div class="user-avatar-sm">${(row.userName || '?').charAt(0)}</div>
+            <div class="user-name">${row.userName || '—'}</div>
+          </div>
+        </td>
+        <td><strong>₹${Number(row.emiAmount || 0).toLocaleString('en-IN', {maximumFractionDigits:2})}</strong></td>
+        <td style="color:#64748b;">₹${Number(row.principal || 0).toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
+        <td style="color:#64748b;">₹${Number(row.interest || 0).toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
+        <td style="color:#64748b;">${row.dueDate || '—'}</td>
+        <td style="color:#64748b;">${row.paymentDate || '—'}</td>
+        <td>${emiStatusBadge(row.status)}</td>
+        <td>
+          <button class="btn btn-outline-primary btn-sm btn-icon" title="View Details">
+            <i class="fas fa-eye"></i>
+          </button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  /* ── Filter logic ─────────────────────────────────────────────── */
+  function applyEMIFilters() {
+    const status = document.getElementById('emiStatusFilter').value;
+    const month  = document.getElementById('emiMonthFilter').value;
+    const q      = (document.getElementById('emiSearchInput').value || '').trim().toLowerCase();
+    const filtered = allEMIs.filter(r => {
+      const matchStatus = !status || r.status === status;
+      const matchMonth  = !month  || (r.dueDate && new Date(r.dueDate).getMonth() + 1 === parseInt(month));
+      const matchSearch = !q      || (r.loanId || '').toLowerCase().includes(q) || (r.userName || '').toLowerCase().includes(q);
+      return matchStatus && matchMonth && matchSearch;
+    });
+    renderEMITable(filtered);
+    const info = document.getElementById('emiPaginationInfo');
+    if (info) info.textContent = `Showing ${filtered.length} of ${allEMIs.length} records`;
+  }
+
+  /* ── CSV export ───────────────────────────────────────────────── */
+  function exportToCSV(data, filename) {
+    if (!data || !data.length) return alert('No data to export');
+    const headers = Object.keys(data[0]);
+    const csvRows = [headers.join(','), ...data.map(r =>
+      headers.map(h => `"${String(r[h] ?? '').replace(/"/g, '""')}"`).join(',')
+    )];
+    const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+    const url  = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename; a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  /* ── Main init ────────────────────────────────────────────────── */
+  document.addEventListener('DOMContentLoaded', async () => {
+    if (!localStorage.getItem('lms_token')) { window.location.href = 'login.html'; return; }
+
+    const tbody = document.getElementById('emiTableBody');
+    tbody.innerHTML = '<tr><td colspan="9" class="text-center py-4"><i class="fas fa-spinner fa-spin me-2"></i>Loading EMI data...</td></tr>';
+
+    try {
+      const res = await apiCall('/api/admin/emi');
+      if (res && res.success) {
+        allEMIs = res.data.map(e => ({
+          loanId:      e.loanId ? String(e.loanId._id || e.loanId).slice(-6).toUpperCase() : 'N/A',
+          userName:    e.userId ? `${e.userId.firstName || ''} ${e.userId.lastName || ''}`.trim() : 'Unknown',
+          emiAmount:   e.emi_amount || 0,
+          principal:   e.principal  || 0,
+          interest:    e.interest   || 0,
+          dueDate:     e.due_date  ? new Date(e.due_date).toLocaleDateString('en-IN')  : '—',
+          paymentDate: e.paid_at   ? new Date(e.paid_at).toLocaleDateString('en-IN')   : '—',
+          status:      e.status    || 'Pending'
+        }));
+
+        renderEMITable(allEMIs);
+
+        /* Update summary cards */
+        const pCount   = allEMIs.filter(x => x.status === 'Paid').length;
+        const penCount = allEMIs.filter(x => x.status === 'Pending').length;
+        const ovCount  = allEMIs.filter(x => x.status === 'Overdue').length;
+        const totDue   = allEMIs.filter(x => x.status === 'Pending' || x.status === 'Overdue')
+                                .reduce((s, x) => s + Number(x.emiAmount), 0);
+
+        document.getElementById('paidCount').textContent    = pCount;
+        document.getElementById('pendingCount').textContent = penCount;
+        document.getElementById('overdueCount').textContent = ovCount;
+        document.getElementById('totalDue').textContent     = '₹' + totDue.toLocaleString('en-IN', {maximumFractionDigits:2});
+
+        const info = document.getElementById('emiPaginationInfo');
+        if (info) info.textContent = `Showing ${allEMIs.length} records`;
+
+        /* Export & Print buttons */
+        const btns = document.querySelectorAll('.page-header .btn-outline-secondary');
+        if (btns[0]) btns[0].addEventListener('click', () => exportToCSV(allEMIs, 'emi_schedule_export.csv'));
+        if (btns[1]) btns[1].addEventListener('click', () => window.print());
+      } else {
+        tbody.innerHTML = '<tr><td colspan="9" class="text-center text-warning">No EMI data found.</td></tr>';
+      }
+    } catch (err) {
+      console.error(err);
+      tbody.innerHTML = '<tr><td colspan="9" class="text-center text-danger">Error loading EMI data. Is the backend running?</td></tr>';
+    }
+
+    /* Wire up filters — single source of truth */
+    document.getElementById('emiSearchInput').addEventListener('input', applyEMIFilters);
+    document.getElementById('emiStatusFilter').addEventListener('change', applyEMIFilters);
+    document.getElementById('emiMonthFilter').addEventListener('change', applyEMIFilters);
+
+    /* Top-bar search mirrors table search */
+    const topSearch = document.querySelector('.topbar-search input');
+    if (topSearch) topSearch.addEventListener('input', e => {
+      document.getElementById('emiSearchInput').value = e.target.value;
+      applyEMIFilters();
+    });
+
+    /* Notification bell */
+    const notifBtn = document.querySelector('.topbar-btn');
+    if (notifBtn) notifBtn.addEventListener('click', () => alert('You have 0 new notifications.'));
+
+    /* Logout links */
+    document.querySelectorAll('.logout-link').forEach(link => {
+      link.addEventListener('click', e => {
+        e.preventDefault();
+        localStorage.removeItem('lms_token');
+        window.location.href = '../login.html';
+      });
+    });
+
+    /* Sidebar toggle */
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    if (sidebarToggle) sidebarToggle.addEventListener('click', () => { sidebar.classList.toggle('open'); overlay.classList.toggle('show'); });
+    if (overlay) overlay.addEventListener('click', () => { sidebar.classList.remove('open'); overlay.classList.remove('show'); });
+
+    /* Profile dropdown */
+    const profileTrigger = document.getElementById('profileTrigger');
+    const profileDropdown = document.getElementById('profileDropdown');
+    if (profileTrigger) profileTrigger.addEventListener('click', e => { e.stopPropagation(); profileDropdown.classList.toggle('show'); });
+    document.addEventListener('click', () => profileDropdown && profileDropdown.classList.remove('show'));
+  });
+</script>
+
+</body>
+</html>
+
