@@ -151,8 +151,8 @@
             </select>
             <select id="appPurposeFilter" aria-label="Filter by purpose">
               <option value="">All Purposes</option>
-              <option value="Home Loan">Home Loan</option>
-              <option value="Personal Loan">Personal Loan</option>
+              <option value="Home">Home Loan</option>
+              <option value="Personal">Personal Loan</option>
               <option value="Education">Education</option>
               <option value="Vehicle">Vehicle</option>
               <option value="Business">Business</option>
@@ -301,10 +301,13 @@
   function applyFilters() {
     const status  = document.getElementById('appStatusFilter').value;
     const purpose = document.getElementById('appPurposeFilter').value;
-    renderApplications(allApplications.filter(a =>
-      (!status  || a.status  === status) &&
-      (!purpose || a.purpose === purpose)
-    ));
+    renderApplications(allApplications.filter(a => {
+      const matchStatus = !status || a.status === status;
+      const matchPurpose = !purpose || 
+                          (a.purpose || '').toLowerCase().includes(purpose.toLowerCase()) || 
+                          purpose.toLowerCase().includes((a.purpose || '').toLowerCase());
+      return matchStatus && matchPurpose;
+    }));
   }
 
   // TODO: Load from API

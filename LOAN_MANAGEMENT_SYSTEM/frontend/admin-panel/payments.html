@@ -225,7 +225,7 @@
         <td>${paymentStatusBadge(row.status)}</td>
         <td>
           ${row.status === 'Paid'
-            ? `<button class="btn btn-outline-primary btn-sm btn-icon" title="Download Receipt"><i class="fas fa-file-download"></i></button>`
+            ? `<button class="btn btn-outline-primary btn-sm btn-icon" onclick="printReceipt('${row.paymentId}')" title="Download Receipt"><i class="fas fa-file-download"></i></button>`
             : `<span style="color:#94a3b8;font-size:12px;">—</span>`
           }
         </td>
@@ -275,7 +275,57 @@
   //     document.getElementById('totalCollected').textContent = `₹${data.collected.toLocaleString()}`;
   //     document.getElementById('totalPending').textContent   = `₹${data.pending.toLocaleString()}`;
   //     document.getElementById('totalFailed').textContent    = data.failedCount;
-  //   });
+  //    });
+
+  function printReceipt(paymentId) {
+    const payment = allPayments.find(p => p.paymentId === paymentId);
+    if (!payment) return alert('Payment record not found.');
+
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Payment Receipt - ${paymentId}</title>
+          <style>
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; color: #333; }
+            .receipt-box { border: 1px solid #eee; padding: 30px; max-width: 600px; margin: auto; box-shadow: 0 0 10px rgba(0,0,0,0.05); }
+            .header { text-align: center; border-bottom: 2px solid #3b82f6; padding-bottom: 20px; margin-bottom: 30px; }
+            .header h1 { margin: 0; color: #3b82f6; font-size: 24px; }
+            .details { margin-bottom: 30px; }
+            .row { display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px dashed #eee; padding-bottom: 5px; }
+            .label { font-weight: 600; color: #666; }
+            .footer { text-align: center; font-size: 12px; color: #999; margin-top: 50px; }
+            @media print { .no-print { display: none; } }
+          </style>
+        </head>
+        <body>
+          <div class="receipt-box">
+            <div class="header">
+              <h1>LoanSphere Receipt</h1>
+              <p>Payment Confirmation</p>
+            </div>
+            <div class="details">
+              <div class="row"><span class="label">Payment ID:</span> <span>${payment.paymentId}</span></div>
+              <div class="row"><span class="label">Loan ID:</span> <span>${payment.loanId}</span></div>
+              <div class="row"><span class="label">Borrower:</span> <span>${payment.userName}</span></div>
+              <div class="row"><span class="label">Amount Paid:</span> <span>₹${Number(payment.amountPaid).toLocaleString('en-IN')}</span></div>
+              <div class="row"><span class="label">Method:</span> <span>${payment.method}</span></div>
+              <div class="row"><span class="label">Date:</span> <span>${payment.paymentDate}</span></div>
+              <div class="row"><span class="label">Status:</span> <span style="color:green;font-weight:bold;">${payment.status}</span></div>
+            </div>
+            <div class="footer">
+              <p>This is a computer generated receipt. No signature required.</p>
+              <p>&copy; ${new Date().getFullYear()} LoanSphere Management System</p>
+            </div>
+            <div style="text-align:center; margin-top:20px;" class="no-print">
+              <button onclick="window.print()" style="padding:10px 20px; background:#3b82f6; color:white; border:none; border-radius:5px; cursor:pointer;">Print Now</button>
+            </div>
+          </div>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+  }
 </script>
 
 <script>

@@ -338,32 +338,52 @@
             document.getElementById('kpiDefaultRate').textContent  = defRate + '%';
             
             // Update Charts
-            initMonthlyBarChart('monthlyBarChart', ['Jan','Feb','Mar','Apr','May','Jun'], [Math.floor(total*0.1), Math.floor(total*0.2), Math.floor(total*0.15), Math.floor(total*0.25), Math.floor(total*0.2), Math.floor(total*0.1)]);
+            if (typeof initMonthlyBarChart === 'function') {
+                Chart.getChart('monthlyBarChart')?.destroy();
+                // Last 6 months labels
+                const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                const now = new Date();
+                const labels = [];
+                for(let i=5; i>=0; i--) {
+                   const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+                   labels.push(months[d.getMonth()]);
+                }
+                initMonthlyBarChart('monthlyBarChart', labels, data.monthlyData);
+            }
             
-            const pending = total - data.approvedLoans - data.totalDefaulters;
-            initApprovalRateChart('approvalRateChart', data.approvedLoans, pending, data.totalDefaulters);
-            initDefaulterChart('defaulterChart', data.totalDefaulters, total - data.totalDefaulters);
+            const pending = data.statusDistribution.Pending || 0;
+            const rejected = data.statusDistribution.Rejected || 0;
+            const approved = data.statusDistribution.Approved || 0;
+            const totalStatus = approved + pending + rejected || 1;
+
+            if (typeof initApprovalRateChart === 'function') {
+                Chart.getChart('approvalRateChart')?.destroy();
+                initApprovalRateChart('approvalRateChart', approved, pending, rejected);
+            }
+            if (typeof initDefaulterChart === 'function') {
+                Chart.getChart('defaulterChart')?.destroy();
+                initDefaulterChart('defaulterChart', data.totalDefaulters, totalApplications - data.totalDefaulters);
+            }
             
             // Update pct labels
-            document.getElementById('approvedPct').textContent  = appRate + '%';
-            document.getElementById('pendingPct').textContent   = ((pending / total) * 100).toFixed(1) + '%';
-            document.getElementById('rejectedPct').textContent  = defRate + '%'; // Using defaulters as proxy for rejected
+            document.getElementById('approvedPct').textContent  = ((approved / totalStatus) * 100).toFixed(1) + '%';
+            document.getElementById('pendingPct').textContent   = ((pending / totalStatus) * 100).toFixed(1) + '%';
+            document.getElementById('rejectedPct').textContent  = ((rejected / totalStatus) * 100).toFixed(1) + '%';
             
             document.getElementById('defaulterPct').textContent = defRate + '%';
             
-            // Metrics
-            document.getElementById('avgLoanAmt').textContent       = '₹' + (250000).toLocaleString('en-IN');
-            document.getElementById('avgCreditScore').textContent   = 710;
-            document.getElementById('avgProcessTime').textContent   = '3 days';
-            document.getElementById('emiCollectionRate').textContent= '92.5%';
+            // Metrics (Real data from portfolioHealth)
+            const health = data.portfolioHealth || {};
+            document.getElementById('avgLoanAmt').textContent       = '₹' + (health.avgLoanAmount || 0).toLocaleString('en-IN');
+            document.getElementById('avgCreditScore').textContent   = health.avgCreditScore || 0;
+            document.getElementById('avgProcessTime').textContent   = health.avgProcessingTime || '—';
+            document.getElementById('emiCollectionRate').textContent= (health.emiCollectionRate || 0) + '%';
             document.getElementById('portfolioNPA').textContent     = defRate + '%';
             
-            // Purpose table
-            renderPurposeTable([
-                { purpose: 'Personal', count: Math.ceil(total * 0.5), share: 50, avgAmount: 150000, approvalPct: 75 },
-                { purpose: 'Home', count: Math.ceil(total * 0.3), share: 30, avgAmount: 1500000, approvalPct: 82 },
-                { purpose: 'Education', count: Math.ceil(total * 0.2), share: 20, avgAmount: 300000, approvalPct: 65 }
-            ]);
+            // Real Purpose table
+            if (data.purposeBreakdown && typeof renderPurposeTable === 'function') {
+                renderPurposeTable(data.purposeBreakdown);
+            }
         }
       });
       

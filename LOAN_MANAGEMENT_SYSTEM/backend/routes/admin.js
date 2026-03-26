@@ -48,6 +48,39 @@ router.get('/dashboard/stats', async (req, res) => {
         ]);
         const totalDisbursed = disbursedAgg.length > 0 ? disbursedAgg[0].total : 0;
 
+        // Purpose breakdown
+        const purposeAgg = await Loan.aggregate([
+            { $group: { 
+                _id: '$loan_purpose', 
+                count: { $sum: 1 }, 
+                avgAmount: { $avg: '$loan_amount' },
+                approvedCount: { $sum: { $cond: [{ $eq: ['$status', 'Approved'] }, 1, 0] } }
+            } }
+        ]);
+        const purposeBreakdown = purposeAgg.map(p => ({
+            purpose: p._id || 'General',
+            count: p.count,
+            share: totalApplications > 0 ? Math.round((p.count / totalApplications) * 100) : 0,
+            avgAmount: Math.round(p.avgAmount || 0),
+            approvalPct: p.count > 0 ? Math.round((p.approvedCount / p.count) * 100) : 0
+        }));
+
+        // Portfolio health
+        const loanStats = await Loan.aggregate([
+            { $match: { status: 'Approved' } },
+            { $group: {
+                _id: null,
+                avgAmount: { $avg: '$loan_amount' },
+                avgCreditScore: { $avg: '$credit_score' }
+            } }
+        ]);
+        const portfolioHealth = {
+            avgLoanAmount: loanStats.length > 0 ? Math.round(loanStats[0].avgAmount) : 0,
+            avgCreditScore: loanStats.length > 0 ? Math.round(loanStats[0].avgCreditScore) : 0,
+            emiCollectionRate: 98, // Placeholder
+            avgProcessingTime: '2 days' // Placeholder
+        };
+
         res.json({
             success: true,
             data: {
@@ -57,6 +90,8 @@ router.get('/dashboard/stats', async (req, res) => {
                 totalDefaulters,
                 totalDisbursed,
                 monthlyData,
+                purposeBreakdown,
+                portfolioHealth,
                 statusDistribution: {
                     Approved: approvedLoans,
                     Pending: await Loan.countDocuments({ status: 'Pending' }),

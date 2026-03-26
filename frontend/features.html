@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Features | Loan Management System</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial, Helvetica, sans-serif;
+}
+
+body{
+background:#f6f8fc;
+color:#333;
+}
+
+/* NAVBAR */
+
+header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:20px 60px;
+background:white;
+box-shadow:0 2px 10px rgba(0,0,0,0.08);
+}
+
+.logo{
+font-size:22px;
+font-weight:bold;
+color:#3b6df5;
+}
+
+nav a{
+margin-left:20px;
+text-decoration:none;
+color:#333;
+font-weight:500;
+}
+
+/* HERO */
+
+.hero{
+padding:80px 20px;
+text-align:center;
+background:linear-gradient(120deg,#3b6df5,#6ea8ff);
+color:white;
+}
+
+.hero h1{
+font-size:42px;
+margin-bottom:15px;
+}
+
+.hero p{
+max-width:650px;
+margin:auto;
+font-size:18px;
+}
+
+/* FEATURES SECTION */
+
+.features{
+padding:80px 60px;
+}
+
+.features h2{
+text-align:center;
+font-size:32px;
+margin-bottom:50px;
+}
+
+.feature-row{
+display:flex;
+align-items:center;
+justify-content:space-between;
+margin-bottom:70px;
+flex-wrap:wrap;
+}
+
+.feature-text{
+flex:1;
+min-width:280px;
+padding:20px;
+}
+
+.feature-text h3{
+font-size:26px;
+margin-bottom:10px;
+color:#3b6df5;
+}
+
+.feature-text p{
+line-height:1.6;
+}
+
+.feature-box{
+flex:1;
+min-width:280px;
+padding:30px;
+background:white;
+border-radius:10px;
+box-shadow:0 5px 18px rgba(0,0,0,0.1);
+}
+
+/* GRID FEATURES */
+
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+gap:25px;
+margin-top:40px;
+}
+
+.card{
+background:white;
+padding:25px;
+border-radius:10px;
+box-shadow:0 5px 15px rgba(0,0,0,0.1);
+transition:0.3s;
+}
+
+.card:hover{
+transform:translateY(-5px);
+}
+
+.card h4{
+color:#3b6df5;
+margin-bottom:10px;
+}
+
+/* CTA */
+
+.cta{
+background:#3b6df5;
+color:white;
+padding:70px;
+text-align:center;
+}
+
+.cta a{
+background:white;
+color:#3b6df5;
+padding:12px 25px;
+text-decoration:none;
+border-radius:6px;
+display:inline-block;
+margin-top:15px;
+font-weight:bold;
+}
+
+/* FOOTER */
+
+footer{
+background:#222;
+color:white;
+text-align:center;
+padding:15px;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+
+<div class="logo">LoanMS</div>
+
+<nav>
+<a href="homepage.html">Home</a>
+<a href="features.html">Features</a>
+<a href="about.html">About</a>
+<a href="login.html">Sign In</a>
+<a href="register.html">Register</a>
+</nav>
+
+</header>
+
+
+<section class="hero">
+
+<h1>Powerful Loan Management Features</h1>
+
+<p>
+Our platform simplifies loan processing with tools for borrowers and administrators to manage
+applications, approvals, and repayments efficiently.
+</p>
+
+</section>
+
+
+<section class="features">
+
+<h2>Key Platform Capabilities</h2>
+
+<div class="feature-row">
+
+<div class="feature-text">
+<h3>Online Loan Applications</h3>
+<p>
+Users can submit loan applications directly through the system with a simple form.
+All application data is securely stored and accessible to administrators for review.
+</p>
+</div>
+
+<div class="feature-box">
+<p>
+✔ Fast application submission  
+<br><br>
+✔ Secure user authentication  
+<br><br>
+✔ Automated status tracking
+</p>
+</div>
+
+</div>
+
+
+<div class="feature-row">
+
+<div class="feature-box">
+<p>
+✔ Approve or reject loan requests  
+<br><br>
+✔ Monitor loan statistics  
+<br><br>
+✔ Manage users and payments
+</p>
+</div>
+
+<div class="feature-text">
+<h3>Admin Control Dashboard</h3>
+<p>
+Administrators can view loan applications, approve or reject requests,
+and track the entire system through a centralized dashboard.
+</p>
+</div>
+
+</div>
+
+
+<h2>Additional Features</h2>
+
+<div class="grid">
+
+<div class="card">
+<h4>EMI Calculator</h4>
+<p>Calculate monthly EMI before applying for a loan.</p>
+</div>
+
+<div class="card">
+<h4>Loan Status Tracking</h4>
+<p>Users can check whether their loan is pending, approved, or rejected.</p>
+</div>
+
+<div class="card">
+<h4>Payment Monitoring</h4>
+<p>Track EMI payments and repayment schedules.</p>
+</div>
+
+<div class="card">
+<h4>Defaulter Identification</h4>
+<p>Automatically detect borrowers who miss payments.</p>
+</div>
+
+<div class="card">
+<h4>User Profile Management</h4>
+<p>Users can update personal information and manage their loans.</p>
+</div>
+
+<div class="card">
+<h4>Reports & Analytics</h4>
+<p>Admins can view loan trends and system statistics.</p>
+</div>
+
+</div>
+
+</section>
+
+
+<section class="cta">
+
+<h2>Start Managing Loans Efficiently</h2>
+
+<a href="register.html">Create Account</a>
+
+</section>
+
+
+<footer>
+<p>© 2026 Loan Management System</p>
+</footer>
+
+</body>
+</html>
