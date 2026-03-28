@@ -17,10 +17,10 @@ const loanSchema = new mongoose.Schema({
     notes: { type: String },
     approved_by: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     approved_at: { type: Date },
-    document_url: { type: String }
-    ,
-    // Store multiple verification documents for applications created with the multi-upload UI.
-    document_urls: [{ type: String }]
+    document_url: { type: String },
+    document_urls: [{ type: String }],
+    selected_bank: { type: String },
+    selected_interest_rate: { type: Number }
 }, {
     timestamps: true
 });

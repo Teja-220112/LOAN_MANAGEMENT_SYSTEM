@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>EMI Schedule — LoanSphere</title>
+  <title>EMI Schedule â€” LoanSphere</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <link rel="stylesheet" href="css/style.css"/>
@@ -36,6 +36,7 @@
     <a href="analytics.html" class="sidebar-link"><i class="fas fa-chart-bar nav-icon"></i><span class="nav-label">Analytics</span></a>
   </nav>
   <div class="sidebar-footer">
+    <a href="../login.html" class="logout-link sidebar-logout" style="display:flex;align-items:center;gap:10px;padding:10px 16px;margin:8px 12px 0;background:rgba(239,68,68,0.08);color:#ef4444;border-radius:8px;font-size:0.85rem;font-weight:600;text-decoration:none;transition:background 0.2s;"><i class="fas fa-sign-out-alt"></i> Logout</a>
     <div class="sidebar-user">
       <div class="sidebar-user-avatar">SA</div>
       <div class="sidebar-user-info">
@@ -96,7 +97,7 @@
         <div class="mini-stat">
           <div class="mini-stat-icon green"><i class="fas fa-check-circle"></i></div>
           <div>
-            <div class="mini-stat-value" id="paidCount">—</div>
+            <div class="mini-stat-value" id="paidCount">â€”</div>
             <div class="mini-stat-label">EMIs Paid</div>
           </div>
         </div>
@@ -105,7 +106,7 @@
         <div class="mini-stat">
           <div class="mini-stat-icon orange"><i class="fas fa-clock"></i></div>
           <div>
-            <div class="mini-stat-value" id="pendingCount">—</div>
+            <div class="mini-stat-value" id="pendingCount">â€”</div>
             <div class="mini-stat-label">Pending EMIs</div>
           </div>
         </div>
@@ -114,7 +115,7 @@
         <div class="mini-stat">
           <div class="mini-stat-icon red"><i class="fas fa-exclamation-circle"></i></div>
           <div>
-            <div class="mini-stat-value" id="overdueCount">—</div>
+            <div class="mini-stat-value" id="overdueCount">â€”</div>
             <div class="mini-stat-label">Overdue EMIs</div>
           </div>
         </div>
@@ -123,7 +124,7 @@
         <div class="mini-stat">
           <div class="mini-stat-icon" style="background:#eff6ff;color:#3b82f6;"><i class="fas fa-rupee-sign"></i></div>
           <div>
-            <div class="mini-stat-value" id="totalDue">—</div>
+            <div class="mini-stat-value" id="totalDue">â€”</div>
             <div class="mini-stat-label">Total Due This Month</div>
           </div>
         </div>
@@ -215,7 +216,7 @@
   const API_BASE = 'http://localhost:3000';
   let allEMIs = [];
 
-  /* ── Auth helper ─────────────────────────────────────────────── */
+  /* â”€â”€ Auth helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   async function apiCall(endpoint, method = 'GET', body = null) {
     const token = localStorage.getItem('lms_token');
     if (!token) { window.location.href = 'login.html'; return null; }
@@ -229,13 +230,13 @@
     return res.json();
   }
 
-  /* ── Status badge ─────────────────────────────────────────────── */
+  /* â”€â”€ Status badge â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   function emiStatusBadge(status) {
     const map = { 'Paid': 'badge-success', 'Pending': 'badge-warning', 'Overdue': 'badge-danger' };
-    return `<span class="badge ${map[status] || 'badge-secondary'}">${status || '—'}</span>`;
+    return `<span class="badge ${map[status] || 'badge-secondary'}">${status || 'â€”'}</span>`;
   }
 
-  /* ── Render table ─────────────────────────────────────────────── */
+  /* â”€â”€ Render table â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   function renderEMITable(rows) {
     const tbody = document.getElementById('emiTableBody');
     if (!rows || rows.length === 0) {
@@ -251,14 +252,14 @@
         <td>
           <div class="user-cell">
             <div class="user-avatar-sm">${(row.userName || '?').charAt(0)}</div>
-            <div class="user-name">${row.userName || '—'}</div>
+            <div class="user-name">${row.userName || 'â€”'}</div>
           </div>
         </td>
-        <td><strong>₹${Number(row.emiAmount || 0).toLocaleString('en-IN', {maximumFractionDigits:2})}</strong></td>
-        <td style="color:#64748b;">₹${Number(row.principal || 0).toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
-        <td style="color:#64748b;">₹${Number(row.interest || 0).toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
-        <td style="color:#64748b;">${row.dueDate || '—'}</td>
-        <td style="color:#64748b;">${row.paymentDate || '—'}</td>
+        <td><strong>â‚¹${Number(row.emiAmount || 0).toLocaleString('en-IN', {maximumFractionDigits:2})}</strong></td>
+        <td style="color:#64748b;">â‚¹${Number(row.principal || 0).toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
+        <td style="color:#64748b;">â‚¹${Number(row.interest || 0).toLocaleString('en-IN', {maximumFractionDigits:2})}</td>
+        <td style="color:#64748b;">${row.dueDate || 'â€”'}</td>
+        <td style="color:#64748b;">${row.paymentDate || 'â€”'}</td>
         <td>${emiStatusBadge(row.status)}</td>
         <td>
           <button class="btn btn-outline-primary btn-sm btn-icon" title="View Details">
@@ -269,7 +270,7 @@
     `).join('');
   }
 
-  /* ── Filter logic ─────────────────────────────────────────────── */
+  /* â”€â”€ Filter logic â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   function applyEMIFilters() {
     const status = document.getElementById('emiStatusFilter').value;
     const month  = document.getElementById('emiMonthFilter').value;
@@ -285,7 +286,7 @@
     if (info) info.textContent = `Showing ${filtered.length} of ${allEMIs.length} records`;
   }
 
-  /* ── CSV export ───────────────────────────────────────────────── */
+  /* â”€â”€ CSV export â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   function exportToCSV(data, filename) {
     if (!data || !data.length) return alert('No data to export');
     const headers = Object.keys(data[0]);
@@ -299,7 +300,7 @@
     URL.revokeObjectURL(url);
   }
 
-  /* ── Main init ────────────────────────────────────────────────── */
+  /* â”€â”€ Main init â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   document.addEventListener('DOMContentLoaded', async () => {
     if (!localStorage.getItem('lms_token')) { window.location.href = 'login.html'; return; }
 
@@ -315,8 +316,8 @@
           emiAmount:   e.emi_amount || 0,
           principal:   e.principal  || 0,
           interest:    e.interest   || 0,
-          dueDate:     e.due_date  ? new Date(e.due_date).toLocaleDateString('en-IN')  : '—',
-          paymentDate: e.paid_at   ? new Date(e.paid_at).toLocaleDateString('en-IN')   : '—',
+          dueDate:     e.due_date  ? new Date(e.due_date).toLocaleDateString('en-IN')  : 'â€”',
+          paymentDate: e.paid_at   ? new Date(e.paid_at).toLocaleDateString('en-IN')   : 'â€”',
           status:      e.status    || 'Pending'
         }));
 
@@ -332,7 +333,7 @@
         document.getElementById('paidCount').textContent    = pCount;
         document.getElementById('pendingCount').textContent = penCount;
         document.getElementById('overdueCount').textContent = ovCount;
-        document.getElementById('totalDue').textContent     = '₹' + totDue.toLocaleString('en-IN', {maximumFractionDigits:2});
+        document.getElementById('totalDue').textContent     = 'â‚¹' + totDue.toLocaleString('en-IN', {maximumFractionDigits:2});
 
         const info = document.getElementById('emiPaginationInfo');
         if (info) info.textContent = `Showing ${allEMIs.length} records`;
@@ -349,7 +350,7 @@
       tbody.innerHTML = '<tr><td colspan="9" class="text-center text-danger">Error loading EMI data. Is the backend running?</td></tr>';
     }
 
-    /* Wire up filters — single source of truth */
+    /* Wire up filters â€” single source of truth */
     document.getElementById('emiSearchInput').addEventListener('input', applyEMIFilters);
     document.getElementById('emiStatusFilter').addEventListener('change', applyEMIFilters);
     document.getElementById('emiMonthFilter').addEventListener('change', applyEMIFilters);
@@ -389,6 +390,8 @@
   });
 </script>
 
+<script src="js/admin.js"></script>
 </body>
 </html>
+
 

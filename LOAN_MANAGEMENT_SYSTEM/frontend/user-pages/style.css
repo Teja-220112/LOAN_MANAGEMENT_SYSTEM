@@ -505,3 +505,23 @@ hr.divider{border:none;border-top:1px solid var(--g200);margin:1rem 0}
   .lms-card{box-shadow:none !important;border:1px solid var(--g300) !important}
   body{background:white}
 }
+
+/* ── BANK OFFERS ───────────────────────────────────────────────── */
+.bank-offer-card {
+  border-radius: var(--r-md);
+  box-shadow: var(--shxs);
+  transition: var(--spring);
+}
+.bank-offer-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shmd);
+}
+.selected-bank-card {
+  background: var(--navy-50) !important;
+  box-shadow: 0 0 0 3px rgba(30,107,186,.15) !important;
+}
+.bank-offer-card .badge {
+  font-size: 0.65rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}

@@ -66,7 +66,27 @@
   </div>
 
   <div class="container pb-5">
-    <div class="row justify-content-center">
+    
+    <!-- Loan Selector Container (Hidden by default, shown if multiple loans) -->
+    <div id="loanSelectorContainer" class="row justify-content-center mb-4 d-none">
+      <div class="col-lg-9">
+        <div class="lms-card p-3" style="background: var(--blue-50); border: 1px solid var(--blue-200);">
+          <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3">
+            <div>
+              <h6 class="mb-1 text-primary-lms fw-bold"><i class="fa-solid fa-layer-group me-2"></i>Multiple Active Loans Found</h6>
+              <p class="mb-0 text-muted" style="font-size: 0.85rem;">Please select the loan you wish to make a payment towards.</p>
+            </div>
+            <div style="min-width: 250px;">
+              <select class="form-select border-primary" id="loanSelectDropdown">
+                <!-- Options populated dynamically -->
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row justify-content-center" id="mainPaymentContent">
       <div class="col-lg-9">
         <div class="row g-4">
 
@@ -362,6 +382,7 @@
   }
 
   // ---- State ----
+  let allDuesData = [];
   let currentEmi = null;
   let loanSummary = null;
   let selectedMethod = 'Card'; // Default
@@ -377,27 +398,63 @@
         }
 
         const res = await apiCall('/api/payments/next-due');
-        if(res && res.success && res.data) {
-            currentEmi = res.data.emi;
-            loanSummary = res.data.loanSummary;
-            updateUI();
+        if(res && res.success && res.data && res.data.length > 0) {
+            allDuesData = res.data;
+
+            if (allDuesData.length > 1) {
+                const selector = document.getElementById('loanSelectorContainer');
+                const dropdown = document.getElementById('loanSelectDropdown');
+                selector.classList.remove('d-none');
+                
+                dropdown.innerHTML = allDuesData.map((d, index) => {
+                    const lId = String(d.loanSummary.loanId).slice(-6).toUpperCase();
+                    const purpose = (d.loanSummary.loanPurpose || 'Loan').replace(/_/g, ' ');
+                    const purposeLabel = purpose.charAt(0).toUpperCase() + purpose.slice(1);
+                    return `<option value="${index}">Loan #${lId} (${purposeLabel}) — EMI ₹${d.emi.emi_amount.toLocaleString('en-IN')} | Due: ${new Date(d.emi.due_date).toLocaleDateString('en-IN')}</option>`;
+                }).join('');
+
+                dropdown.addEventListener('change', (e) => {
+                    switchLoan(parseInt(e.target.value));
+                });
+            }
+
+            // Init first element
+            switchLoan(0);
+
         } else {
             // No pending EMIs handling
-            document.querySelector('main').innerHTML = `
-                <div class="container py-5 text-center">
+            document.querySelector('#mainPaymentContent').innerHTML = `
+                <div class="col-12 py-5 text-center">
                     <div class="lms-card p-5">
-                        <div class="check-circle mb-3"><i class="fa-solid fa-check"></i></div>
+                        <div class="check-circle mb-3 mx-auto"><i class="fa-solid fa-check"></i></div>
                         <h4>All Caught Up!</h4>
                         <p class="text-muted">You have no pending or overdue EMIs at the moment.</p>
                         <a href="dashboard.html" class="btn-primary-lms d-inline-flex">Go to Dashboard</a>
                     </div>
                 </div>
             `;
+            const selector = document.getElementById('loanSelectorContainer');
+            if(selector) selector.classList.add('d-none');
         }
     } catch(err) {
         console.error(err);
     }
   });
+
+  function switchLoan(index) {
+      if (!allDuesData[index]) return;
+      currentEmi = allDuesData[index].emi;
+      loanSummary = allDuesData[index].loanSummary;
+      
+      // Reset forms/UI to step 1
+      if (typeof goStep === 'function') goStep(1);
+      
+      // Uncheck confirmation box
+      const confirmCheck = document.getElementById('confirmCheck');
+      if(confirmCheck) confirmCheck.checked = false;
+
+      updateUI();
+  }
 
   // ---- UI Updates ----
   function updateUI() {
@@ -406,13 +463,19 @@
     const fmt = (n) => '₹' + (n||0).toLocaleString('en-IN', {minimumFractionDigits:2, maximumFractionDigits:2});
     const dt = d => new Date(d).toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'});
 
+    // loanId can be a full object OR an ObjectId string depending on the data source
+    const loanIdStr = (currentEmi.loanId && currentEmi.loanId._id)
+        ? String(currentEmi.loanId._id)
+        : String(currentEmi.loanId);
+    const shortId = loanIdStr.slice(-6).toUpperCase();
+
     // Header values
-    document.getElementById('headerLoanId').textContent = currentEmi.loanId._id.slice(-6).toUpperCase();
+    document.getElementById('headerLoanId').textContent = shortId;
     document.getElementById('headerAmount').textContent = fmt(currentEmi.emi_amount);
     document.getElementById('headerDueDate').textContent = dt(currentEmi.due_date);
 
     // Summary Card
-    document.getElementById('sumLoanId').textContent      = '#' + currentEmi.loanId._id.slice(-6).toUpperCase();
+    document.getElementById('sumLoanId').textContent      = '#' + shortId;
     document.getElementById('sumAmount').textContent      = fmt(loanSummary.loanAmount);
     document.getElementById('sumRate').textContent        = (loanSummary.interestRate || 10.5) + '% p.a.';
     document.getElementById('sumTenure').textContent      = (loanSummary.tenure || 0) + ' months';
@@ -424,7 +487,7 @@
     document.getElementById('sumPct').textContent          = pct + '%';
 
     // Step 3 (Confirmation) values
-    document.getElementById('confirmLoanId').textContent    = '#' + currentEmi.loanId._id.slice(-6).toUpperCase();
+    document.getElementById('confirmLoanId').textContent    = '#' + shortId;
     document.getElementById('confirmAmt').textContent       = fmt(currentEmi.emi_amount);
     document.getElementById('confirmDue').textContent       = dt(currentEmi.due_date);
     document.getElementById('confirmAmtInline').textContent = fmt(currentEmi.emi_amount);

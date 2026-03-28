@@ -212,7 +212,8 @@ router.put('/loans/:id/approve', async (req, res) => {
 
         // EMI Computation (reducing balance method)
         const P = loan.loan_amount;
-        const R = loan.interest_rate / 12 / 100;
+        const rateToUse = loan.selected_interest_rate || loan.interest_rate;
+        const R = rateToUse / 12 / 100;
         const N = loan.loan_tenure;
         const emi = (P * R * Math.pow(1 + R, N)) / (Math.pow(1 + R, N) - 1);
 
@@ -241,6 +242,18 @@ router.put('/loans/:id/approve', async (req, res) => {
 
         // Bulk insert all EMIs in one go (faster & atomic)
         await EMISchedule.insertMany(emiDocs);
+
+        // ── Create loan-approved notification for user ──
+        try {
+            const Notification = require('../models/Notification');
+            await Notification.create({
+                userId: loan.userId,
+                type: 'loan_approved',
+                title: '🎉 Loan Approved!',
+                message: `Your loan of ₹${loan.loan_amount.toLocaleString('en-IN')} (${loan.loan_purpose}) has been approved. Your EMI schedule has been set up.`,
+                loanId: loan._id
+            });
+        } catch(notifErr) { console.error('Notification create error:', notifErr); }
 
         res.json({ success: true, data: loan });
     } catch(err) {
@@ -337,7 +350,8 @@ router.post('/cleanup-duplicate-emis', async (req, res) => {
 
                 // Recreate correct set
                 const P = loan.loan_amount;
-                const R = loan.interest_rate / 12 / 100;
+                const rateToUse = loan.selected_interest_rate || loan.interest_rate;
+                const R = rateToUse / 12 / 100;
                 const N = loan.loan_tenure;
                 const emi = (P * R * Math.pow(1 + R, N)) / (Math.pow(1 + R, N) - 1);
 

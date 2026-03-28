@@ -27,6 +27,22 @@ const NAVBAR_HTML = `
         <li class="nav-item"><a class="nav-link" href="emi_calculator.html" data-page="emi_calculator"><i class="fas fa-calculator me-1 d-lg-none"></i>EMI Calculator</a></li>
         <li class="nav-item"><a class="nav-link" href="payments.html" data-page="payments"><i class="fas fa-receipt me-1 d-lg-none"></i>Payment History</a></li>
         <li class="nav-item"><a class="nav-link" href="profile.html" data-page="profile"><i class="fas fa-user me-1 d-lg-none"></i>Profile</a></li>
+        <li class="nav-item" style="position:relative;">
+          <button class="nav-link btn btn-link p-0 px-2" id="notif-bell-btn" onclick="toggleNotifPanel()" style="background:none;border:none;position:relative;" title="Notifications">
+            <i class="fas fa-bell" style="font-size:1.1rem;"></i>
+            <span id="notif-badge" class="d-none" style="position:absolute;top:-4px;right:-4px;background:#ef4444;color:#fff;border-radius:50%;min-width:18px;height:18px;font-size:0.65rem;display:flex;align-items:center;justify-content:center;font-weight:700;padding:0 3px;"></span>
+          </button>
+          <!-- Notification Dropdown Panel -->
+          <div id="notif-panel" class="d-none" style="position:absolute;right:0;top:calc(100% + 8px);width:340px;max-height:420px;overflow-y:auto;background:#fff;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.18);z-index:9999;border:1px solid #e5e7eb;">
+            <div style="padding:12px 16px;border-bottom:1px solid #f3f4f6;display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-weight:700;font-size:0.95rem;">Notifications</span>
+              <button onclick="markAllNotifRead()" style="background:none;border:none;font-size:0.75rem;color:#6366f1;cursor:pointer;font-weight:600;">Mark all read</button>
+            </div>
+            <div id="notif-list" style="padding:8px 0;">
+              <div style="padding:20px;text-align:center;color:#9ca3af;font-size:0.85rem;"><i class="fas fa-bell-slash mb-2 d-block"></i>No notifications yet</div>
+            </div>
+          </div>
+        </li>
         <li class="nav-item">
           <a class="nav-link nav-logout" href="logout.html">
             <i class="fas fa-right-from-bracket me-1"></i>Logout
@@ -278,3 +294,108 @@ if (!customElements.get('check-credit-score-button')) {
 
   customElements.define('check-credit-score-button', CheckCreditScoreButton);
 }
+
+/* ── Notification Bell Functions ────────────────────────────────── */
+const NOTIF_ICONS = {
+    loan_approved: '🎉',
+    loan_rejected: '❌',
+    emi_due: '⏰',
+    emi_paid: '✅',
+    general: '📢'
+};
+const NOTIF_COLORS = {
+    loan_approved: '#10b981',
+    loan_rejected: '#ef4444',
+    emi_due: '#f59e0b',
+    emi_paid: '#6366f1',
+    general: '#3b82f6'
+};
+
+async function fetchNotifications() {
+    const token = localStorage.getItem('lms_token');
+    if (!token) return;
+    try {
+        const res = await fetch('http://localhost:3000/api/notifications', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (!data.success) return;
+
+        // Update badge
+        const badge = document.getElementById('notif-badge');
+        if (badge) {
+            if (data.unreadCount > 0) {
+                badge.textContent = data.unreadCount > 9 ? '9+' : data.unreadCount;
+                badge.classList.remove('d-none');
+                badge.style.display = 'flex';
+            } else {
+                badge.classList.add('d-none');
+                badge.style.display = 'none';
+            }
+        }
+
+        // Populate list
+        const list = document.getElementById('notif-list');
+        if (!list) return;
+        if (data.data.length === 0) {
+            list.innerHTML = `<div style="padding:20px;text-align:center;color:#9ca3af;font-size:0.85rem;"><i class="fas fa-bell-slash mb-2 d-block"></i>No notifications yet</div>`;
+            return;
+        }
+        list.innerHTML = data.data.map(n => `
+            <div onclick="markNotifRead('${n._id}', this)" style="padding:12px 16px;border-bottom:1px solid #f9fafb;cursor:pointer;background:${n.isRead ? '#fff' : '#f0f4ff'};transition:background 0.2s;">
+                <div style="display:flex;align-items:flex-start;gap:10px;">
+                    <span style="font-size:1.3rem;line-height:1;">${NOTIF_ICONS[n.type] || '📢'}</span>
+                    <div style="flex:1;">
+                        <div style="font-weight:${n.isRead ? '500' : '700'};font-size:0.85rem;color:#1e293b;">${n.title}</div>
+                        <div style="font-size:0.78rem;color:#64748b;margin-top:2px;line-height:1.4;">${n.message}</div>
+                        <div style="font-size:0.7rem;color:#9ca3af;margin-top:4px;">${new Date(n.createdAt).toLocaleString('en-IN')}</div>
+                    </div>
+                    ${!n.isRead ? `<span style="width:8px;height:8px;background:${NOTIF_COLORS[n.type]||'#6366f1'};border-radius:50%;flex-shrink:0;margin-top:4px;"></span>` : ''}
+                </div>
+            </div>
+        `).join('');
+    } catch(e) { /* silent fail */ }
+}
+
+function toggleNotifPanel() {
+    const panel = document.getElementById('notif-panel');
+    if (!panel) return;
+    const isHidden = panel.classList.contains('d-none');
+    panel.classList.toggle('d-none', !isHidden);
+    if (isHidden) fetchNotifications();
+}
+
+async function markNotifRead(id, el) {
+    const token = localStorage.getItem('lms_token');
+    if (!token) return;
+    await fetch(`http://localhost:3000/api/notifications/${id}/read`, {
+        method: 'PATCH',
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (el) { el.style.background = '#fff'; el.querySelector('div > div:last-child span')?.remove(); }
+    fetchNotifications(); // refresh badge
+}
+
+async function markAllNotifRead() {
+    const token = localStorage.getItem('lms_token');
+    if (!token) return;
+    await fetch('http://localhost:3000/api/notifications/mark-all-read', {
+        method: 'PATCH',
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    fetchNotifications();
+}
+
+// Close panel when clicking outside
+document.addEventListener('click', (e) => {
+    const panel = document.getElementById('notif-panel');
+    const btn = document.getElementById('notif-bell-btn');
+    if (panel && btn && !panel.contains(e.target) && !btn.contains(e.target)) {
+        panel.classList.add('d-none');
+    }
+});
+
+// Auto-fetch on load (with debounce to wait for layout injection)
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(fetchNotifications, 500); // wait for injectLayout()
+});

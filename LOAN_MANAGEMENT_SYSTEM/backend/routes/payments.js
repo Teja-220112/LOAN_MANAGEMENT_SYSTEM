@@ -73,6 +73,23 @@ router.post('/verify', protect, async (req, res) => {
         emi.paid_at = Date.now();
         await emi.save();
 
+        // ── Notification: EMI Paid ──
+        try {
+            const Notification = require('../models/Notification');
+            const loan = await Loan.findById(emi.loanId);
+            const isPrepaid = emi.due_date > new Date();
+            await Notification.create({
+                userId: req.user._id,
+                type: 'emi_paid',
+                title: isPrepaid ? '✅ EMI Pre-paid Successfully!' : '✅ EMI Payment Successful!',
+                message: isPrepaid
+                    ? `You pre-paid EMI #${emi.installment_number} of ₹${emi.emi_amount.toLocaleString('en-IN')} (due ${new Date(emi.due_date).toLocaleDateString('en-IN')}) ahead of schedule. Great financial discipline!`
+                    : `EMI #${emi.installment_number} of ₹${emi.emi_amount.toLocaleString('en-IN')} has been paid successfully via ${method || 'online'}.`,
+                loanId: emi.loanId,
+                emiId: emi._id
+            });
+        } catch(notifErr) { console.error('Notification error:', notifErr); }
+
         res.status(201).json({ success: true, data: payment });
     } catch (error) {
         console.error(error);
@@ -138,42 +155,54 @@ router.get('/summary', protect, async (req, res) => {
     }
 });
 
-// Get next due EMI for payment page
+// Get active loans with unpaid EMIs for payment page (supports pre-payment + multiple loans)
 router.get('/next-due', protect, async (req, res) => {
     try {
-        // Find the oldest pending or overdue EMI across all active loans for this user
-        const emi = await EMISchedule.findOne({ 
-            userId: req.user._id, 
-            status: { $in: ['Pending', 'Overdue'] } 
-        })
-        .sort({ due_date: 1 })
-        .populate('loanId');
+        // Step 1: Find all approved loans for this user
+        const activeLoans = await Loan.find({
+            userId: req.user._id,
+            status: 'Approved'
+        });
 
-        if (!emi) {
-            return res.json({ success: true, data: null });
+        if (!activeLoans || activeLoans.length === 0) {
+            return res.json({ success: true, data: [] });
         }
 
-        // Get total stats for the loan summary on pay page
-        const loan = emi.loanId;
-        const allEmis = await EMISchedule.find({ loanId: loan._id });
-        const paidEmis = allEmis.filter(e => e.status === 'Paid');
-        const totalPaidCount = paidEmis.length;
-        const outstanding = allEmis.filter(e => e.status !== 'Paid').reduce((acc, e) => acc + e.emi_amount, 0);
+        const results = [];
 
-        res.json({ 
-            success: true, 
-            data: { 
-                emi,
+        for (const loan of activeLoans) {
+            // Step 2: Find all EMIs for this loan (any status)
+            const allEmis = await EMISchedule.find({ loanId: loan._id }).sort({ due_date: 1 });
+            
+            if (!allEmis || allEmis.length === 0) continue;
+
+            // Step 3: Check if loan is fully paid
+            const unpaidEmis = allEmis.filter(e => e.status !== 'Paid');
+            if (unpaidEmis.length === 0) continue; // This loan is fully paid, skip it
+
+            // Step 4: Pick the best EMI to show:
+            // Priority: Overdue > Pending (by due_date) — allows pre-payment of any unpaid EMI
+            const overdueEmi = unpaidEmis.find(e => e.status === 'Overdue');
+            const nextEmi = overdueEmi || unpaidEmis[0]; // earliest unpaid installment
+
+            const paidCount = allEmis.filter(e => e.status === 'Paid').length;
+            const outstanding = unpaidEmis.reduce((acc, e) => acc + e.emi_amount, 0);
+
+            results.push({
+                emi: { ...nextEmi.toObject(), loanId: loan }, // Manually attach full loan object
                 loanSummary: {
                     loanId: loan._id,
+                    loanPurpose: loan.loan_purpose,
                     loanAmount: loan.loan_amount,
-                    interestRate: loan.interest_rate,
+                    interestRate: loan.selected_interest_rate || loan.interest_rate,
                     tenure: loan.loan_tenure,
-                    paidCount: totalPaidCount,
-                    outstanding: outstanding
+                    paidCount,
+                    outstanding
                 }
-            } 
-        });
+            });
+        }
+
+        res.json({ success: true, data: results });
     } catch (error) {
         console.error(error);
         res.status(500).json({ success: false, error: 'Server error' });

@@ -30,7 +30,10 @@ const upload = multer({
 
 router.post('/apply', protect, upload.array('documents', MAX_FILES), async (req, res) => {
     try {
-        const { loan_amount, loan_purpose, loan_tenure, monthly_income, employment_type, credit_score } = req.body;
+        const { 
+            loan_amount, loan_purpose, loan_tenure, monthly_income, 
+            employment_type, credit_score, selected_bank, selected_interest_rate 
+        } = req.body;
 
         const docs = req.files || [];
         const document_urls = docs.map(f => `/uploads/${f.filename}`);
@@ -46,6 +49,8 @@ router.post('/apply', protect, upload.array('documents', MAX_FILES), async (req,
             credit_score,
             document_url,
             document_urls,
+            selected_bank,
+            selected_interest_rate,
             status: 'Pending'
         });
 

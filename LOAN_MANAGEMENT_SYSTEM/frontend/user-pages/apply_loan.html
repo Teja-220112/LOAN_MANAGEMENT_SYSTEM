@@ -79,16 +79,25 @@
                     <span class="input-group-text"><i class="fas fa-tag"></i></span>
                     <select id="loan_purpose" name="loan_purpose" class="form-select" required>
                       <option value="" disabled selected>Select purpose…</option>
-                      <option value="home">Home Purchase / Renovation</option>
                       <option value="education">Education</option>
-                      <option value="medical">Medical Emergency</option>
-                      <option value="vehicle">Vehicle Purchase</option>
                       <option value="business">Business / Working Capital</option>
                       <option value="personal">Personal / Lifestyle</option>
-                      <option value="debt">Debt Consolidation</option>
-                      <option value="other">Other</option>
+                      <option value="home">Home Purchase / Renovation</option>
+                      <option value="vehicle">Vehicle Purchase</option>
                     </select>
                   </div>
+                </div>
+
+                <!-- Bank Offers Container (Dynamic Dropdown) -->
+                <div class="col-md-12 d-none" id="bank-offers-row">
+                  <label class="form-label" for="selected_bank">Recommended Bank Offers <span class="text-danger">*</span></label>
+                  <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-building-columns"></i></span>
+                    <select id="selected_bank" name="selected_bank" class="form-select" required>
+                      <option value="" disabled selected>Select a bank…</option>
+                    </select>
+                  </div>
+                  <input type="hidden" id="selected_interest_rate" name="selected_interest_rate">
                 </div>
 
                 <!-- Monthly Income -->
@@ -248,10 +257,82 @@ async function apiCall(endpoint, method='GET', body=null) {
 document.addEventListener('DOMContentLoaded', () => {
     if(!localStorage.getItem('lms_token')) window.location.href = 'login.html';
     const form = document.querySelector('form') || document.getElementById('apply-loan-form');
+    const bankRow = document.getElementById('bank-offers-row');
+
+    function renderBanks(banks) {
+        const bankSelect = document.getElementById('selected_bank');
+        if (!bankSelect) return;
+        
+        bankSelect.innerHTML = '<option value="" disabled selected>Select a bank…</option>';
+        // Find best offer (lowest minRate)
+        const bestOffer = banks.reduce((min, b) => b.minRate < min.minRate ? b : min, banks[0]);
+
+        banks.forEach(bank => {
+            const isBest = bank._id === bestOffer._id;
+            const option = document.createElement('option');
+            option.value = bank.name;
+            option.dataset.rate = bank.minRate;
+            option.textContent = `${bank.name} - ${bank.minRate}% to ${bank.maxRate}% Interest ${isBest ? '(Best Offer)' : ''}`;
+            bankSelect.appendChild(option);
+            
+            // Auto-select best offer if nothing selected yet
+            if (isBest && !document.getElementById('selected_bank').value) {
+                bankSelect.value = bank.name;
+                document.getElementById('selected_interest_rate').value = bank.minRate;
+            }
+        });
+
+        // Event listener to update hidden rate input
+        bankSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            document.getElementById('selected_interest_rate').value = selectedOption.dataset.rate || '';
+        });
+    }
+    
     if(form) {
         // Remove old submit listener if existing
         const newForm = form.cloneNode(true);
         form.parentNode.replaceChild(newForm, form);
+
+        // Re-attach purpose change listener to the new form's purpose select
+        const newPurposeSelect = newForm.querySelector('#loan_purpose');
+        const bankRow = document.getElementById('bank-offers-row');
+        if(newPurposeSelect) {
+            newPurposeSelect.addEventListener('change', async (e) => {
+                const purpose = e.target.value.toLowerCase();
+                const validPurposes = ['education', 'personal', 'business', 'home', 'vehicle'];
+
+                // Reset existing selection
+                const selectedBankInput = document.getElementById('selected_bank');
+                const selectedRateInput = document.getElementById('selected_interest_rate');
+                if (selectedBankInput) selectedBankInput.value = '';
+                if (selectedRateInput) selectedRateInput.value = '';
+
+                if (!validPurposes.includes(purpose)) {
+                    bankRow.classList.add('d-none');
+                    return;
+                }
+                try {
+                    const res = await fetch(`http://localhost:3000/api/banks?purpose=${purpose}&_t=${Date.now()}`, {
+                        headers: { 'Authorization': `Bearer ${localStorage.getItem('lms_token')}` },
+                        cache: 'no-store'
+                    });
+                    const response = await res.json();
+                    if(response.success && response.data && response.data.length > 0) {
+                        bankRow.classList.remove('d-none');
+                        renderBanks(response.data);
+                    } else {
+                        bankRow.classList.add('d-none');
+                        if (response.success && (!response.data || response.data.length === 0)) {
+                            console.warn('No banks found for purpose:', purpose);
+                        }
+                    }
+                } catch (err) { 
+                    console.error('Error fetching banks:', err);
+                    alert('Could not fetch bank offers. Please ensure the server is running on port 3000.');
+                }
+            });
+        }
 
         const MAX_FILES = 10;
         const docsInput = newForm.querySelector('#documents');
@@ -307,6 +388,12 @@ document.addEventListener('DOMContentLoaded', () => {
             payload.append('employment_type', formData.get('employment_type') || 'Salaried');
             payload.append('credit_score', formData.get('credit_score'));
             
+            // Collect selected bank and rate if present
+            const selectedBank = document.getElementById('selected_bank')?.value;
+            const selectedRate = document.getElementById('selected_interest_rate')?.value;
+            if (selectedBank) payload.append('selected_bank', selectedBank);
+            if (selectedRate) payload.append('selected_interest_rate', Number(selectedRate));
+
             const docsToSend = (selectedFiles && selectedFiles.length > 0)
                 ? selectedFiles
                 : (formData.getAll('documents') || []);

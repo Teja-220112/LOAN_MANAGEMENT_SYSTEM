@@ -82,14 +82,14 @@
         <input type="text" id="table-search" class="form-control" placeholder="Search by ID, loan…" />
       </div>
       <div class="d-flex gap-2">
-        <select class="form-select form-select-sm" style="width:auto;">
+        <select class="form-select form-select-sm" id="status-filter" style="width:auto;">
           <option value="">All Status</option>
-          <option value="paid">Paid</option>
-          <option value="pending">Pending</option>
-          <option value="failed">Failed</option>
+          <option value="Paid">Paid</option>
+          <option value="Pending">Pending</option>
+          <option value="Failed">Failed</option>
         </select>
-        <input type="month" class="form-control form-control-sm" style="width:auto;" title="Filter by month" />
-        <button class="btn btn-sm btn-outline-secondary">
+        <input type="month" class="form-control form-control-sm" id="month-filter" style="width:auto;" title="Filter by month" />
+        <button class="btn btn-sm btn-outline-secondary" onclick="exportCSV()">
           <i class="fas fa-download me-1"></i>Export
         </button>
       </div>
@@ -176,8 +176,32 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
 <script src="scripts.js"></script>
 
+<style>
+  #receipt-modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:9999; align-items:center; justify-content:center; }
+  #receipt-modal-overlay.show { display:flex; }
+  #receipt-box { background:#fff; border-radius:14px; padding:2rem; max-width:420px; width:92%; position:relative; }
+  .receipt-row { display:flex; justify-content:space-between; border-bottom:1px dashed #e5e7eb; padding:8px 0; font-size:0.85rem; }
+  .receipt-row:last-child { border-bottom:none; }
+</style>
+
+<!-- Receipt Modal -->
+<div id="receipt-modal-overlay" onclick="if(event.target===this)closeReceipt()">
+  <div id="receipt-box">
+    <button onclick="closeReceipt()" style="position:absolute;top:12px;right:14px;background:none;border:none;font-size:1.25rem;cursor:pointer;">✕</button>
+    <div style="text-align:center;margin-bottom:1.2rem;">
+      <div style="font-size:2rem;">🧾</div>
+      <h5 style="font-weight:700;margin-bottom:2px;">Payment Receipt</h5>
+      <p style="color:#6b7280;font-size:0.8rem;margin:0;">LoanSphere Management System</p>
+    </div>
+    <div id="receipt-content"></div>
+    <div style="display:flex;gap:8px;margin-top:1.2rem;">
+      <button onclick="printReceipt()" style="flex:1;padding:9px;background:#6366f1;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;"><i class="fas fa-print me-1"></i>Print</button>
+      <button onclick="closeReceipt()" style="flex:1;padding:9px;background:#f3f4f6;border:none;border-radius:8px;font-weight:600;cursor:pointer;">Close</button>
+    </div>
+  </div>
+</div>
+
 <script>
-// ===== Frontend Connection Code: payments.html =====
 async function apiCall(endpoint, method='GET', body=null) {
     const token = localStorage.getItem('lms_token');
     if(!token) { window.location.href = 'login.html'; return; }
@@ -187,55 +211,147 @@ async function apiCall(endpoint, method='GET', body=null) {
     if(res.status === 401) { window.location.href = 'login.html'; return; }
     return res.json();
 }
+
+let allPayments = [];
+
+const fmt = n => '₹' + (n||0).toLocaleString('en-IN', {minimumFractionDigits:2});
+const dt  = d => d ? new Date(d).toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'}) : 'N/A';
+
+function renderPayments() {
+    const tbody  = document.getElementById('payments-tbody');
+    const search = (document.getElementById('table-search')?.value || '').toLowerCase();
+    const status = document.getElementById('status-filter')?.value || '';
+    const month  = document.getElementById('month-filter')?.value  || '';
+
+    let filtered = allPayments.filter(p => {
+        const loanId   = (p.loanId?._id || p.loanId || '').toString();
+        const txn      = (p.transaction_id || '').toLowerCase();
+        const matchSearch = !search || txn.includes(search) || loanId.toLowerCase().includes(search);
+        const matchStatus = !status  || p.status === status;
+        let   matchMonth  = true;
+        if (month && p.payment_date) {
+            const d = new Date(p.payment_date);
+            matchMonth = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}` === month;
+        }
+        return matchSearch && matchStatus && matchMonth;
+    });
+
+    // Update pagination text
+    document.querySelector('.pagination')?.parentElement?.previousElementSibling && (
+        document.querySelector('[class*="justify-content-between"] span').textContent =
+            `Showing ${filtered.length > 0 ? 1 : 0}–${filtered.length} of ${filtered.length} payment${filtered.length !== 1 ? 's' : ''}`
+    );
+
+    if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4"><div class="empty-state"><i class="fas fa-receipt"></i><p class="mt-2">No payments match your filters.</p></div></td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = filtered.map((p, i) => {
+        const loanId   = (p.loanId?._id || p.loanId || '').toString();
+        const shortLoan = loanId.slice(-6).toUpperCase();
+        const shortTxn  = (p.transaction_id || 'N/A');
+        const badgeClass = p.status === 'Paid' ? 'badge-paid' : p.status === 'Pending' ? 'badge-pending' : 'badge-failed';
+        const receiptBtn = p.status === 'Paid'
+            ? `<button onclick="showReceipt(${i})" class="btn btn-sm btn-outline-primary" title="View Receipt"><i class="fas fa-file-invoice me-1"></i>Receipt</button>`
+            : `<span style="color:#9ca3af;">—</span>`;
+        return `<tr>
+            <td class="td-mono" style="font-size:0.75rem;">${shortTxn}</td>
+            <td><a href="loan_details.html?id=${loanId}">#${shortLoan}</a></td>
+            <td>${p.installment_number}</td>
+            <td class="td-mono">${fmt(p.amount_paid)}</td>
+            <td>${dt(p.payment_date)}</td>
+            <td>${p.method || '—'}</td>
+            <td><span class="badge-status ${badgeClass}">${p.status}</span></td>
+            <td>${receiptBtn}</td>
+        </tr>`;
+    }).join('');
+
+    // Store filtered for receipt lookup
+    window._filteredPayments = filtered;
+}
+
+function showReceipt(index) {
+    const p = (window._filteredPayments || [])[index];
+    if (!p) return;
+    const loanId = (p.loanId?._id || p.loanId || '').toString().slice(-6).toUpperCase();
+    document.getElementById('receipt-content').innerHTML = `
+        <div class="receipt-row"><span>Transaction ID</span><strong style="font-family:monospace;font-size:0.78rem">${p.transaction_id || '—'}</strong></div>
+        <div class="receipt-row"><span>Loan ID</span><strong>#${loanId}</strong></div>
+        <div class="receipt-row"><span>EMI Number</span><strong>#${p.installment_number}</strong></div>
+        <div class="receipt-row"><span>Amount Paid</span><strong style="color:#10b981;">${fmt(p.amount_paid)}</strong></div>
+        <div class="receipt-row"><span>Payment Method</span><strong>${p.method || '—'}</strong></div>
+        <div class="receipt-row"><span>Payment Date</span><strong>${dt(p.payment_date)}</strong></div>
+        <div class="receipt-row"><span>Status</span><strong style="color:#10b981;">✅ ${p.status}</strong></div>
+    `;
+    document.getElementById('receipt-modal-overlay').classList.add('show');
+    window._currentReceipt = p;
+}
+
+function closeReceipt() {
+    document.getElementById('receipt-modal-overlay').classList.remove('show');
+}
+
+function printReceipt() {
+    const content = document.getElementById('receipt-box').innerHTML;
+    const w = window.open('', '_blank');
+    w.document.write(`<html><head><title>Receipt</title><style>body{font-family:sans-serif;padding:30px;max-width:400px;margin:auto}h5{text-align:center}.receipt-row{display:flex;justify-content:space-between;border-bottom:1px dashed #e5e7eb;padding:8px 0;font-size:14px}</style></head><body>${content}</body></html>`);
+    w.document.close();
+    w.print();
+}
+
+function exportCSV() {
+    const rows = (window._filteredPayments || allPayments);
+    if (!rows.length) { alert('No data to export.'); return; }
+    const header = ['Transaction ID','Loan ID','EMI #','Amount Paid','Date','Method','Status'];
+    const csv = [header, ...rows.map(p => [
+        p.transaction_id, (p.loanId?._id||p.loanId||'').toString().slice(-6).toUpperCase(),
+        p.installment_number, p.amount_paid,
+        new Date(p.payment_date).toLocaleDateString('en-IN'), p.method, p.status
+    ])].map(r => r.join(',')).join('\n');
+    const a = document.createElement('a');
+    a.href = 'data:text/csv,' + encodeURIComponent(csv);
+    a.download = 'payment_history.csv';
+    a.click();
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
-    if(!localStorage.getItem('lms_token')) window.location.href = 'login.html';
-    const tbody = document.getElementById('payments-tbody') || document.querySelector('table tbody');
-    if(tbody) tbody.innerHTML = '<tr><td colspan="7" class="text-center">Loading...</td></tr>';
-    
+    if(!localStorage.getItem('lms_token')) { window.location.href = 'login.html'; return; }
+    const tbody = document.getElementById('payments-tbody');
+    tbody.innerHTML = '<tr><td colspan="8" class="text-center">Loading...</td></tr>';
+
+    // Wire up filters
+    ['table-search','status-filter','month-filter'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', renderPayments);
+    });
+
     try {
         const [histRes, sumRes] = await Promise.all([
             apiCall('/api/payments/history'),
             apiCall('/api/payments/summary')
         ]);
-        
-        if(histRes && histRes.success) {
-            if(tbody) {
-                tbody.innerHTML = '';
-                const payments = histRes.data;
-                const formatCur = (n) => '₹' + (n||0).toLocaleString('en-IN');
-                const dt = d => d ? new Date(d).toLocaleDateString('en-GB') : 'N/A';
-                
-                if(payments.length === 0) tbody.innerHTML = '<tr><td colspan="7" class="text-center">No payment records found.</td></tr>';
-                
-                payments.forEach(p => {
-                    const badgeClass = p.status === 'Paid' ? 'badge-paid' : p.status === 'Pending' ? 'badge-pending' : 'badge-failed';
-                    tbody.innerHTML += `
-                    <tr>
-                        <td class="td-mono" style="font-size:0.75rem;">${p.transaction_id || 'N/A'}</td>
-                        <td><a href="loan_details.html?id=${p.loanId?._id || p.loanId}">#${(p.loanId?._id || p.loanId).slice(-6).toUpperCase()}</a></td>
-                        <td>${p.installment_number}</td>
-                        <td class="td-mono">${formatCur(p.amount_paid)}</td>
-                        <td>${dt(p.payment_date)}</td>
-                        <td>${p.method}</td>
-                        <td><span class="badge-status ${badgeClass}">${p.status}</span></td>
-                        <td>—</td>
-                    </tr>`;
-                });
-            }
+
+        if (histRes?.success) {
+            allPayments = histRes.data;
+            renderPayments();
+
+            // Update pagination text
+            const paginationSpan = document.querySelector('.d-flex.align-items-center.justify-content-between span');
+            if (paginationSpan) paginationSpan.textContent = `Showing 1–${allPayments.length} of ${allPayments.length} payments`;
         }
-        
-        if(sumRes && sumRes.success) {
-            const paidCountEl = document.getElementById('count-paid');
-            if(paidCountEl) paidCountEl.textContent = sumRes.data.paidCount;
-            
-            const pndCountEl = document.getElementById('count-pending');
-            if(pndCountEl) pndCountEl.textContent = sumRes.data.pendingCount;
-            
-            const fldCountEl = document.getElementById('count-failed');
-            if(fldCountEl) fldCountEl.textContent = sumRes.data.failedCount;
+
+        if (sumRes?.success) {
+            const paidEl    = document.getElementById('count-paid');
+            const pendingEl = document.getElementById('count-pending');
+            const failedEl  = document.getElementById('count-failed');
+            if (paidEl)    paidEl.textContent    = sumRes.data.paidCount;
+            if (pendingEl) pendingEl.textContent  = sumRes.data.pendingCount;
+            if (failedEl)  failedEl.textContent   = sumRes.data.failedCount;
         }
     } catch(err) {
-        if(tbody) tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Error loading data</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center text-danger">Error loading data</td></tr>';
+        console.error(err);
     }
 });
 </script>

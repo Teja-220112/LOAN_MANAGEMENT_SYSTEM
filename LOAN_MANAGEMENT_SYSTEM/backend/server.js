@@ -16,6 +16,8 @@ const userRoutes = require('./routes/user');
 const loanRoutes = require('./routes/loans');
 const paymentRoutes = require('./routes/payments');
 const adminRoutes = require('./routes/admin');
+const bankRoutes = require('./routes/banks');
+const notificationRoutes = require('./routes/notifications');
 
 const app = express();
 
@@ -39,6 +41,8 @@ app.use('/api/user', userRoutes);
 app.use('/api/loans', loanRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/banks', bankRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Start HTTP server immediately (do not block on MongoDB connection)
 const port = process.env.PORT || 3000;
@@ -71,4 +75,45 @@ async function connectMongo() {
     }
 }
 
-connectMongo();
+connectMongo().then(() => {
+    // Run immediately on startup then every 24 hours
+    scheduleEmiReminders();
+    setInterval(scheduleEmiReminders, 24 * 60 * 60 * 1000);
+});
+
+async function scheduleEmiReminders() {
+    try {
+        const EMISchedule = require('./models/EMISchedule');
+        const Notification = require('./models/Notification');
+        const now = new Date();
+        const in10Days = new Date(now.getTime() + 10 * 24 * 60 * 60 * 1000);
+        const in10DaysStart = new Date(in10Days.getFullYear(), in10Days.getMonth(), in10Days.getDate());
+        const in10DaysEnd = new Date(in10DaysStart.getTime() + 24 * 60 * 60 * 1000);
+
+        const dueEmis = await EMISchedule.find({
+            status: 'Pending',
+            due_date: { $gte: in10DaysStart, $lt: in10DaysEnd }
+        });
+
+        for (const emi of dueEmis) {
+            const alreadySent = await Notification.findOne({
+                userId: emi.userId,
+                emiId: emi._id,
+                type: 'emi_due'
+            });
+            if (!alreadySent) {
+                await Notification.create({
+                    userId: emi.userId,
+                    type: 'emi_due',
+                    title: '⏰ EMI Due in 10 Days',
+                    message: `Your EMI #${emi.installment_number} of ₹${emi.emi_amount.toLocaleString('en-IN')} is due on ${new Date(emi.due_date).toLocaleDateString('en-IN')}. Please ensure your account has sufficient funds.`,
+                    loanId: emi.loanId,
+                    emiId: emi._id
+                });
+            }
+        }
+        if (dueEmis.length > 0) console.log(`EMI reminders sent for ${dueEmis.length} installments`);
+    } catch (err) {
+        console.error('EMI reminder job error:', err.message);
+    }
+}
