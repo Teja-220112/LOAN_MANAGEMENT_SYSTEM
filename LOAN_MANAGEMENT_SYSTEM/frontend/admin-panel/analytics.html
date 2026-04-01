@@ -363,7 +363,7 @@
             }
             if (typeof initDefaulterChart === 'function') {
                 Chart.getChart('defaulterChart')?.destroy();
-                initDefaulterChart('defaulterChart', data.totalDefaulters, totalApplications - data.totalDefaulters);
+                initDefaulterChart('defaulterChart', data.totalDefaulters, total - data.totalDefaulters);
             }
             
             // Update pct labels

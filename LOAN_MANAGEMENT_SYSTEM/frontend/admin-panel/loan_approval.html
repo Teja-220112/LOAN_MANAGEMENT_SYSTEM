@@ -206,49 +206,7 @@
       <!-- RIGHT COLUMN -->
       <div class="col-12 col-lg-5">
 
-        <!-- Action Card -->
-        <div class="info-section mb-3" style="border-color:#e2e8f0;">
-          <div class="info-section-header">
-            <i class="fas fa-gavel" style="background:#fffbeb;color:#f59e0b;"></i>
-            <h6 class="info-section-title">Decision Panel</h6>
-          </div>
-          <div class="info-section-body">
-            <p style="font-size:13px;color:#64748b;margin-bottom:20px;">
-              Review all applicant information carefully before making a decision. This action will notify the applicant.
-            </p>
-
-            <!-- Admin Notes -->
-            <div style="margin-bottom:18px;">
-              <label class="form-label">Admin Notes (Optional)</label>
-              <textarea class="form-control" id="adminNotes" rows="3" placeholder="Enter any internal notes or reasons for this decision..."></textarea>
-            </div>
-
-            <!-- Rejection Reason -->
-            <div style="margin-bottom:20px;">
-              <label class="form-label">Rejection Reason</label>
-              <select class="form-select" id="rejectionReason">
-                <option value="">Select reason (if rejecting)</option>
-                <option value="low_credit">Low Credit Score</option>
-                <option value="low_income">Insufficient Income</option>
-                <option value="high_debt">High Debt-to-Income Ratio</option>
-                <option value="incomplete_docs">Incomplete Documentation</option>
-                <option value="verification_failed">Verification Failed</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-
-            <!-- Action Buttons hidden for Loan Agent -->
-            <div style="display:none;gap:10px;">
-              <button class="btn btn-success" style="flex:1;" id="approveBtn">
-                <i class="fas fa-check-circle me-2"></i> Approve Loan
-              </button>
-              <button class="btn btn-danger" style="flex:1;" id="rejectBtn">
-                <i class="fas fa-times-circle me-2"></i> Reject Loan
-              </button>
-            </div>
-
-          </div>
-        </div>
+        <!-- Action Card (Removed for Admin, only Manager can approve) -->
 
         <!-- Risk Assessment Card -->
         <div class="info-section mb-3">
@@ -434,13 +392,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             if(document.getElementById('appName')) document.getElementById('appName').textContent = `${u.firstName || ''} ${u.lastName || ''}`.trim() || '—';
             if(document.getElementById('appEmail')) document.getElementById('appEmail').textContent = u.email || '—';
             if(document.getElementById('appPhone')) document.getElementById('appPhone').textContent = u.phone || '—';
-            if(document.getElementById('appEmployment')) document.getElementById('appEmployment').textContent = u.employment_type || '—';
-            if(document.getElementById('appIncome')) document.getElementById('appIncome').textContent = u.monthly_income ? `₹${Number(u.monthly_income).toLocaleString('en-IN')}` : '—';
-            if(document.getElementById('appCreditScore')) document.getElementById('appCreditScore').textContent = u.credit_score || '—';
+            if(document.getElementById('appEmployment')) document.getElementById('appEmployment').textContent = l.employment_type || '—';
+            if(document.getElementById('appIncome')) document.getElementById('appIncome').textContent = l.monthly_income ? `₹${Number(l.monthly_income).toLocaleString('en-IN')}` : '—';
+            if(document.getElementById('appCreditScore')) document.getElementById('appCreditScore').textContent = l.credit_score || '—';
             
             // Risk fields (mocked or loaded if available on user)
-            if(document.getElementById('riskScoreDisplay')) document.getElementById('riskScoreDisplay').textContent = u.credit_score > 750 ? 'Low' : (u.credit_score > 600 ? 'Medium' : 'High');
-            if(document.getElementById('dtiRatio')) document.getElementById('dtiRatio').textContent = l.loan_amount && u.monthly_income ? `${((l.loan_amount / (u.monthly_income * 12)) * 100).toFixed(1)}%` : '—';
+            if(document.getElementById('riskScoreDisplay')) document.getElementById('riskScoreDisplay').textContent = l.credit_score > 750 ? 'Low' : (l.credit_score > 600 ? 'Medium' : 'High');
+            if(document.getElementById('dtiRatio')) document.getElementById('dtiRatio').textContent = l.loan_amount && l.monthly_income ? `${((l.loan_amount / (l.monthly_income * 12)) * 100).toFixed(1)}%` : '—';
             if(document.getElementById('creditUtil')) document.getElementById('creditUtil').textContent = '35%'; // Mocked
             if(document.getElementById('prevDefaults')) document.getElementById('prevDefaults').textContent = '0'; // Mocked
             

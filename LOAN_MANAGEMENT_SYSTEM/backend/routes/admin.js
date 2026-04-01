@@ -193,6 +193,9 @@ router.get('/loans/:id', async (req, res) => {
 
 router.put('/loans/:id/approve', async (req, res) => {
     try {
+        if (req.user && req.user.role !== 'manager') {
+            return res.status(403).json({ success: false, error: 'Only managers can approve loans' });
+        }
         const loan = await Loan.findById(req.params.id).populate('userId', 'email firstName lastName');
         if(!loan) return res.status(404).json({ success: false, error: 'Loan not found' });
 
@@ -270,6 +273,9 @@ router.put('/loans/:id/approve', async (req, res) => {
 
 router.put('/loans/:id/reject', async (req, res) => {
     try {
+        if (req.user && req.user.role !== 'manager') {
+            return res.status(403).json({ success: false, error: 'Only managers can reject loans' });
+        }
         const loan = await Loan.findById(req.params.id);
         if(!loan) return res.status(404).json({ success: false, error: 'Loan not found' });
         

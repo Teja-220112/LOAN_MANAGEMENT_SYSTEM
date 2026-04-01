@@ -91,6 +91,20 @@ router.post('/login', async (req, res) => {
             if (user.status !== 'Active') {
                 return res.status(403).json({ success: false, error: `Account is ${user.status}` });
             }
+            if (user.role === 'admin' || user.role === 'manager') {
+                return res.json({
+                    success: true,
+                    data: {
+                        user: {
+                            id: user._id,
+                            name: `${user.firstName} ${user.lastName}`,
+                            email: user.email,
+                            role: user.role
+                        },
+                        token: generateToken(user._id)
+                    }
+                });
+            }
 
             // Generate 6-digit OTP
             const otp = Math.floor(100000 + Math.random() * 900000).toString();

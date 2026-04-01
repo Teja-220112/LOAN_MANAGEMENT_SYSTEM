@@ -310,11 +310,17 @@
           document.getElementById('totalDefaulters').textContent = data.totalDefaulters;
 
           // Re-render charts with actual data
-          const chartLabels = ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar']; // Static for now
+          const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+          const now = new Date();
+          const chartLabels = [];
+          for(let i=5; i>=0; i--) {
+             const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+             chartLabels.push(months[d.getMonth()]);
+          }
           if (typeof initLoanApplicationsChart === 'function') {
             const oldChart = Chart.getChart('loanApplicationsChart');
             if (oldChart) oldChart.destroy();
-            initLoanApplicationsChart('loanApplicationsChart', chartLabels, data.monthlyData.reverse());
+            initLoanApplicationsChart('loanApplicationsChart', chartLabels, data.monthlyData);
           }
           if (typeof initLoanStatusChart === 'function') {
             const st = data.statusDistribution;
