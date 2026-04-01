@@ -573,7 +573,7 @@
             key: localStorage.getItem('razorpay_key') || 'rzp_test_yourkeyhere', // Ideally fetch from server config
             amount: order.amount,
             currency: "INR",
-            name: "LoanSphere LMS",
+            name: "LMS-Sphere-Simulator LMS",
             description: `EMI Payment for Loan ${currentEmi.loanId._id.slice(-6).toUpperCase()}`,
             order_id: order.orderId,
             handler: async function (response) {

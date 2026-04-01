@@ -11,7 +11,7 @@ const NAVBAR_HTML = `
     <a class="navbar-brand p-0" href="../index.html">
       <div class="navbar-brand-wrap">
         <div class="brand-icon"><i class="fas fa-landmark"></i></div>
-        <div class="brand-text">LoanSphere <span>Management System</span></div>
+        <div class="brand-text">LMS-Sphere-Simulator <span>Management System</span></div>
       </div>
     </a>
     <button class="navbar-toggler border-0 shadow-none" type="button"
@@ -60,7 +60,7 @@ const FOOTER_HTML = `
       <div class="col-lg-4">
         <div class="footer-brand">
           <div class="brand-icon"><i class="fas fa-landmark"></i></div>
-          <span class="footer-brand-name">LoanSphere</span>
+          <span class="footer-brand-name">LMS-Sphere-Simulator</span>
         </div>
         <p class="footer-tagline">Simple, secure, and transparent loan management for everyone.</p>
       </div>
@@ -90,7 +90,7 @@ const FOOTER_HTML = `
       </div>
     </div>
     <div class="footer-bottom d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2">
-      <span>&copy; 2025 LoanSphere Management System. All rights reserved.</span>
+      <span>&copy; 2025 LMS-Sphere-Simulator Management System. All rights reserved.</span>
       <span>Built for secure &amp; transparent lending.</span>
     </div>
   </div>

@@ -1,4 +1,4 @@
-// config.js - Global configuration for LoanSphere Frontend
+// config.js - Global configuration for LMS-Sphere-Simulator Frontend
 
 // Determine current environment
 const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
