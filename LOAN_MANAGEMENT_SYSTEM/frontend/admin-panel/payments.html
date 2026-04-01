@@ -300,9 +300,7 @@
             .footer { text-align: center; font-size: 12px; color: #999; margin-top: 50px; }
             @media print { .no-print { display: none; } }
           </style>
-        
-  <script src="../config.js"></script>
-</head>
+        </head>
         <body>
           <div class="receipt-box">
             <div class="header">
@@ -326,8 +324,7 @@
               <button onclick="window.print()" style="padding:10px 20px; background:#3b82f6; color:white; border:none; border-radius:5px; cursor:pointer;">Print Now</button>
             </div>
           </div>
-        <script src="js/admin.js"></script>
-</body>
+        </body>
       </html>
     `);
     printWindow.document.close();
@@ -339,62 +336,108 @@
 async function apiCall(endpoint, method='GET', body=null) {
     const token = localStorage.getItem('lms_token');
     if(!token) { window.location.href = 'login.html'; return; }
-    const options = { method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` } };
+    const options = { 
+        method, 
+        headers: { 
+            'Content-Type': 'application/json', 
+            'Authorization': `Bearer ${token}` 
+        } 
+    };
     if(body) options.body = JSON.stringify(body);
     const res = await fetch(`${window.API_BASE_URL}${endpoint}`, options);
     if(res.status === 401 || res.status === 403) { window.location.href = 'login.html'; return; }
     return res.json();
 }
+
 document.addEventListener('DOMContentLoaded', async () => {
     if(!localStorage.getItem('lms_token')) window.location.href = 'login.html';
-    const tbody = document.getElementById('payments-tbody') || document.querySelector('table tbody');
+    
+    // Target specific table body ID where possible, fallback to querySelector
+    const tbody = document.getElementById('paymentsTableBody') || document.querySelector('table tbody');
+    
     if(tbody) {
-             tbody.innerHTML = '<tr><td colspan="7" class="text-center">Loading...</td></tr>';
-             try {
-                const res = await apiCall('/api/admin/payments');
-                if(res && res.success) {
-                    allPayments = res.data.map(p => ({
-                        paymentId: p.transaction_id || p._id.slice(-6).toUpperCase(),
-                        loanId: p.loanId ? p.loanId._id.slice(-6).toUpperCase() : 'N/A',
-                        userName: p.userId ? `${p.userId.firstName || ''} ${p.userId.lastName || ''}`.trim() : 'Unknown',
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4"><i class="fas fa-spinner fa-spin me-2"></i>Loading payments...</td></tr>';
+        try {
+            const res = await apiCall('/api/admin/payments');
+            if(res && res.success) {
+                allPayments = res.data.map(p => {
+                    // Safe ID extraction: handles populated objects or raw string IDs
+                    const pid = p.transaction_id || (p._id ? String(p._id).slice(-6).toUpperCase() : 'N/A');
+                    const lid = p.loanId ? String(p.loanId._id || p.loanId).slice(-6).toUpperCase() : 'N/A';
+                    
+                    // Safe User Name extraction
+                    let uName = 'Unknown';
+                    if (p.userId && typeof p.userId === 'object') {
+                        uName = `${p.userId.firstName || ''} ${p.userId.lastName || ''}`.trim();
+                    } else if (p.userId && typeof p.userId === 'string') {
+                        uName = p.userId.slice(-6).toUpperCase();
+                    }
+                    
+                    return {
+                        paymentId: pid,
+                        loanId: lid,
+                        userName: uName || 'Unknown',
                         amountPaid: p.amount_paid || 0,
                         method: p.method || 'Online',
-                        paymentDate: p.payment_date ? new Date(p.payment_date).toLocaleDateString() : '—',
+                        paymentDate: p.payment_date ? new Date(p.payment_date).toLocaleDateString('en-IN') : '—',
                         status: p.status || 'Pending'
-                    }));
-                    renderPayments(allPayments);
-                    
-                    if(document.getElementById('payPaginationInfo')) document.getElementById('payPaginationInfo').textContent = `Showing ${allPayments.length} payments`;
-                    
-                    const totCol = allPayments.filter(p=>p.status==='Paid').reduce((sum, p)=>sum + Number(p.amountPaid), 0);
-                    const penCount = allPayments.filter(p=>p.status==='Pending').length;
-                    const failCount = allPayments.filter(p=>p.status==='Failed').length;
-                    
-                    if(document.getElementById('totalCollected')) document.getElementById('totalCollected').textContent = '₹' + totCol.toLocaleString('en-IN');
-                    if(document.getElementById('totalPending')) document.getElementById('totalPending').textContent = penCount;
-                    if(document.getElementById('totalFailed')) document.getElementById('totalFailed').textContent = failCount;
-                    
-                    const exportBtn = document.querySelector('.btn-outline-secondary');
-                    if(exportBtn) exportBtn.addEventListener('click', () => exportToCSV(allPayments, 'payments_export.csv'));
+                    };
+                });
+                
+                renderPayments(allPayments);
+                
+                // Update Summary Cards
+                if(document.getElementById('payPaginationInfo')) {
+                    document.getElementById('payPaginationInfo').textContent = `Showing ${allPayments.length} payments`;
                 }
-             } catch(err) { tbody.innerHTML = '<tr><td colspan="8" class="text-center text-danger">Error loading payments</td></tr>'; }
+                
+                const totCol = allPayments.filter(p => p.status === 'Paid').reduce((sum, p) => sum + Number(p.amountPaid), 0);
+                const penCount = allPayments.filter(p => p.status === 'Pending').length;
+                const failCount = allPayments.filter(p => p.status === 'Failed').length;
+                
+                if(document.getElementById('totalCollected')) {
+                    document.getElementById('totalCollected').textContent = '₹' + totCol.toLocaleString('en-IN');
+                }
+                if(document.getElementById('totalPending')) {
+                    document.getElementById('totalPending').textContent = penCount;
+                }
+                if(document.getElementById('totalFailed')) {
+                    document.getElementById('totalFailed').textContent = failCount;
+                }
+                
+                // Hook up local export button
+                const exportBtn = document.querySelector('.btn-outline-secondary');
+                if(exportBtn) {
+                    exportBtn.addEventListener('click', () => exportToCSV(allPayments, 'payments_export.csv'));
+                }
+            } else {
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center text-warning">No payment records found.</td></tr>';
+            }
+        } catch(err) { 
+            console.error('Payment Load Error:', err);
+            tbody.innerHTML = '<tr><td colspan="8" class="text-center text-danger">Error loading payments. Check console for details.</td></tr>'; 
+        }
     }
     
-    // Global UI Fixes
+    // Global Search Sync
     const topSearch = document.querySelector('.topbar-search input');
     if(topSearch) {
         topSearch.addEventListener('input', (e) => {
-            const localSearch = document.querySelector('.table-search input');
+            const localSearch = document.getElementById('paySearchInput');
             if(localSearch) {
                 localSearch.value = e.target.value;
                 localSearch.dispatchEvent(new Event('input'));
             }
         });
     }
+
+    // Topbar Notification Alert
     const notifBtn = document.querySelector('.topbar-btn');
     if(notifBtn) {
-        notifBtn.addEventListener('click', () => alert('You have 0 new notifications.'));
+        notifBtn.addEventListener('click', () => alert('No new notifications.'));
     }
+
+    // Global Logout logic
     document.querySelectorAll('.logout-link').forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
@@ -402,13 +445,21 @@ document.addEventListener('DOMContentLoaded', async () => {
             window.location.href = '../login.html';
         });
     });
+
+    // Helper: Export to CSV
     window.exportToCSV = function(data, filename) {
         if(!data || !data.length) return alert('No data to export');
         const headers = Object.keys(data[0]);
-        const csvRows = [headers.join(','), ...data.map(r => headers.map(h => `"${String(r[h] ?? '').replace(/"/g, '""')}"`).join(','))];
-        const blob = new Blob([csvRows.join('\\n')], { type: 'text/csv' });
+        const csvRows = [
+            headers.join(','), 
+            ...data.map(r => headers.map(h => `"${String(r[h] ?? '').replace(/"/g, '""')}"`).join(','))
+        ];
+        const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
         const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
+        const a = document.createElement('a'); 
+        a.href = url; 
+        a.download = filename; 
+        a.click();
         window.URL.revokeObjectURL(url);
     };
 });

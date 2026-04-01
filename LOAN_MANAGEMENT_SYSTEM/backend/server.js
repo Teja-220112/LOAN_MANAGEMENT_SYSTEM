@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const helmet = require('helmet');
 const path = require('path');
 const fs = require('fs');
 
@@ -20,6 +21,12 @@ const bankRoutes = require('./routes/banks');
 const notificationRoutes = require('./routes/notifications');
 
 const app = express();
+
+// Security Middleware: Helmet
+app.use(helmet({
+    crossOriginResourcePolicy: false, // Allow cross-origin images/resources from Vercel/Render
+    contentSecurityPolicy: false,     // CSP disabled to avoid blocking CDN scripts for now
+}));
 
 // Middleware — open CORS for all origins (frontend on Vercel)
 app.use(cors({
