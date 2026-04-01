@@ -315,7 +315,7 @@ async function fetchNotifications() {
     const token = localStorage.getItem('lms_token');
     if (!token) return;
     try {
-        const res = await fetch('http://localhost:3000/api/notifications', {
+        const res = await fetch(window.API_BASE_URL + '/api/notifications', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await res.json();
@@ -368,7 +368,7 @@ function toggleNotifPanel() {
 async function markNotifRead(id, el) {
     const token = localStorage.getItem('lms_token');
     if (!token) return;
-    await fetch(`http://localhost:3000/api/notifications/${id}/read`, {
+    await fetch(`${window.API_BASE_URL}/api/notifications/${id}/read`, {
         method: 'PATCH',
         headers: { 'Authorization': `Bearer ${token}` }
     });
@@ -379,7 +379,7 @@ async function markNotifRead(id, el) {
 async function markAllNotifRead() {
     const token = localStorage.getItem('lms_token');
     if (!token) return;
-    await fetch('http://localhost:3000/api/notifications/mark-all-read', {
+    await fetch(window.API_BASE_URL + '/api/notifications/mark-all-read', {
         method: 'PATCH',
         headers: { 'Authorization': `Bearer ${token}` }
     });

@@ -21,8 +21,25 @@ const notificationRoutes = require('./routes/notifications');
 
 const app = express();
 
-// Middleware
-app.use(cors());
+// Middleware — allow Vercel frontend + localhost in dev
+const corsOptions = {
+    origin: function (origin, callback) {
+        const allowed = [
+            process.env.FRONTEND_URL,          // e.g. https://loansphere.vercel.app
+            'http://localhost:5500',
+            'http://127.0.0.1:5500',
+            'http://localhost:3000',
+        ].filter(Boolean);
+        // Allow requests with no origin (e.g. mobile apps, curl)
+        if (!origin || allowed.some(o => origin.startsWith(o))) {
+            callback(null, true);
+        } else {
+            callback(null, true); // open for now; restrict after confirming Vercel URL
+        }
+    },
+    credentials: true,
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 

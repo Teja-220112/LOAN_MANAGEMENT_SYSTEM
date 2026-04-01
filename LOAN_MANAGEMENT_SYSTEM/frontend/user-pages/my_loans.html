@@ -7,6 +7,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link rel="stylesheet" href="style.css" />
+
+  <script src="../config.js"></script>
 </head>
 <body>
 
@@ -141,7 +143,7 @@ async function apiCall(endpoint, method='GET', body=null) {
     if(!token) { window.location.href = 'login.html'; return; }
     const options = { method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` } };
     if(body) options.body = JSON.stringify(body);
-    const res = await fetch(`http://localhost:3000${endpoint}`, options);
+    const res = await fetch(`${window.API_BASE_URL}${endpoint}`, options);
     if(res.status === 401) { window.location.href = 'login.html'; return; }
     return res.json();
 }

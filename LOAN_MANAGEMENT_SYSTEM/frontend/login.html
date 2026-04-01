@@ -7,6 +7,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link rel="stylesheet" href="user-pages/style.css" />
+
+  <script src="config.js"></script>
 </head>
 <body class="auth-page">
 
@@ -74,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             try {
                 if (!pendingUserId) {
-                    const res = await fetch('http://localhost:3000/api/auth/login', {
+                    const res = await fetch(window.API_BASE_URL + '/api/auth/login', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ email: data.email, password: data.password })
@@ -96,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         alert('Error: ' + result.error);
                     }
                 } else {
-                    const res = await fetch('http://localhost:3000/api/auth/verify-otp', {
+                    const res = await fetch(window.API_BASE_URL + '/api/auth/verify-otp', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ userId: pendingUserId, otp: data.otp })
