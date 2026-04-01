@@ -93,7 +93,7 @@ async function scheduleEmiReminders() {
         const dueEmis = await EMISchedule.find({
             status: 'Pending',
             due_date: { $gte: in10DaysStart, $lt: in10DaysEnd }
-        });
+        }).populate('userId', 'email firstName');
 
         for (const emi of dueEmis) {
             const alreadySent = await Notification.findOne({
@@ -110,6 +110,10 @@ async function scheduleEmiReminders() {
                     loanId: emi.loanId,
                     emiId: emi._id
                 });
+                
+                const { sendEmail } = require('./utils/email');
+                const emailHtml = `<h3>EMI Due Reminder</h3><p>Dear ${emi.userId.firstName},</p><p>Your EMI #${emi.installment_number} of ₹${emi.emi_amount.toLocaleString('en-IN')} is due on ${new Date(emi.due_date).toLocaleDateString('en-IN')}. Please ensure your account has sufficient funds.</p>`;
+                await sendEmail(emi.userId.email, emi.userId.firstName, 'EMI Due in 10 Days', emailHtml);
             }
         }
         if (dueEmis.length > 0) console.log(`EMI reminders sent for ${dueEmis.length} installments`);

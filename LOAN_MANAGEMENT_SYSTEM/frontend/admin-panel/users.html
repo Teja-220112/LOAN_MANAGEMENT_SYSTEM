@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Users â€” LoanSphere</title>
+  <title>Users — LoanSphere</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <link rel="stylesheet" href="css/style.css"/>
@@ -146,7 +146,7 @@
 
       <!-- Pagination -->
       <div class="table-footer">
-        <div class="pagination-info" id="paginationInfo">Showing 0â€“0 of 0 users</div>
+        <div class="pagination-info" id="paginationInfo">Showing 0–0 of 0 users</div>
         <div class="pagination-controls" id="paginationControls">
           <button id="prevPage" disabled><i class="fas fa-chevron-left"></i></button>
           <button class="active">1</button>
@@ -243,6 +243,7 @@
   </div>
 </div>
 
+<script src="../config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="js/charts.js"></script>
 <script>
@@ -274,12 +275,12 @@
           <div class="user-cell">
             <div class="user-avatar-sm">${(u.name || '?').charAt(0).toUpperCase()}</div>
             <div>
-              <div class="user-name">${u.name || 'â€”'}</div>
+              <div class="user-name">${u.name || '—'}</div>
             </div>
           </div>
         </td>
-        <td style="color:#64748b;">${u.email || 'â€”'}</td>
-        <td>${u.phone || 'â€”'}</td>
+        <td style="color:#64748b;">${u.email || '—'}</td>
+        <td>${u.phone || '—'}</td>
         <td><span style="font-weight:600;">${u.totalLoans ?? 0}</span></td>
         <td>${accountStatusBadge(u.status)}</td>
         <td>
@@ -318,8 +319,8 @@
           </div>
         </div>
         <div class="info-row">
-          <div class="info-item"><div class="info-item-label">Email</div><div class="info-item-value">${user.email || 'â€”'}</div></div>
-          <div class="info-item"><div class="info-item-label">Phone</div><div class="info-item-value">${user.phone || 'â€”'}</div></div>
+          <div class="info-item"><div class="info-item-label">Email</div><div class="info-item-value">${user.email || '—'}</div></div>
+          <div class="info-item"><div class="info-item-label">Phone</div><div class="info-item-value">${user.phone || '—'}</div></div>
           <div class="info-item"><div class="info-item-label">Total Loans</div><div class="info-item-value">${user.totalLoans ?? 0}</div></div>
           <div class="info-item"><div class="info-item-label">Status</div><div class="info-item-value">${accountStatusBadge(user.status)}</div></div>
         </div>`;
@@ -368,7 +369,7 @@
     //     allUsers = data.users;
     //     renderUsersTable(allUsers);
     //     document.getElementById('usersCountLabel').textContent = `Showing ${allUsers.length} of ${data.total} users`;
-    //     document.getElementById('paginationInfo').textContent = `Showing ${(currentPage-1)*PAGE_SIZE+1}â€“${Math.min(currentPage*PAGE_SIZE, data.total)} of ${data.total} users`;
+    //     document.getElementById('paginationInfo').textContent = `Showing ${(currentPage-1)*PAGE_SIZE+1}–${Math.min(currentPage*PAGE_SIZE, data.total)} of ${data.total} users`;
     //   });
   }
 
@@ -382,13 +383,13 @@ async function apiCall(endpoint, method='GET', body=null) {
     if(!token) { window.location.href = 'login.html'; return; }
     const options = { method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` } };
     if(body) options.body = JSON.stringify(body);
-    const res = await fetch(`http://localhost:3000${endpoint}`, options);
+    const base = window.API_BASE || "http://localhost:3000"; const res = await fetch(`${base}${endpoint}`, options);
     if(res.status === 401 || res.status === 403) { window.location.href = 'login.html'; return; }
     return res.json();
 }
 document.addEventListener('DOMContentLoaded', async () => {
     if(!localStorage.getItem('lms_token')) window.location.href = 'login.html';
-    const tbody = document.getElementById('users-tbody') || document.querySelector('table tbody');
+    const tbody = document.getElementById('usersTableBody');
     if(tbody) {
         const fetchUsers = async () => {
              tbody.innerHTML = '<tr><td colspan="7" class="text-center">Loading...</td></tr>';
@@ -407,7 +408,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const countLabel = document.getElementById('usersCountLabel');
                     if(countLabel) countLabel.textContent = `Showing ${allUsers.length} users`;
                     const pageInfo = document.getElementById('paginationInfo');
-                    if(pageInfo) pageInfo.textContent = `Showing 1â€“${allUsers.length} of ${allUsers.length} users`;
+                    if(pageInfo) pageInfo.textContent = `Showing 1–${allUsers.length} of ${allUsers.length} users`;
                     
                     // Hook up Export Button
                     const exportBtn = document.querySelector('.btn-outline-secondary');
@@ -429,7 +430,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             const formData = new FormData(form);
                             const payload = Object.fromEntries(formData.entries());
                             try {
-                                const r = await fetch('http://localhost:3000/api/auth/register', {
+                                const r = await fetch((window.API_BASE||'http://localhost:3000')+'/api/auth/register', {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify(payload)
@@ -485,7 +486,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if(!data || !data.length) return alert('No data to export');
             const headers = Object.keys(data[0]);
             const csvRows = [headers.join(','), ...data.map(r => headers.map(h => `"${String(r[h] ?? '').replace(/"/g, '""')}"`).join(','))];
-            const blob = new Blob([csvRows.join('\\n')], { type: 'text/csv' });
+            const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
             window.URL.revokeObjectURL(url);

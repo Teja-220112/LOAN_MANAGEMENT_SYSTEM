@@ -88,6 +88,11 @@ router.post('/verify', protect, async (req, res) => {
                 loanId: emi.loanId,
                 emiId: emi._id
             });
+            
+            const { sendEmail } = require('../utils/email');
+            const user = await require('../models/User').findById(req.user._id);
+            const emailHtml = `<h3>${isPrepaid ? 'EMI Pre-Paid Successfully!' : 'EMI Payment Successful!'}</h3><p>Dear ${user.firstName},</p><p>Your EMI #${emi.installment_number} payment of ₹${emi.emi_amount.toLocaleString('en-IN')} was successful.</p>`;
+            await sendEmail(user.email, user.firstName, 'EMI Payment Successful', emailHtml);
         } catch(notifErr) { console.error('Notification error:', notifErr); }
 
         res.status(201).json({ success: true, data: payment });
@@ -124,6 +129,27 @@ router.post('/pay', protect, async (req, res) => {
         emi.status = 'Paid';
         emi.paid_at = Date.now();
         await emi.save();
+
+        // ── Notification: EMI Paid (Mock Route) ──
+        try {
+            const Notification = require('../models/Notification');
+            const isPrepaid = emi.due_date > new Date();
+            await Notification.create({
+                userId: req.user._id,
+                type: 'emi_paid',
+                title: isPrepaid ? '✅ EMI Pre-paid Successfully!' : '✅ EMI Payment Successful!',
+                message: isPrepaid
+                    ? `You pre-paid EMI #${emi.installment_number} of ₹${emi.emi_amount.toLocaleString('en-IN')} (due ${new Date(emi.due_date).toLocaleDateString('en-IN')}) ahead of schedule. Great financial discipline!`
+                    : `EMI #${emi.installment_number} of ₹${emi.emi_amount.toLocaleString('en-IN')} has been paid successfully via ${method || 'online'}.`,
+                loanId: emi.loanId,
+                emiId: emi._id
+            });
+            
+            const { sendEmail } = require('../utils/email');
+            const user = await require('../models/User').findById(req.user._id);
+            const emailHtml = `<h3>${isPrepaid ? 'EMI Pre-Paid Successfully!' : 'EMI Payment Successful!'}</h3><p>Dear ${user.firstName},</p><p>Your EMI #${emi.installment_number} payment of ₹${emi.emi_amount.toLocaleString('en-IN')} was successful.</p>`;
+            await sendEmail(user.email, user.firstName, 'EMI Payment Successful', emailHtml);
+        } catch(notifErr) { console.error('Notification error:', notifErr); }
 
         res.status(201).json({ success: true, data: payment });
     } catch (error) {

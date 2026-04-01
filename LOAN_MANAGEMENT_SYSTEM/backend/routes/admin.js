@@ -193,7 +193,7 @@ router.get('/loans/:id', async (req, res) => {
 
 router.put('/loans/:id/approve', async (req, res) => {
     try {
-        const loan = await Loan.findById(req.params.id);
+        const loan = await Loan.findById(req.params.id).populate('userId', 'email firstName lastName');
         if(!loan) return res.status(404).json({ success: false, error: 'Loan not found' });
 
         // Prevent generating duplicate EMIs if already approved
@@ -254,6 +254,12 @@ router.put('/loans/:id/approve', async (req, res) => {
                 loanId: loan._id
             });
         } catch(notifErr) { console.error('Notification create error:', notifErr); }
+
+        try {
+            const { sendEmail } = require('../utils/email');
+            const emailHtml = `<h3>Loan Approved</h3><p>Dear ${loan.userId.firstName},</p><p>Congratulations! Your loan of ₹${loan.loan_amount.toLocaleString('en-IN')} has been approved.</p><p>Your EMI schedule has been established. You can view your dashboard for details.</p>`;
+            await sendEmail(loan.userId.email, loan.userId.firstName, 'Loan Approved', emailHtml);
+        } catch(mailErr) { console.error('Email error:', mailErr); }
 
         res.json({ success: true, data: loan });
     } catch(err) {

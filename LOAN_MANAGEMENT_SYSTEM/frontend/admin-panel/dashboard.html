@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dashboard â€” LoanSphere</title>
+  <title>Dashboard — LoanSphere</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <link rel="stylesheet" href="css/style.css"/>
@@ -169,11 +169,11 @@
         <div class="stat-card blue">
           <div class="stat-card-icon"><i class="fas fa-users"></i></div>
           <!-- Dynamic: populated from API -->
-          <div class="stat-card-value" id="totalUsers">â€”</div>
+          <div class="stat-card-value" id="totalUsers">—</div>
           <div class="stat-card-label">Total Registered Users</div>
           <div class="stat-card-trend up">
             <i class="fas fa-arrow-up"></i>
-            <strong>â€”%</strong>
+            <strong>—%</strong>
             <span>vs last month</span>
           </div>
         </div>
@@ -182,11 +182,11 @@
       <div class="col-12 col-sm-6 col-xl-3">
         <div class="stat-card orange">
           <div class="stat-card-icon"><i class="fas fa-file-invoice-dollar"></i></div>
-          <div class="stat-card-value" id="totalApplications">â€”</div>
+          <div class="stat-card-value" id="totalApplications">—</div>
           <div class="stat-card-label">Total Loan Applications</div>
           <div class="stat-card-trend up">
             <i class="fas fa-arrow-up"></i>
-            <strong>â€”%</strong>
+            <strong>—%</strong>
             <span>vs last month</span>
           </div>
         </div>
@@ -195,11 +195,11 @@
       <div class="col-12 col-sm-6 col-xl-3">
         <div class="stat-card green">
           <div class="stat-card-icon"><i class="fas fa-check-circle"></i></div>
-          <div class="stat-card-value" id="approvedLoans">â€”</div>
+          <div class="stat-card-value" id="approvedLoans">—</div>
           <div class="stat-card-label">Approved Loans</div>
           <div class="stat-card-trend up">
             <i class="fas fa-arrow-up"></i>
-            <strong>â€”%</strong>
+            <strong>—%</strong>
             <span>approval rate</span>
           </div>
         </div>
@@ -208,11 +208,11 @@
       <div class="col-12 col-sm-6 col-xl-3">
         <div class="stat-card red">
           <div class="stat-card-icon"><i class="fas fa-exclamation-triangle"></i></div>
-          <div class="stat-card-value" id="totalDefaulters">â€”</div>
+          <div class="stat-card-value" id="totalDefaulters">—</div>
           <div class="stat-card-label">Total Defaulters</div>
           <div class="stat-card-trend down">
             <i class="fas fa-arrow-up"></i>
-            <strong>â€”%</strong>
+            <strong>—%</strong>
             <span>risk level</span>
           </div>
         </div>
@@ -311,6 +311,7 @@
 </div>
 
 <!-- Scripts -->
+<script src="../config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="js/charts.js"></script>
@@ -356,14 +357,14 @@
           <div class="user-cell">
             <div class="user-avatar-sm">${row.name?.charAt(0) || '?'}</div>
             <div>
-              <div class="user-name">${row.name || 'â€”'}</div>
+              <div class="user-name">${row.name || '—'}</div>
               <div class="user-id">${row.email || ''}</div>
             </div>
           </div>
         </td>
-        <td><strong>â‚¹${Number(row.amount).toLocaleString()}</strong></td>
-        <td>${row.purpose || 'â€”'}</td>
-        <td>${row.date || 'â€”'}</td>
+        <td><strong>₹${Number(row.amount).toLocaleString()}</strong></td>
+        <td>${row.purpose || '—'}</td>
+        <td>${row.date || '—'}</td>
         <td>${statusBadge(row.status)}</td>
         <td>
           <a href="loan_approval.html?id=${row.loanId}" class="btn btn-primary btn-sm btn-icon" title="Review">
@@ -391,7 +392,7 @@ async function apiCall(endpoint, method='GET', body=null) {
     if(!token) { window.location.href = 'login.html'; return; }
     const options = { method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` } };
     if(body) options.body = JSON.stringify(body);
-    const res = await fetch(`http://localhost:3000${endpoint}`, options);
+    const base = window.API_BASE || "http://localhost:3000"; const res = await fetch(`${base}${endpoint}`, options);
     if(res.status === 401 || res.status === 403) { window.location.href = 'login.html'; return; }
     return res.json();
 }
@@ -445,7 +446,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 email: l.userId ? l.userId.email : '',
                 amount: l.loan_amount || 0,
                 purpose: l.loan_purpose || 'Personal',
-                date: l.createdAt ? new Date(l.createdAt).toLocaleDateString() : 'â€”',
+                date: l.createdAt ? new Date(l.createdAt).toLocaleDateString() : '—',
                 status: l.status || 'Pending'
             }));
             if(typeof renderRecentApplications === 'function') {

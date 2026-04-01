@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Analytics â€” LoanSphere</title>
+  <title>Analytics — LoanSphere</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <link rel="stylesheet" href="css/style.css"/>
@@ -102,28 +102,28 @@
       <div class="col-6 col-lg-3">
         <div class="stat-card blue">
           <div class="stat-card-icon"><i class="fas fa-file-invoice-dollar"></i></div>
-          <div class="stat-card-value" id="kpiTotal">â€”</div>
+          <div class="stat-card-value" id="kpiTotal">—</div>
           <div class="stat-card-label">Total Applications YTD</div>
         </div>
       </div>
       <div class="col-6 col-lg-3">
         <div class="stat-card green">
           <div class="stat-card-icon"><i class="fas fa-percentage"></i></div>
-          <div class="stat-card-value" id="kpiApprovalRate">â€”%</div>
+          <div class="stat-card-value" id="kpiApprovalRate">—%</div>
           <div class="stat-card-label">Approval Rate</div>
         </div>
       </div>
       <div class="col-6 col-lg-3">
         <div class="stat-card orange">
           <div class="stat-card-icon"><i class="fas fa-rupee-sign"></i></div>
-          <div class="stat-card-value" id="kpiDisbursed">â€”</div>
+          <div class="stat-card-value" id="kpiDisbursed">—</div>
           <div class="stat-card-label">Total Disbursed</div>
         </div>
       </div>
       <div class="col-6 col-lg-3">
         <div class="stat-card red">
           <div class="stat-card-icon"><i class="fas fa-exclamation-circle"></i></div>
-          <div class="stat-card-value" id="kpiDefaultRate">â€”%</div>
+          <div class="stat-card-value" id="kpiDefaultRate">—%</div>
           <div class="stat-card-label">Default Rate</div>
         </div>
       </div>
@@ -170,15 +170,15 @@
           <div style="display:flex;justify-content:center;gap:24px;margin-top:12px;flex-wrap:wrap;">
             <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#64748b;">
               <span style="width:10px;height:10px;border-radius:50%;background:#22c55e;display:inline-block;"></span> Approved
-              <strong style="color:#0f172a;" id="approvedPct">â€”%</strong>
+              <strong style="color:#0f172a;" id="approvedPct">—%</strong>
             </div>
             <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#64748b;">
               <span style="width:10px;height:10px;border-radius:50%;background:#f59e0b;display:inline-block;"></span> Pending
-              <strong style="color:#0f172a;" id="pendingPct">â€”%</strong>
+              <strong style="color:#0f172a;" id="pendingPct">—%</strong>
             </div>
             <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#64748b;">
               <span style="width:10px;height:10px;border-radius:50%;background:#ef4444;display:inline-block;"></span> Rejected
-              <strong style="color:#0f172a;" id="rejectedPct">â€”%</strong>
+              <strong style="color:#0f172a;" id="rejectedPct">—%</strong>
             </div>
           </div>
         </div>
@@ -196,7 +196,7 @@
             <canvas id="defaulterChart"></canvas>
             <!-- Center label -->
             <div id="defaulterCenter" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-58%);text-align:center;pointer-events:none;">
-              <div style="font-size:28px;font-weight:800;font-family:'Space Grotesk',sans-serif;color:#0f172a;" id="defaulterPct">â€”%</div>
+              <div style="font-size:28px;font-weight:800;font-family:'Space Grotesk',sans-serif;color:#0f172a;" id="defaulterPct">—%</div>
               <div style="font-size:11px;color:#94a3b8;">Default Rate</div>
             </div>
           </div>
@@ -257,7 +257,7 @@
                 <div style="font-size:13px;font-weight:600;color:#0f172a;">Average Loan Amount</div>
                 <div style="font-size:11.5px;color:#94a3b8;">Per approved loan</div>
               </div>
-              <div style="font-size:16px;font-weight:700;font-family:'Space Grotesk',sans-serif;" id="avgLoanAmt">â€”</div>
+              <div style="font-size:16px;font-weight:700;font-family:'Space Grotesk',sans-serif;" id="avgLoanAmt">—</div>
             </div>
             <div style="height:1px;background:#f1f5f9;"></div>
 
@@ -266,7 +266,7 @@
                 <div style="font-size:13px;font-weight:600;color:#0f172a;">Average Credit Score</div>
                 <div style="font-size:11.5px;color:#94a3b8;">Across all applicants</div>
               </div>
-              <div style="font-size:16px;font-weight:700;font-family:'Space Grotesk',sans-serif;" id="avgCreditScore">â€”</div>
+              <div style="font-size:16px;font-weight:700;font-family:'Space Grotesk',sans-serif;" id="avgCreditScore">—</div>
             </div>
             <div style="height:1px;background:#f1f5f9;"></div>
 
@@ -275,7 +275,7 @@
                 <div style="font-size:13px;font-weight:600;color:#0f172a;">Avg Processing Time</div>
                 <div style="font-size:11.5px;color:#94a3b8;">From application to decision</div>
               </div>
-              <div style="font-size:16px;font-weight:700;font-family:'Space Grotesk',sans-serif;" id="avgProcessTime">â€”</div>
+              <div style="font-size:16px;font-weight:700;font-family:'Space Grotesk',sans-serif;" id="avgProcessTime">—</div>
             </div>
             <div style="height:1px;background:#f1f5f9;"></div>
 
@@ -284,7 +284,7 @@
                 <div style="font-size:13px;font-weight:600;color:#0f172a;">EMI Collection Rate</div>
                 <div style="font-size:11.5px;color:#94a3b8;">On-time payment percentage</div>
               </div>
-              <div style="font-size:16px;font-weight:700;color:#22c55e;font-family:'Space Grotesk',sans-serif;" id="emiCollectionRate">â€”%</div>
+              <div style="font-size:16px;font-weight:700;color:#22c55e;font-family:'Space Grotesk',sans-serif;" id="emiCollectionRate">—%</div>
             </div>
             <div style="height:1px;background:#f1f5f9;"></div>
 
@@ -293,7 +293,7 @@
                 <div style="font-size:13px;font-weight:600;color:#0f172a;">Portfolio NPA</div>
                 <div style="font-size:11.5px;color:#94a3b8;">Non-Performing Assets ratio</div>
               </div>
-              <div style="font-size:16px;font-weight:700;color:#ef4444;font-family:'Space Grotesk',sans-serif;" id="portfolioNPA">â€”%</div>
+              <div style="font-size:16px;font-weight:700;color:#ef4444;font-family:'Space Grotesk',sans-serif;" id="portfolioNPA">—%</div>
             </div>
           </div>
         </div>
@@ -335,7 +335,7 @@
             // Update KPIs
             document.getElementById('kpiTotal').textContent        = data.totalApplications.toLocaleString();
             document.getElementById('kpiApprovalRate').textContent = appRate + '%';
-            document.getElementById('kpiDisbursed').textContent    = 'â‚¹' + (data.approvedLoans * 2.5).toFixed(1) + 'L';
+            document.getElementById('kpiDisbursed').textContent    = '₹' + (data.approvedLoans * 2.5).toFixed(1) + 'L';
             document.getElementById('kpiDefaultRate').textContent  = defRate + '%';
             
             // Update Charts
@@ -375,9 +375,9 @@
             
             // Metrics (Real data from portfolioHealth)
             const health = data.portfolioHealth || {};
-            document.getElementById('avgLoanAmt').textContent       = 'â‚¹' + (health.avgLoanAmount || 0).toLocaleString('en-IN');
+            document.getElementById('avgLoanAmt').textContent       = '₹' + (health.avgLoanAmount || 0).toLocaleString('en-IN');
             document.getElementById('avgCreditScore').textContent   = health.avgCreditScore || 0;
-            document.getElementById('avgProcessTime').textContent   = health.avgProcessingTime || 'â€”';
+            document.getElementById('avgProcessTime').textContent   = health.avgProcessingTime || '—';
             document.getElementById('emiCollectionRate').textContent= (health.emiCollectionRate || 0) + '%';
             document.getElementById('portfolioNPA').textContent     = defRate + '%';
             
@@ -442,7 +442,7 @@
             <span style="font-size:12px;color:#64748b;min-width:36px;">${row.share}%</span>
           </div>
         </td>
-        <td>â‚¹${Number(row.avgAmount).toLocaleString()}</td>
+        <td>₹${Number(row.avgAmount).toLocaleString()}</td>
         <td>
           <span style="color:${row.approvalPct >= 70 ? '#22c55e' : row.approvalPct >= 50 ? '#f59e0b' : '#ef4444'};font-weight:600;">
             ${row.approvalPct}%

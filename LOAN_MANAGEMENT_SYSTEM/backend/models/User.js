@@ -13,7 +13,9 @@ const userSchema = new mongoose.Schema({
     national_id: { type: String },
     employment_type: { type: String },
     kyc_verified: { type: Boolean, default: false },
-    status: { type: String, enum: ['Active', 'Inactive', 'Suspended'], default: 'Active' }
+    status: { type: String, enum: ['Active', 'Inactive', 'Suspended'], default: 'Active' },
+    otp: { type: String },
+    otpExpires: { type: Date }
 }, {
     timestamps: true
 });

@@ -13,12 +13,12 @@
 <div id="navbar-placeholder"></div>
 
 <main>
-  <!-- ── Dashboard Header ──────────────────────────────────── -->
+  <!-- ”€”€ Dashboard Header ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€ -->
   <div class="dashboard-header">
     <div class="container">
       <div class="row align-items-center">
         <div class="col">
-          <p class="dashboard-greeting">Good morning 👋</p>
+          <p class="dashboard-greeting">Good morning ðŸ‘‹</p>
           <!-- User name populated by backend: {{ user.full_name }} -->
           <h1 class="dashboard-name" id="user-name">Loading...</h1>
           <p class="dashboard-date" id="dashboard-date"></p>
@@ -32,7 +32,7 @@
     </div>
   </div>
 
-  <!-- ── Summary Cards ─────────────────────────────────────── -->
+  <!-- ”€”€ Summary Cards ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€ -->
   <div class="container" style="margin-top:-28px;position:relative;z-index:1;">
     <div class="row g-3">
       <!-- Active Loans -->
@@ -71,7 +71,7 @@
     </div>
   </div>
 
-  <!-- ── Content Area ───────────────────────────────────────── -->
+  <!-- ”€”€ Content Area ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€ -->
   <div class="container page-section-sm">
     <div class="row g-4">
 
@@ -134,6 +134,7 @@
 
 <!-- No footer on dashboard page -->
 
+<script src="config.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
 <script src="scripts.js"></script>
 <script>
@@ -141,7 +142,7 @@
     // Date display
     const now = new Date();
     const hour = now.getHours();
-    const greeting = hour < 12 ? 'Good morning 👋' : hour < 17 ? 'Good afternoon 👋' : 'Good evening 👋';
+    const greeting = hour < 12 ? 'Good morning ðŸ‘‹' : hour < 17 ? 'Good afternoon ðŸ‘‹' : 'Good evening ðŸ‘‹';
     document.querySelector('.dashboard-greeting').textContent = greeting;
     document.getElementById('dashboard-date').textContent =
       now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
