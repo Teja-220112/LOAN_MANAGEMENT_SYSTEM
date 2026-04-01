@@ -25,16 +25,17 @@ const app = express();
 const corsOptions = {
     origin: function (origin, callback) {
         const allowed = [
-            process.env.FRONTEND_URL,          // e.g. https://loansphere.vercel.app
+            'https://loansphere-two.vercel.app',  // production frontend
+            process.env.FRONTEND_URL,              // from env var
             'http://localhost:5500',
             'http://127.0.0.1:5500',
             'http://localhost:3000',
         ].filter(Boolean);
-        // Allow requests with no origin (e.g. mobile apps, curl)
+        // Allow requests with no origin (mobile, curl, etc.)
         if (!origin || allowed.some(o => origin.startsWith(o))) {
             callback(null, true);
         } else {
-            callback(null, true); // open for now; restrict after confirming Vercel URL
+            callback(null, true); // permissive — tighten after testing
         }
     },
     credentials: true,
