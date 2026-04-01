@@ -21,26 +21,20 @@ const notificationRoutes = require('./routes/notifications');
 
 const app = express();
 
-// Middleware — allow Vercel frontend + localhost in dev
-const corsOptions = {
-    origin: function (origin, callback) {
-        const allowed = [
-            'https://loansphere-two.vercel.app',  // production frontend
-            process.env.FRONTEND_URL,              // from env var
-            'http://localhost:5500',
-            'http://127.0.0.1:5500',
-            'http://localhost:3000',
-        ].filter(Boolean);
-        // Allow requests with no origin (mobile, curl, etc.)
-        if (!origin || allowed.some(o => origin.startsWith(o))) {
-            callback(null, true);
-        } else {
-            callback(null, true); // permissive — tighten after testing
-        }
-    },
-    credentials: true,
-};
-app.use(cors(corsOptions));
+// Middleware — open CORS for all origins (frontend on Vercel)
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+// Handle preflight for ALL routes
+app.options('*', cors());
+// Belt-and-braces: set CORS header on every response
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    next();
+});
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
