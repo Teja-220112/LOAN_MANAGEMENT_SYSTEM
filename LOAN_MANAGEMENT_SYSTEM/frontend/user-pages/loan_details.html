@@ -186,15 +186,15 @@
 // ===== Frontend Connection Code: loan_details.html =====
 async function apiCall(endpoint, method='GET', body=null) {
     const token = localStorage.getItem('lms_token');
-    if(!token) { window.location.href = 'login.html'; return; }
+    if(!token) { window.location.href = '../login.html'; return; }
     const options = { method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` } };
     if(body) options.body = JSON.stringify(body);
     const res = await fetch(`${window.API_BASE_URL}${endpoint}`, options);
-    if(res.status === 401) { window.location.href = 'login.html'; return; }
+    if(res.status === 401) { window.location.href = '../login.html'; return; }
     return res.json();
 }
 document.addEventListener('DOMContentLoaded', async () => {
-    if(!localStorage.getItem('lms_token')) window.location.href = 'login.html';
+    if(!localStorage.getItem('lms_token')) window.location.href = '../login.html';
     const urlParams = new URLSearchParams(window.location.search);
     const loanId = urlParams.get('id');
     if(!loanId) return alert('No Loan ID provided');

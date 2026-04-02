@@ -140,15 +140,15 @@
 // ===== Frontend Connection Code: my_loans.html =====
 async function apiCall(endpoint, method='GET', body=null) {
     const token = localStorage.getItem('lms_token');
-    if(!token) { window.location.href = 'login.html'; return; }
+    if(!token) { window.location.href = '../login.html'; return; }
     const options = { method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` } };
     if(body) options.body = JSON.stringify(body);
     const res = await fetch(`${window.API_BASE_URL}${endpoint}`, options);
-    if(res.status === 401) { window.location.href = 'login.html'; return; }
+    if(res.status === 401) { window.location.href = '../login.html'; return; }
     return res.json();
 }
 document.addEventListener('DOMContentLoaded', async () => {
-    if(!localStorage.getItem('lms_token')) window.location.href = 'login.html';
+    if(!localStorage.getItem('lms_token')) window.location.href = '../login.html';
     const tbody = document.getElementById('loans-tbody') || document.querySelector('table tbody');
     if(!tbody) return;
     tbody.innerHTML = '<tr><td colspan="6" class="text-center">Loading...</td></tr>';
