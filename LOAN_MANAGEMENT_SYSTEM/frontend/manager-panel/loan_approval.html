@@ -72,17 +72,17 @@
       <div class="page-header-left">
         <div class="breadcrumb-bar">
           <a href="dashboard.html">Home</a><span>/</span>
-          <a href="loan_applications.html">Applications</a><span>/</span>
+          <a href="dashboard.html">Applications</a><span>/</span>
           <span>Review Loan</span>
         </div>
         <h4>Review Loan Application</h4>
         <p>Application ID: <span id="loanIdLabel" style="font-family:monospace;color:#3b82f6;font-weight:600;">—</span></p>
       </div>
       <div style="display:flex;gap:10px;">
-        <a href="loan_applications.html" class="btn btn-outline-secondary btn-sm">
-          <i class="fas fa-arrow-left"></i> Back to List
+        <a href="dashboard.html" class="btn btn-outline-secondary btn-sm">
+          <i class="fas fa-arrow-left"></i> Back to Dashboard
         </a>
-        <button class="btn btn-outline-secondary btn-sm"><i class="fas fa-print"></i> Print</button>
+        <button class="btn btn-outline-secondary btn-sm" onclick="window.print()"><i class="fas fa-print"></i> Print</button>
       </div>
     </div>
 
@@ -406,7 +406,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const loanId = urlParams.get('id');
     if (!loanId) {
         document.getElementById('loanIdLabel').textContent = 'None Selected';
-        const msg = '<div class="alert alert-warning" style="margin-bottom:20px;">Please select a loan application from the <a href="loan_applications.html">Applications List</a> to review it.</div>';
+        const msg = '<div class="alert alert-warning" style="margin-bottom:20px;">Please select a loan application from the <a href="dashboard.html">Manager Dashboard</a> to review it.</div>';
         const banner = document.getElementById('statusBanner');
         if (banner) banner.insertAdjacentHTML('beforebegin', msg);
         const approveBtn = document.getElementById('approveBtn');
