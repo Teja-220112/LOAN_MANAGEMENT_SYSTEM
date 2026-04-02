@@ -343,8 +343,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                         loanId: l._id,
                         userName: l.userId ? `${l.userId.firstName || ''} ${l.userId.lastName || ''}`.trim() : 'Unknown',
                         loanAmount: l.loan_amount || 0,
-                        income: l.userId && l.userId.monthly_income ? l.userId.monthly_income : 0,
-                        creditScore: l.userId && l.userId.credit_score ? l.userId.credit_score : 700,
+                        income: l.monthly_income ? l.monthly_income : 0,
+                        creditScore: l.credit_score ? l.credit_score : 700,
                         purpose: l.loan_purpose || 'Personal',
                         applicationDate: l.createdAt ? new Date(l.createdAt).toLocaleDateString() : '—',
                         status: l.status || 'Pending'

@@ -6,15 +6,8 @@ const Loan = require('../models/Loan');
 const EMISchedule = require('../models/EMISchedule');
 const { protect } = require('../middleware/auth');
 
-// Setup array of storage engines
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, 'uploads/');
-    },
-    filename: function (req, file, cb) {
-        cb(null, Date.now() + '-' + file.originalname);
-    }
-});
+// Setup MemoryStorage
+const storage = multer.memoryStorage();
 const MAX_FILES = 10;
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
 const ALLOWED_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'application/pdf']);
@@ -36,7 +29,7 @@ router.post('/apply', protect, upload.array('documents', MAX_FILES), async (req,
         } = req.body;
 
         const docs = req.files || [];
-        const document_urls = docs.map(f => `/uploads/${f.filename}`);
+        const document_urls = docs.map(f => `data:${f.mimetype};base64,${f.buffer.toString('base64')}`);
         const document_url = document_urls.length > 0 ? document_urls[0] : null;
 
         const loan = await Loan.create({

@@ -117,7 +117,11 @@ router.get('/users', async (req, res) => {
             query.status = req.query.status;
         }
         const users = await User.find(query).select('-password');
-        res.json({ success: true, data: users });
+        const usersWithLoans = await Promise.all(users.map(async (u) => {
+            const totalLoans = await Loan.countDocuments({ userId: u._id });
+            return { ...u.toObject(), totalLoans };
+        }));
+        res.json({ success: true, data: usersWithLoans });
     } catch(err) {
         res.status(500).json({ success: false, error: 'Server Error' });
     }

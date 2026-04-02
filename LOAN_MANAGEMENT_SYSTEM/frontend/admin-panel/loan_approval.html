@@ -436,25 +436,29 @@ document.addEventListener('DOMContentLoaded', async () => {
                 } else {
                     const iconFor = (url) => {
                         const lower = String(url || '').toLowerCase();
-                        if (lower.endsWith('.pdf')) return 'fa-file-pdf';
-                        if (lower.endsWith('.png') || lower.endsWith('.jpg') || lower.endsWith('.jpeg')) return 'fa-file-image';
+                        if (lower.includes('application/pdf') || lower.endsWith('.pdf')) return 'fa-file-pdf';
+                        if (lower.includes('image/') || lower.endsWith('.png') || lower.endsWith('.jpg') || lower.endsWith('.jpeg')) return 'fa-file-image';
                         return 'fa-file';
                     };
 
-                    docArea.innerHTML = allUrls.map((u, idx) => `
+                    docArea.innerHTML = allUrls.map((u, idx) => {
+                        const isBase64 = String(u).startsWith('data:');
+                        const href = isBase64 ? u : `${window.API_BASE_URL}${u}`;
+                        const displayTitle = isBase64 ? 'Uploaded Document (Base64)' : String(u).replace('/uploads/','');
+                        return `
                         <div style="display:flex;align-items:center;padding:12px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;margin-bottom:10px;">
                             <i class="fas ${iconFor(u)}" style="font-size:22px;color:#3b82f6;margin-right:12px;"></i>
                             <div style="flex:1;">
                                 <div style="font-size:14px;font-weight:600;color:#1e293b;">Uploaded Document ${idx + 1}</div>
                                 <div style="font-size:12px;color:#64748b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:320px;">
-                                    ${String(u).replace('/uploads/','')}
+                                    ${displayTitle}
                                 </div>
                             </div>
-                            <a href="${window.API_BASE_URL}${u}" target="_blank" class="btn btn-sm btn-outline-primary">
+                            <a href="${href}" target="_blank" download="Document_${idx+1}" class="btn btn-sm btn-outline-primary">
                                 <i class="fas fa-external-link-alt mt-1"></i> View
                             </a>
                         </div>
-                    `).join('');
+                    `}).join('');
                 }
             }
             
