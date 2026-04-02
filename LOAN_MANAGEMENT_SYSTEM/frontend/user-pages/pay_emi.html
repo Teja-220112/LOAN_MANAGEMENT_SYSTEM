@@ -354,7 +354,7 @@
 </main>
 
 <div id="lms-footer-placeholder"></div>
-<script src="config.js"></script>
+<script src="../config.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
 <script src="scripts.js"></script>
 <script>
@@ -363,7 +363,7 @@
   // ---- Shared Connection Helper ----
   async function apiCall(endpoint, method='GET', body=null) {
     const token = localStorage.getItem('lms_token');
-    if(!token) { window.location.href = 'login.html'; return; }
+    if(!token) { window.location.href = '../login.html'; return; }
     const options = { 
         method, 
         headers: { 
@@ -374,7 +374,7 @@
     if(body) options.body = JSON.stringify(body);
     try {
         const res = await fetch(`${window.API_BASE_URL}${endpoint}`, options);
-        if(res.status === 401) { window.location.href = 'login.html'; return; }
+        if(res.status === 401) { window.location.href = '../login.html'; return; }
         return res.json();
     } catch(err) {
         console.error('API Call Error:', err);
@@ -390,7 +390,7 @@
 
   // ---- Initialization ----
   document.addEventListener('DOMContentLoaded', async () => {
-    if(!localStorage.getItem('lms_token')) window.location.href = 'login.html';
+    if(!localStorage.getItem('lms_token')) window.location.href = '../login.html';
     
     try {
         const keyRes = await apiCall('/api/payments/key');
